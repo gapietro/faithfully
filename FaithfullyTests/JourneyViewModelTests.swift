@@ -15,7 +15,7 @@ final class JourneyViewModelTests: XCTestCase {
         context = ModelContext(container)
         challenges = try TestHelpers.loadTestChallenges()
         badgeService = BadgeService(modelContext: context)
-        challengeService = ChallengeService(modelContext: context, challenges: challenges, badgeService: badgeService)
+        challengeService = try ChallengeService(modelContext: context, challenges: challenges, badgeService: badgeService)
     }
 
     func testTotalCompletedReflectsActualCount() throws {

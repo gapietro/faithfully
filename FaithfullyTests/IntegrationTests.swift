@@ -19,7 +19,7 @@ final class IntegrationTests: XCTestCase {
     func testFullCompletionFlow_ViewCompleteVerifyPersistenceStreakBadge() throws {
         let today = Date.from(year: 2026, month: 6, day: 15)
         let badgeService = BadgeService(modelContext: context)
-        let challengeService = ChallengeService(
+        let challengeService = try ChallengeService(
             modelContext: context, challenges: challenges, badgeService: badgeService, dateProvider: { today }
         )
 
@@ -51,7 +51,7 @@ final class IntegrationTests: XCTestCase {
     func testComplete31Challenges_5KBadgeAppearsInJourney() throws {
         let today = Date.from(year: 2026, month: 6, day: 15)
         let badgeService = BadgeService(modelContext: context)
-        let challengeService = ChallengeService(
+        let challengeService = try ChallengeService(
             modelContext: context, challenges: challenges, badgeService: badgeService, dateProvider: { today }
         )
 
@@ -82,7 +82,7 @@ final class IntegrationTests: XCTestCase {
     func testMissADay_StreakResets_GracePeriodAllowsRecovery() throws {
         let today = Date.from(year: 2026, month: 6, day: 15)
         let badgeService = BadgeService(modelContext: context)
-        let challengeService = ChallengeService(
+        let challengeService = try ChallengeService(
             modelContext: context, challenges: challenges, badgeService: badgeService, dateProvider: { today }
         )
 
@@ -129,7 +129,7 @@ final class IntegrationTests: XCTestCase {
     func testCompleteChallengeWithJournal_JournalAppearsInTimeline() throws {
         let today = Date.from(year: 2026, month: 6, day: 15)
         let badgeService = BadgeService(modelContext: context)
-        let challengeService = ChallengeService(
+        let challengeService = try ChallengeService(
             modelContext: context, challenges: challenges, badgeService: badgeService, dateProvider: { today }
         )
 
@@ -144,9 +144,9 @@ final class IntegrationTests: XCTestCase {
 
     // MARK: - 4.2 Year Transition
 
-    func testDay365Completion_Day366ShowsDifferentChallengeThanDay1() {
+    func testDay365Completion_Day366ShowsDifferentChallengeThanDay1() throws {
         let badgeService = BadgeService(modelContext: context)
-        let challengeService = ChallengeService(
+        let challengeService = try ChallengeService(
             modelContext: context, challenges: challenges, badgeService: badgeService
         )
 
@@ -156,15 +156,15 @@ final class IntegrationTests: XCTestCase {
         let challenge1 = challengeService.challengeForDate(day1)
 
         // Year 2 should use offset = 1
-        let scheduler = ChallengeScheduler(challenges: challenges)
+        let scheduler = try XCTUnwrap(ChallengeScheduler(challenges: challenges))
         let challengeYear2 = scheduler.challengeForDate(day366, yearOffset: 1)
 
         XCTAssertNotEqual(challenge1.id, challengeYear2.id,
                          "Day 1 of year 2 should show a different challenge than day 1 of year 1")
     }
 
-    func testGivingChallengesOnFirstSaturdaysPersistAcrossYearBoundary() {
-        let scheduler = ChallengeScheduler(challenges: challenges)
+    func testGivingChallengesOnFirstSaturdaysPersistAcrossYearBoundary() throws {
+        let scheduler = try XCTUnwrap(ChallengeScheduler(challenges: challenges))
 
         // First Saturday of January 2026
         let jan2026FirstSat = Date.from(year: 2026, month: 1, day: 3) // Jan 3 2026 is Saturday
@@ -191,7 +191,7 @@ final class IntegrationTests: XCTestCase {
     func testForceQuitAndRelaunchPreservesAllData() throws {
         let today = Date.from(year: 2026, month: 6, day: 15)
         let badgeService = BadgeService(modelContext: context)
-        let challengeService = ChallengeService(
+        let challengeService = try ChallengeService(
             modelContext: context, challenges: challenges, badgeService: badgeService, dateProvider: { today }
         )
 
@@ -202,7 +202,7 @@ final class IntegrationTests: XCTestCase {
         // Simulate "relaunch" — create new ModelContext from same container
         let newContext = ModelContext(container)
         let newBadgeService = BadgeService(modelContext: newContext)
-        let newChallengeService = ChallengeService(
+        let newChallengeService = try ChallengeService(
             modelContext: newContext, challenges: challenges, badgeService: newBadgeService, dateProvider: { today }
         )
 
@@ -212,13 +212,13 @@ final class IntegrationTests: XCTestCase {
         )
         XCTAssertEqual(completions.count, 1)
         XCTAssertEqual(completions.first?.journalEntry, "Test persistence")
-        XCTAssertTrue(newChallengeService.isCompleted(challengeId: challenge.id))
+        XCTAssertTrue(newChallengeService.isCompleted(on: today))
     }
 
     func test1000CompletionsDoesNotDegradePerformance() throws {
         let today = Date.from(year: 2026, month: 6, day: 15)
         let badgeService = BadgeService(modelContext: context)
-        let challengeService = ChallengeService(
+        let challengeService = try ChallengeService(
             modelContext: context, challenges: challenges, badgeService: badgeService, dateProvider: { today }
         )
 

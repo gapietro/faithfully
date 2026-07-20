@@ -11,6 +11,8 @@ final class DailyWalkViewModel {
     var newBadges: [BadgeDefinition] = []
     var translation: BibleTranslation = .esv
 
+    let yesterdayChallenge: DailyChallenge
+
     private let challengeService: ChallengeServiceProtocol
     private let today: Date
 
@@ -22,8 +24,14 @@ final class DailyWalkViewModel {
         self.challengeService = challengeService
         self.today = today
         self.todayChallenge = challengeService.challengeForDate(today)
-        self.isCompleted = challengeService.isCompleted(challengeId: todayChallenge.id)
+        self.yesterdayChallenge = challengeService.challengeForDate(today.addingDays(-1))
+        self.isCompleted = challengeService.isCompleted(on: today)
         self.currentStreak = challengeService.calculateStreak()
+    }
+
+    func refresh() {
+        isCompleted = challengeService.isCompleted(on: today)
+        currentStreak = challengeService.calculateStreak()
     }
 
     func complete(journal: String? = nil) {

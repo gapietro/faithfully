@@ -2,41 +2,58 @@ import SwiftUI
 import SwiftData
 
 struct ContentView: View {
-    @Environment(\.modelContext) private var modelContext
+    @Environment(AppEnvironment.self) private var appEnvironment
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
 
     var body: some View {
-        if hasCompletedOnboarding {
-            MainTabView()
-        } else {
-            OnboardingView(onComplete: {
-                hasCompletedOnboarding = true
-            })
+        switch appEnvironment.state {
+        case .loading:
+            ProgressView()
+        case .failed(let message):
+            ChallengeLoadErrorView(message: message) {
+                appEnvironment.retry()
+            }
+        case .ready(let services):
+            if hasCompletedOnboarding {
+                MainTabView(services: services)
+            } else {
+                OnboardingView(onComplete: {
+                    hasCompletedOnboarding = true
+                })
+            }
         }
     }
 }
 
 struct MainTabView: View {
-    @Environment(\.modelContext) private var modelContext
+    let services: AppServices
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         TabView {
-            DailyWalkView()
+            DailyWalkView(vm: services.dailyWalkViewModel)
                 .tabItem {
                     Label("Daily Walk", systemImage: "figure.walk")
                 }
-            CalendarScreenView()
+            CalendarScreenView(vm: services.calendarViewModel)
                 .tabItem {
                     Label("Calendar", systemImage: "calendar")
                 }
-            JourneyView()
+            JourneyView(vm: services.journeyViewModel)
                 .tabItem {
                     Label("Journey", systemImage: "trophy")
                 }
-            SettingsView()
+            SettingsView(vm: services.settingsViewModel)
                 .tabItem {
                     Label("Settings", systemImage: "gear")
                 }
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            // Re-read completion state on foreground so grace-period expiry or
+            // changes made while backgrounded are reflected without a relaunch.
+            if newPhase == .active {
+                services.refreshAfterCompletion()
+            }
         }
     }
 }

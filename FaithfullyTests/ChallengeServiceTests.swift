@@ -15,7 +15,7 @@ final class ChallengeServiceTests: XCTestCase {
         context = ModelContext(container)
         challenges = try TestHelpers.loadTestChallenges()
         badgeService = BadgeService(modelContext: context)
-        service = ChallengeService(modelContext: context, challenges: challenges, badgeService: badgeService)
+        service = try ChallengeService(modelContext: context, challenges: challenges, badgeService: badgeService)
     }
 
     func testLoadChallengesReturns365Items() {
@@ -98,6 +98,112 @@ final class ChallengeServiceTests: XCTestCase {
         let pastRange = today.addingDays(-10)...today.addingDays(-5)
         let pastCompletions = service.fetchCompletions(for: pastRange)
         XCTAssertEqual(pastCompletions.count, 0)
+    }
+
+    // MARK: - Fail-closed pool (#5)
+
+    func testInitThrowsOnEmptyChallengePool() {
+        XCTAssertThrowsError(
+            try ChallengeService(modelContext: context, challenges: [], badgeService: badgeService)
+        ) { error in
+            XCTAssertEqual(error as? ChallengeServiceError, .emptyChallengePool)
+        }
+    }
+
+    func testInitThrowsOnGivingOnlyPool() {
+        let givingOnly = challenges.filter { $0.category == .giving }
+        XCTAssertThrowsError(
+            try ChallengeService(modelContext: context, challenges: givingOnly, badgeService: badgeService)
+        ) { error in
+            XCTAssertEqual(error as? ChallengeServiceError, .emptyChallengePool)
+        }
+    }
+
+    // MARK: - Completion keyed by scheduled day (#3)
+
+    func testIsCompletedIsScopedToScheduledDay() throws {
+        let today = Date.now
+        let challenge = service.challengeForDate(today)
+        _ = try service.completeChallenge(challenge, on: today, journal: nil)
+
+        XCTAssertTrue(service.isCompleted(on: today))
+        XCTAssertFalse(service.isCompleted(on: today.addingDays(1)))
+        XCTAssertFalse(service.isCompleted(on: today.addingDays(-1)))
+    }
+
+    func testCompletingReusedChallengeIdOnOneDayDoesNotCompleteTheOther() throws {
+        // The scheduler reuses non-giving IDs within a year and giving IDs monthly.
+        // Find two 2026 dates that map to the same challenge ID under one service.
+        let startDate = Date.from(year: 2026, month: 1, day: 1)
+        var currentToday = startDate
+        let service = try ChallengeService(
+            modelContext: context,
+            challenges: challenges,
+            badgeService: badgeService,
+            userStartDate: startDate,
+            dateProvider: { currentToday }
+        )
+
+        var datesByChallengeId: [String: [Date]] = [:]
+        for offset in 0..<365 {
+            let date = startDate.addingDays(offset)
+            datesByChallengeId[service.challengeForDate(date).id, default: []].append(date)
+        }
+        guard let reusedDates = datesByChallengeId.values.first(where: { $0.count >= 2 }) else {
+            XCTFail("Expected at least one challenge ID scheduled on two dates within the year")
+            return
+        }
+        let dateA = reusedDates[0]
+        let dateB = reusedDates[1]
+        XCTAssertEqual(service.challengeForDate(dateA).id, service.challengeForDate(dateB).id)
+
+        // Complete day A (with "today" set to day A so grace allows it)
+        currentToday = dateA
+        _ = try service.completeChallenge(service.challengeForDate(dateA), on: dateA, journal: nil)
+
+        XCTAssertTrue(service.isCompleted(on: dateA))
+        XCTAssertFalse(service.isCompleted(on: dateB),
+                       "Completing day A must not mark a later day with the same challenge ID as done")
+
+        // Day B must still be completable independently
+        currentToday = dateB
+        XCTAssertNoThrow(try service.completeChallenge(service.challengeForDate(dateB), on: dateB, journal: nil))
+        XCTAssertTrue(service.isCompleted(on: dateB))
+
+        let all = try context.fetch(FetchDescriptor<CompletedChallenge>())
+        XCTAssertEqual(all.count, 2, "Both days should have their own completion record")
+    }
+
+    // MARK: - Year rotation in the live service path (#4)
+
+    func testChallengeForDateAppliesYearOffsetFromUserStartDate() throws {
+        let startDate = Date.from(year: 2025, month: 1, day: 1)
+        let service = try ChallengeService(
+            modelContext: context, challenges: challenges, badgeService: badgeService,
+            userStartDate: startDate
+        )
+        let target = Date.from(year: 2026, month: 6, day: 15) // one whole year after start
+        let scheduler = try XCTUnwrap(ChallengeScheduler(challenges: challenges))
+
+        XCTAssertEqual(service.challengeForDate(target).id,
+                       scheduler.challengeForDate(target, yearOffset: 1).id,
+                       "Service path must pass the year offset derived from the user's start date")
+        XCTAssertNotEqual(service.challengeForDate(target).id,
+                          scheduler.challengeForDate(target, yearOffset: 0).id,
+                          "A second-year user must not see the first-year pairing")
+    }
+
+    func testChallengeForDateUsesZeroOffsetWithinFirstYear() throws {
+        let startDate = Date.from(year: 2026, month: 1, day: 1)
+        let service = try ChallengeService(
+            modelContext: context, challenges: challenges, badgeService: badgeService,
+            userStartDate: startDate
+        )
+        let target = Date.from(year: 2026, month: 6, day: 15)
+        let scheduler = try XCTUnwrap(ChallengeScheduler(challenges: challenges))
+
+        XCTAssertEqual(service.challengeForDate(target).id,
+                       scheduler.challengeForDate(target, yearOffset: 0).id)
     }
 
     func testCalculateStreakDelegatesToStreakAlgorithm() throws {
