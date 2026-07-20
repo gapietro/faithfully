@@ -16,7 +16,7 @@ final class SettingsViewModelTests: XCTestCase {
     func testInitLoadsAllPreferencesFromUserProfile() {
         let vm = SettingsViewModel(modelContext: context)
         // Default values
-        XCTAssertEqual(vm.translation, .esv)
+        XCTAssertEqual(vm.translation, .web)
         XCTAssertTrue(vm.morningEnabled)
         XCTAssertTrue(vm.eveningEnabled)
         XCTAssertTrue(vm.streakWarningsEnabled)
@@ -26,19 +26,19 @@ final class SettingsViewModelTests: XCTestCase {
 
     func testUpdateTranslationPersistsToSwiftData() throws {
         let vm = SettingsViewModel(modelContext: context)
-        vm.updateTranslation(.niv)
+        vm.updateTranslation(.kjv)
 
         // Read back from SwiftData
         let descriptor = FetchDescriptor<UserProfile>()
         let profiles = try context.fetch(descriptor)
-        XCTAssertEqual(profiles.first?.preferredTranslation, .niv)
+        XCTAssertEqual(profiles.first?.preferredTranslation, .kjv)
     }
 
     func testUpdateTranslationImmediatelyReflectsInPublishedProperty() {
         let vm = SettingsViewModel(modelContext: context)
-        XCTAssertEqual(vm.translation, .esv)
-        vm.updateTranslation(.nkjv)
-        XCTAssertEqual(vm.translation, .nkjv)
+        XCTAssertEqual(vm.translation, .web)
+        vm.updateTranslation(.kjv)
+        XCTAssertEqual(vm.translation, .kjv)
     }
 
     func testToggleNotificationsUpdatesPreferences() throws {
@@ -77,7 +77,7 @@ final class SettingsViewModelTests: XCTestCase {
         var changeCount = 0
         vm.onPreferencesChanged = { changeCount += 1 }
 
-        vm.updateTranslation(.niv)
+        vm.updateTranslation(.kjv)
         vm.updateMorningTime(.now)
         vm.updateEveningTime(.now)
         vm.toggleMorningNotifications(false)

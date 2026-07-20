@@ -19,7 +19,7 @@ final class UserProfile {
         id: UUID = UUID(),
         displayName: String = "",
         startDate: Date = .now,
-        preferredTranslation: BibleTranslation = .esv,
+        preferredTranslation: BibleTranslation = .web,
         morningNotificationTime: Date = Calendar.current.date(from: DateComponents(hour: 7, minute: 0)) ?? .now,
         eveningReminderTime: Date = Calendar.current.date(from: DateComponents(hour: 20, minute: 0)) ?? .now,
         morningNotificationsEnabled: Bool = true,
