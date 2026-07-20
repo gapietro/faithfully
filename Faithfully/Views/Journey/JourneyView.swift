@@ -19,10 +19,17 @@ struct JourneyView: View {
                         // Journey progress
                         if let badge = vm.journeyBadge {
                             VStack(spacing: 8) {
+                                BadgeGlyphView(
+                                    type: .journey,
+                                    category: nil,
+                                    isEarned: badge.isEarned,
+                                    size: 64
+                                )
                                 Text(badge.definition.name)
                                     .font(.title2)
                                     .fontWeight(.bold)
                                 ProgressView(value: badge.progress)
+                                    .tint(.brandGold)
                                     .accessibilityIdentifier("journeyProgress")
                                 Text("\(badge.current) / \(badge.definition.threshold)")
                                     .font(.caption)
@@ -38,9 +45,11 @@ struct JourneyView: View {
                         LazyVGrid(columns: [GridItem(.adaptive(minimum: 80))], spacing: 16) {
                             ForEach(vm.allBadges) { badge in
                                 VStack(spacing: 4) {
-                                    Image(systemName: badge.isEarned ? "medal.fill" : "medal")
-                                        .font(.title)
-                                        .foregroundStyle(badge.isEarned ? .yellow : .gray)
+                                    BadgeGlyphView(
+                                        type: badge.type,
+                                        category: badge.category,
+                                        isEarned: badge.isEarned
+                                    )
                                     Text(badge.name)
                                         .font(.caption2)
                                         .lineLimit(2)
@@ -70,9 +79,17 @@ struct JourneyView: View {
 
                             ForEach(vm.journalEntries) { entry in
                                 VStack(alignment: .leading, spacing: 4) {
-                                    Text(entry.challengeTitle)
-                                        .font(.subheadline)
-                                        .fontWeight(.semibold)
+                                    HStack(alignment: .firstTextBaseline) {
+                                        Text(entry.challengeTitle)
+                                            .font(.subheadline)
+                                            .fontWeight(.semibold)
+                                        Spacer()
+                                        ShareLink(item: vm.shareEntry(entry).shareText) {
+                                            Image(systemName: "square.and.arrow.up")
+                                                .font(.subheadline)
+                                        }
+                                        .accessibilityIdentifier("shareJournalEntry_\(entry.id)")
+                                    }
                                     Text(entry.journalText)
                                         .font(.body)
                                     Text(entry.date, style: .date)

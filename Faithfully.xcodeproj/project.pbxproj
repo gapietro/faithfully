@@ -24,6 +24,7 @@
 		2F312632AC14118C841E0C15 /* ChallengeLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54DE59ED320B7ECF201DD87B /* ChallengeLoader.swift */; };
 		2FE1C5B4185830A889A4A773 /* AppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80BCA35EB18A58680001DA07 /* AppEnvironment.swift */; };
 		360B310D937097319D020531 /* BadgeEvaluationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C790891C0DCDD4C7DB6C2D0F /* BadgeEvaluationTests.swift */; };
+		3C8DB7EF750C25D868EB1B88 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0011191C28B01F3B06B8D632 /* Theme.swift */; };
 		3EEF85F3C8562871FED7D891 /* GracePeriodTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 367AA3DC56C1C6FB78899646 /* GracePeriodTests.swift */; };
 		405E36F1F235143788943FE8 /* ChallengeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0648FA1C864A0347BDCE9783 /* ChallengeService.swift */; };
 		49E36B30BA57C2A8336A4198 /* BadgeType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CE0FF4F36D3DACDC3093E21 /* BadgeType.swift */; };
@@ -34,6 +35,7 @@
 		5971F0738E3B864D0D217F9B /* challenges.json in Resources */ = {isa = PBXBuildFile; fileRef = E21F1C1F78DEA9BF5B9415BB /* challenges.json */; };
 		5FDB62C1F90B9D3C71E2A10A /* BadgeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74F6284E83B418C2BCBDCCEE /* BadgeService.swift */; };
 		6124F5ABC02556689F0B2880 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A000725D1040D99A3941006 /* NotificationService.swift */; };
+		6630C91E272B2E316260065A /* BadgeGlyphView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06C137F2CA7A309E888C55F4 /* BadgeGlyphView.swift */; };
 		6DD47A1B457B8BDE6093EB97 /* OnboardingUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4633BCA761A773CACA56C30 /* OnboardingUITests.swift */; };
 		70852E2E7553C27061534558 /* CalendarScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C63D9A0C5A395FD4223613F2 /* CalendarScreenView.swift */; };
 		78883C2558407F58887D891D /* BibleTranslation.swift in Sources */ = {isa = PBXBuildFile; fileRef = C11AB09887355905D1FFAAB5 /* BibleTranslation.swift */; };
@@ -46,6 +48,7 @@
 		96122060F492B61D4658AB52 /* CalendarUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A11E73D92A9210B503E7C64 /* CalendarUITests.swift */; };
 		9795E344571C1F8C6D0BE104 /* DateExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7E82070E2328FA2AAD0BDBD /* DateExtensions.swift */; };
 		99E419A156CD38ED7E540C72 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C315CB3CE3641793CCDCCA9 /* OnboardingView.swift */; };
+		9D5D35D1BD90DD09EE7706BF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6B31150D89C22F4555406336 /* Assets.xcassets */; };
 		A4FCCBCD3C7E8C7FD622A38A /* DailyChallenge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37879E79DEFABA9060E9BB0F /* DailyChallenge.swift */; };
 		B20DDDAEFD9BD02F9252EACA /* CalendarViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADDBB06120517520730446F6 /* CalendarViewModel.swift */; };
 		B214B11C94FA056C14C9BA1D /* ChallengeLoadErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39F46BEE80A0313990208AAA /* ChallengeLoadErrorView.swift */; };
@@ -53,6 +56,7 @@
 		BB2AD676CEF4056D9A6D3CD8 /* BadgeDefinition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A3D400EB0FB3AFCA44B590B /* BadgeDefinition.swift */; };
 		C1CE0B1FE9AC8A9B7346C19A /* EarnedBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = B102D549A1D69BC7485C0A77 /* EarnedBadge.swift */; };
 		C3D559F2C8DA67F078058DEE /* DailyWalkViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AA434CB8B30887102A76D77 /* DailyWalkViewModel.swift */; };
+		C74D9F63A6639139AE0BDE40 /* DesignSystemTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95A6EAF64C9F86F5A9B4196C /* DesignSystemTests.swift */; };
 		C98AB36AA430514B29E6AAE9 /* BadgeDisplayItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 203ACCDF10A9C0DBC5AF367C /* BadgeDisplayItem.swift */; };
 		CC1106BE105A6B1870B335D0 /* CompletionSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F1C1FDEFBC65E60E901411C /* CompletionSheetView.swift */; };
 		D1AC06C345ACDF65186C1B86 /* SettingsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93B7089D45C604FF9B8A04C3 /* SettingsUITests.swift */; };
@@ -94,9 +98,11 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0011191C28B01F3B06B8D632 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		012A5C11A1D363F4A5CF83A8 /* StreakCalculationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreakCalculationTests.swift; sourceTree = "<group>"; };
 		01F67D0C226BF6BCEF1EAC07 /* BadgeCelebrationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeCelebrationView.swift; sourceTree = "<group>"; };
 		0648FA1C864A0347BDCE9783 /* ChallengeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeService.swift; sourceTree = "<group>"; };
+		06C137F2CA7A309E888C55F4 /* BadgeGlyphView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeGlyphView.swift; sourceTree = "<group>"; };
 		09FD5B1A4D33639B4E10E0B0 /* CalendarDay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarDay.swift; sourceTree = "<group>"; };
 		0AA434CB8B30887102A76D77 /* DailyWalkViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyWalkViewModel.swift; sourceTree = "<group>"; };
 		0C315CB3CE3641793CCDCCA9 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
@@ -127,6 +133,7 @@
 		6455D33E9E372079FC16852E /* DarkModePreference.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DarkModePreference.swift; sourceTree = "<group>"; };
 		67599777A0F22E0A83494345 /* Faithfully.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Faithfully.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6B169F0954F3DE4364D4AB33 /* UserProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfile.swift; sourceTree = "<group>"; };
+		6B31150D89C22F4555406336 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		6C1F861CFF2402A653925C0A /* ChallengeCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeCategory.swift; sourceTree = "<group>"; };
 		74F6284E83B418C2BCBDCCEE /* BadgeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeService.swift; sourceTree = "<group>"; };
 		7847C279C6EF8A4FFB24A8EA /* DateExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateExtensionsTests.swift; sourceTree = "<group>"; };
@@ -138,6 +145,7 @@
 		93B7089D45C604FF9B8A04C3 /* SettingsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsUITests.swift; sourceTree = "<group>"; };
 		941EED6208C9F0D677530C51 /* StreakCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreakCalculator.swift; sourceTree = "<group>"; };
 		950A441B84B488EB25DBCE4C /* BadgeEvaluator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeEvaluator.swift; sourceTree = "<group>"; };
+		95A6EAF64C9F86F5A9B4196C /* DesignSystemTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystemTests.swift; sourceTree = "<group>"; };
 		95C2EA6C438066372A013C12 /* ChallengeServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeServiceTests.swift; sourceTree = "<group>"; };
 		A0075A584AA1781999757B85 /* FaithfullyUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = FaithfullyUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A27AF0C56105C1392BCAD569 /* JourneyUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JourneyUITests.swift; sourceTree = "<group>"; };
@@ -184,6 +192,7 @@
 			isa = PBXGroup;
 			children = (
 				01F67D0C226BF6BCEF1EAC07 /* BadgeCelebrationView.swift */,
+				06C137F2CA7A309E888C55F4 /* BadgeGlyphView.swift */,
 				39F46BEE80A0313990208AAA /* ChallengeLoadErrorView.swift */,
 			);
 			path = Shared;
@@ -267,6 +276,7 @@
 				95C2EA6C438066372A013C12 /* ChallengeServiceTests.swift */,
 				C30E30061C9CB312FE870547 /* DailyWalkViewModelTests.swift */,
 				7847C279C6EF8A4FFB24A8EA /* DateExtensionsTests.swift */,
+				95A6EAF64C9F86F5A9B4196C /* DesignSystemTests.swift */,
 				367AA3DC56C1C6FB78899646 /* GracePeriodTests.swift */,
 				1C84840D14A258F54B26F511 /* IntegrationTests.swift */,
 				A2A318E32A093F40BE1C8A1A /* JourneyViewModelTests.swift */,
@@ -307,6 +317,7 @@
 				D7E82070E2328FA2AAD0BDBD /* DateExtensions.swift */,
 				30AB76D9D85A7B9F0E11A96D /* GracePeriod.swift */,
 				941EED6208C9F0D677530C51 /* StreakCalculator.swift */,
+				0011191C28B01F3B06B8D632 /* Theme.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -344,6 +355,7 @@
 		BF84B271DA2A05BE0DA22373 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				6B31150D89C22F4555406336 /* Assets.xcassets */,
 				E21F1C1F78DEA9BF5B9415BB /* challenges.json */,
 			);
 			path = Resources;
@@ -496,6 +508,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9D5D35D1BD90DD09EE7706BF /* Assets.xcassets in Resources */,
 				5971F0738E3B864D0D217F9B /* challenges.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -524,6 +537,7 @@
 				84562F915E82A35FDEC95124 /* ChallengeServiceTests.swift in Sources */,
 				F4FA31D8154505F060B8C90F /* DailyWalkViewModelTests.swift in Sources */,
 				57857BB8620BE4F59D2F1393 /* DateExtensionsTests.swift in Sources */,
+				C74D9F63A6639139AE0BDE40 /* DesignSystemTests.swift in Sources */,
 				3EEF85F3C8562871FED7D891 /* GracePeriodTests.swift in Sources */,
 				1E6A0D7CDF33AB3F382CB7E5 /* IntegrationTests.swift in Sources */,
 				58401CC0AD276E46FC47065E /* JourneyViewModelTests.swift in Sources */,
@@ -556,6 +570,7 @@
 				BB2AD676CEF4056D9A6D3CD8 /* BadgeDefinition.swift in Sources */,
 				C98AB36AA430514B29E6AAE9 /* BadgeDisplayItem.swift in Sources */,
 				4B8B25A0654C8F88E8B2507C /* BadgeEvaluator.swift in Sources */,
+				6630C91E272B2E316260065A /* BadgeGlyphView.swift in Sources */,
 				ED54B0A200BB09430BA44193 /* BadgeProgress.swift in Sources */,
 				5FDB62C1F90B9D3C71E2A10A /* BadgeService.swift in Sources */,
 				49E36B30BA57C2A8336A4198 /* BadgeType.swift in Sources */,
@@ -593,6 +608,7 @@
 				D63BC2E6584F9F8217BEBD5B /* SettingsViewModel.swift in Sources */,
 				5249EE8E55CCC8C7B483B023 /* ShareCardData.swift in Sources */,
 				7F61244E1B7B31BEB68C39B4 /* StreakCalculator.swift in Sources */,
+				3C8DB7EF750C25D868EB1B88 /* Theme.swift in Sources */,
 				92701A1838BA3DAC4A21DD53 /* UserProfile.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -689,6 +705,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -769,6 +786,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;

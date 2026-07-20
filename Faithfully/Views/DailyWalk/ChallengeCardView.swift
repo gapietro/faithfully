@@ -7,12 +7,13 @@ struct ChallengeCardView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             // Category badge
-            Text(challenge.category.displayName)
+            Label(challenge.category.displayName, systemImage: challenge.category.iconName)
                 .font(.caption)
                 .fontWeight(.semibold)
+                .foregroundStyle(Color.brandForest)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 4)
-                .background(Color.accentColor.opacity(0.15))
+                .background(Color.brandForest.opacity(0.12))
                 .clipShape(Capsule())
                 .accessibilityIdentifier("categoryBadge")
 
@@ -22,14 +23,14 @@ struct ChallengeCardView: View {
                 .fontWeight(.bold)
                 .accessibilityIdentifier("challengeTitle")
 
-            // Scripture
+            // Scripture — serif per design direction; UI text stays sans
             VStack(alignment: .leading, spacing: 8) {
                 Text(challenge.scriptureText(for: translation))
-                    .font(.body)
+                    .font(.scripture)
                     .italic()
                     .accessibilityIdentifier("scriptureText")
                 Text("— \(challenge.scriptureReference)")
-                    .font(.caption)
+                    .font(.scriptureReference)
                     .foregroundStyle(.secondary)
             }
 
@@ -47,7 +48,7 @@ struct ChallengeCardView: View {
                 .italic()
         }
         .padding()
-        .background(Color(.systemBackground))
+        .background(Color.brandCream)
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .shadow(color: .black.opacity(0.1), radius: 8, y: 4)
     }
