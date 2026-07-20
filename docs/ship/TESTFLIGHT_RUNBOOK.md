@@ -26,13 +26,15 @@ Step-by-step path from this repo to a TestFlight build. **Nothing here has been 
 
 ## ⛔ Blockers before external/public TestFlight or App Store
 
-External TestFlight goes through App Review and puts the content in public hands. Do **not** start it until all of these are cleared:
+External TestFlight goes through App Review. Do **not** start it until all of these are cleared:
 
-1. **Scripture licensing clearance** — see `docs/content/TRANSLATION_LICENSING.md`. Current verdict: *not cleared to ship as-is*. Either written publisher permission (Crossway + HCCP inquiries), or swap to public-domain translations (KJV/WEB), or gate translations.
-2. **ESV/NIV data quality fix** — see `docs/content/SCRIPTURE_SPOT_CHECK.md`: ~110 of 365 "ESV" fields are actually NIV text; some NIV fields are retired NIV 1984 wording. Must be re-sourced before the text is shown to external users under those labels.
-3. **Privacy policy hosted URL** — publish `docs/ship/PRIVACY_POLICY.md` (after review) at a public URL and enter it in App Store Connect.
-4. **Screenshots** — capture per `docs/ship/SCREENSHOTS_AND_ICON.md` (6.9" required; 6.5" recommended).
-5. **Real app icon** — current AppIcon is a placeholder navy/cross; replace with final 1024×1024 art.
+1. ~~**Scripture licensing / accuracy**~~ — **Cleared for v1** under public-domain WEB + KJV (`docs/content/TRANSLATION_LICENSING.md`, PR #34).
+2. ~~**Privacy policy hosted URL**~~ — **Live:** https://gist.github.com/scoutapietro/96c48a68f12efe3950b5bc359db70974 (paste into App Store Connect Privacy Policy field).
+3. **Screenshots** — capture per `docs/ship/SCREENSHOTS_AND_ICON.md` (6.9" required; 6.5" recommended). *(issue #26)*
+4. **Real app icon** — current AppIcon is a placeholder navy/cross; replace with final 1024×1024 art. *(issue #26)*
+5. **Explicit Greg OK** before external TF / Submit for Review. *(issue #28)*
+
+Internal TestFlight (#27) does **not** require #3–5.
 
 ## Reference
 
