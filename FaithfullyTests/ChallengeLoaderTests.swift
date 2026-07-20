@@ -18,9 +18,8 @@ final class ChallengeLoaderTests: XCTestCase {
             XCTAssertFalse(challenge.id.isEmpty, "Challenge ID should not be empty")
             XCTAssertFalse(challenge.title.isEmpty, "Title should not be empty for \(challenge.id)")
             XCTAssertFalse(challenge.scriptureReference.isEmpty, "Scripture reference should not be empty for \(challenge.id)")
-            XCTAssertFalse(challenge.scriptureTextESV.isEmpty, "ESV text should not be empty for \(challenge.id)")
-            XCTAssertFalse(challenge.scriptureTextNIV.isEmpty, "NIV text should not be empty for \(challenge.id)")
-            XCTAssertFalse(challenge.scriptureTextNKJV.isEmpty, "NKJV text should not be empty for \(challenge.id)")
+            XCTAssertFalse(challenge.scriptureTextWEB.isEmpty, "WEB text should not be empty for \(challenge.id)")
+            XCTAssertFalse(challenge.scriptureTextKJV.isEmpty, "KJV text should not be empty for \(challenge.id)")
             XCTAssertFalse(challenge.challengeDescription.isEmpty, "Description should not be empty for \(challenge.id)")
             XCTAssertFalse(challenge.reflectionPrompt.isEmpty, "Reflection prompt should not be empty for \(challenge.id)")
         }
@@ -58,8 +57,18 @@ final class ChallengeLoaderTests: XCTestCase {
     func testScriptureTextForTranslationReturnsCorrectTranslation() {
         let challenge = challenges.first!
 
-        XCTAssertEqual(challenge.scriptureText(for: .esv), challenge.scriptureTextESV)
-        XCTAssertEqual(challenge.scriptureText(for: .niv), challenge.scriptureTextNIV)
-        XCTAssertEqual(challenge.scriptureText(for: .nkjv), challenge.scriptureTextNKJV)
+        XCTAssertEqual(challenge.scriptureText(for: .web), challenge.scriptureTextWEB)
+        XCTAssertEqual(challenge.scriptureText(for: .kjv), challenge.scriptureTextKJV)
+    }
+
+    func testLegacyTranslationRawValuesDecodeAsWEB() throws {
+        let decoder = JSONDecoder()
+        for legacy in ["\"esv\"", "\"niv\"", "\"nkjv\"", "\"unknown\""] {
+            let decoded = try decoder.decode(BibleTranslation.self, from: Data(legacy.utf8))
+            XCTAssertEqual(decoded, .web,
+                           "Pre-PD raw value \(legacy) must migrate to the WEB default, not crash")
+        }
+        let kjv = try decoder.decode(BibleTranslation.self, from: Data("\"kjv\"".utf8))
+        XCTAssertEqual(kjv, .kjv)
     }
 }

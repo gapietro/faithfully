@@ -156,11 +156,11 @@ final class DailyWalkViewModelTests: XCTestCase {
     func testTranslationChangeUpdatesScriptureText() {
         let today = Date.now
         let vm = DailyWalkViewModel(challengeService: challengeService, today: today)
-        let esvText = vm.scriptureText
-        XCTAssertEqual(esvText, vm.todayChallenge.scriptureText(for: .esv))
+        let webText = vm.scriptureText
+        XCTAssertEqual(webText, vm.todayChallenge.scriptureText(for: .web))
 
-        vm.updateTranslation(.niv)
-        XCTAssertEqual(vm.scriptureText, vm.todayChallenge.scriptureText(for: .niv))
-        XCTAssertEqual(vm.translation, .niv)
+        vm.updateTranslation(.kjv)
+        XCTAssertEqual(vm.scriptureText, vm.todayChallenge.scriptureText(for: .kjv))
+        XCTAssertEqual(vm.translation, .kjv)
     }
 }
