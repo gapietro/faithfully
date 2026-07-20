@@ -9,13 +9,13 @@ One-page status for the owner. Detail lives in the linked docs.
 | Content editorial | 🟢 Ready | Sprint D editorial pass done (em-dashes, giving challenges) |
 | Scripture accuracy | 🟢 Ready | v1 bundle rebuilt from public-domain WEB + KJV, 251/251 refs resolved, independent spot check 24/24 — [PD spot check](../content/SCRIPTURE_SPOT_CHECK_PD.md) |
 | Translation licensing | 🟢 Ready | Cleared for v1 under the public-domain strategy (the owner's decision, #22); commercial translations deferred to v1.x — [licensing](../content/TRANSLATION_LICENSING.md) |
-| Privacy policy URL | 🟡 Draft | Text drafted, needs review + public hosting — [PRIVACY_POLICY.md](PRIVACY_POLICY.md) |
+| Privacy policy URL | 🟢 Ready | Live public gist + in-app Settings link — [PRIVACY_POLICY.md](PRIVACY_POLICY.md) · [HTML](../privacy/index.html) |
 | Signing / TestFlight | 🟡 the owner's clicks | Runbook ready; internal TestFlight possible anytime — [TESTFLIGHT_RUNBOOK.md](TESTFLIGHT_RUNBOOK.md) |
 | CloudKit | ⚪ Deferred (v1.x) | v1 is local SwiftData only, by decision — [CLOUDKIT_DECISION.md](CLOUDKIT_DECISION.md) |
 | Real badge art | 🟡 Outstanding | Recraft pack not commissioned; placeholder art ships internally fine |
 | Marketing screenshots | 🟡 Planned | Sizes + storyboard documented; capture after content/icon final — [SCREENSHOTS_AND_ICON.md](SCREENSHOTS_AND_ICON.md) |
 | App icon | 🟡 Placeholder | Navy/cross placeholder; final 1024×1024 needed before store |
 
-**Bottom line:** the two former red blockers are cleared — v1 ships public-domain scripture (WEB default, KJV secondary). Public release now waits only on the mechanical yellows (privacy URL, icon, screenshots) plus the owner's signing clicks.
+**Bottom line:** scripture/licensing and privacy URL are green. Public release now waits on icon + screenshots (#26) and the owner's signing / explicit OK for external TF (#27, #28).
 
 Honest launch checklist: [`sparc/completion/checklist.md`](../../sparc/completion/checklist.md).

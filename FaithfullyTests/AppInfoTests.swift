@@ -20,4 +20,16 @@ final class AppInfoTests: XCTestCase {
         XCTAssertNotEqual(current, "Unknown")
         XCTAssertTrue(current.hasPrefix("1."), "Expected marketing version starting with 1., got \(current)")
     }
+
+    func testPrivacyPolicyURLIsHTTPS() {
+        XCTAssertEqual(AppInfo.privacyPolicyURL.scheme, "https")
+        XCTAssertFalse(AppInfo.privacyPolicyURL.absoluteString.isEmpty)
+        XCTAssertTrue(AppInfo.privacyPolicyURL.absoluteString.contains("gist.github.com"))
+    }
+
+    func testPrivacyPolicyRawURLPointsAtPolicyHTML() {
+        XCTAssertEqual(AppInfo.privacyPolicyRawURL.scheme, "https")
+        XCTAssertTrue(AppInfo.privacyPolicyRawURL.absoluteString.hasSuffix("/raw/index.html")
+            || AppInfo.privacyPolicyRawURL.path.contains("index.html"))
+    }
 }
