@@ -220,13 +220,15 @@ The app needs a pre-built library of at minimum 365 daily challenges (one full y
 
 ## 6. Technical Architecture
 
+> **v1 scope note (Sprint E, 2026-07-20):** v1 ships with **local SwiftData persistence only; CloudKit is deferred** to a v1.x release. CloudKit references in this section (sync, backup/restore, remote content updates) describe the future architecture, not the launch build. Rationale: `docs/ship/CLOUDKIT_DECISION.md`.
+
 ### 6.1 Platform & Stack
 
 - **Language:** Swift 5.9+
 - **UI Framework:** SwiftUI
 - **Minimum iOS:** 17.0
 - **Architecture:** MVVM (Model-View-ViewModel)
-- **Data Persistence:** SwiftData (local) + CloudKit (sync)
+- **Data Persistence:** SwiftData (local) + CloudKit (sync, deferred to v1.x)
 - **Notifications:** UserNotifications framework
 
 ### 6.2 Data Model
