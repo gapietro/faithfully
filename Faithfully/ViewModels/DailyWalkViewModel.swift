@@ -43,6 +43,10 @@ final class DailyWalkViewModel {
             today = newToday
             todayChallenge = challengeService.challengeForDate(newToday)
             yesterdayChallenge = challengeService.challengeForDate(newToday.addingDays(-1))
+            // A celebration left showing overnight belongs to the previous day's
+            // completion; carrying it into the new day blocks the fresh UI.
+            showCelebration = false
+            newBadges = []
         }
         refresh()
     }
