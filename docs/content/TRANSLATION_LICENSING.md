@@ -1,6 +1,40 @@
 # Bible Translation Licensing — v1 Decision
 
-Sprint D research and product recommendation for shipping ESV, NIV, and NKJV scripture text in Faithfully. Researched 2026-07-20 from the publishers' official pages (fetch log at bottom).
+## Status: ✅ Cleared for v1 under the public-domain strategy (2026-07-20)
+
+**Greg's decision (issue #22, option 1): v1 ships public-domain scripture only — the World English Bible (WEB, default) and the King James Version (KJV). No ESV, NIV, or NKJV text ships in the v1 bundle.**
+
+What this means for v1 (Sprint F1, issues #23/#24):
+
+- The entire challenge bundle was re-sourced: all 365 challenges now carry `scripture_text_web` and `scripture_text_kjv` resolved from public-domain full-Bible texts (getbible.net v2 dumps), independently spot-checked against bible-api.com — see [SCRIPTURE_SPOT_CHECK_PD.md](SCRIPTURE_SPOT_CHECK_PD.md).
+- Both translations are public domain in the United States; neither requires permission or a royalty for commercial App Store distribution. (The KJV remains under Crown patent in the UK, which restricts *printing* the KJV in the UK by unlicensed printers; it is not understood to block digital quotation in an app, and WEB — the app default — carries no restriction anywhere.)
+- WEB's publishers *request* (but do not require) the courtesy notice "World English Bible (WEB), public domain." We include attribution for both translations anyway.
+- The share card includes only the scripture *reference* (e.g. "Philippians 4:6-7"), never verse text, so no attribution is required there.
+- The previous blockers (mislabeled ESV text, NIV 1984 wording, app-classification ambiguity) are moot for v1: that text no longer ships.
+
+### Attribution strings (v1, public domain)
+
+In-app (Settings → About footer, shipped):
+
+> Scripture quotations from the World English Bible (public domain) and the King James Version (public domain).
+
+App Store description legal line (optional, recommended):
+
+> Scripture from the World English Bible (WEB) and King James Version (KJV), both public domain.
+
+App Store review notes (include so review doesn't flag scripture licensing):
+
+> All scripture text in the app comes from public-domain translations: the World English Bible (WEB) and the King James Version (KJV). No licensed Bible translations are included.
+
+### Deferred: licensed translations (v1.x+)
+
+Adding ESV/NIV/NKJV later remains possible behind the existing data-swap design (`BibleTranslation` enum + per-translation JSON fields). Doing so requires the permission-inquiry path documented in the historical research below.
+
+---
+
+## Historical: Sprint D commercial-translation research (superseded for v1)
+
+Sprint D research and product recommendation for shipping ESV, NIV, and NKJV scripture text in Faithfully. Researched 2026-07-20 from the publishers' official pages (fetch log at bottom). Kept for the v1.x licensed-translation path.
 
 > **This is product guidance, not legal advice.** It summarizes publicly posted publisher policies to inform a product decision. Anything App Store-bound should get a real permissions inquiry (cheap) and, if in doubt, a lawyer (rarely needed at this scale).
 
@@ -30,7 +64,9 @@ Faithfully passes the numeric tests for all three: 365 < 500 verses per translat
 
 There is also a **factual blocker found by the spot check** (`SCRIPTURE_SPOT_CHECK.md`): ~110 of the app's "ESV" fields actually contain NIV text, and some NIV fields contain retired NIV 1984 wording. Shipping mislabeled or non-current text would violate the terms of the very policies above (misattribution; NIV 2011-only rule) regardless of verse counts.
 
-## Decision for Greg (v1): **Not cleared to ship as-is**
+### Sprint D recommendation (as written; Greg subsequently chose the public-domain path — option 2 below, now implemented)
+
+**Original heading: Decision for Greg (v1): Not cleared to ship as-is**
 
 **Recommendation: do not ship the current ESV/NIV/NKJV bundle to external TestFlight or the App Store without (a) fixing the text and (b) resolving the app-classification ambiguity — via permission inquiries or by falling back to public domain.**
 

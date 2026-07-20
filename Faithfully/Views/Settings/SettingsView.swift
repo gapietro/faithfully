@@ -85,6 +85,11 @@ struct SettingsView: View {
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                             .accessibilityIdentifier("privacyBlurb")
+
+                        Text("Scripture quotations from the World English Bible (public domain) and the King James Version (public domain).")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .accessibilityIdentifier("scriptureAttribution")
                     }
                 }
                 .navigationTitle("Settings")

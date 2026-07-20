@@ -44,7 +44,7 @@ Ideas, from the PRD tagline list:
 >
 > Start your daily walk today.
 
-*(~1,200 chars — room to grow. Scripture attribution notices may need to be appended here depending on the licensing outcome; see `docs/content/TRANSLATION_LICENSING.md`.)*
+*(~1,200 chars — room to grow. Optional legal line to append: "Scripture from the World English Bible (WEB) and King James Version (KJV), both public domain." See `docs/content/TRANSLATION_LICENSING.md`.)*
 
 ## Keywords (100 chars max)
 
@@ -79,3 +79,5 @@ Draft (139):
 ## Review notes for Apple (draft)
 
 > Faithfully is a daily Christian devotional/habit app. Each day it shows one challenge tied to a Bible passage; users mark it complete, optionally journal, and earn streaks/badges. There is no login or account — the app is fully usable immediately after launch, entirely on-device and offline. Notifications are optional local notifications. No demo credentials are needed: launch the app, complete onboarding, and today's challenge is on the home screen.
+>
+> All scripture text in the app comes from public-domain translations: the World English Bible (WEB) and the King James Version (KJV). No licensed Bible translations are included.
