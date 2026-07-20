@@ -2,14 +2,12 @@ import SwiftUI
 import SwiftData
 
 struct CalendarScreenView: View {
-    @Environment(\.modelContext) private var modelContext
-    @State private var vm: CalendarViewModel?
+    let vm: CalendarViewModel
 
     var body: some View {
         NavigationStack {
             ScrollView {
               VStack {
-                if let vm {
                     // Month navigation
                     HStack {
                         Button(action: { vm.previousMonth() }) {
@@ -74,24 +72,10 @@ struct CalendarScreenView: View {
                         }
                         .accessibilityIdentifier("dayDetail")
                     }
-                } else {
-                    ProgressView()
-                }
               }
             }
             .navigationTitle("Calendar")
-            .onAppear { setupViewModel() }
         }
-    }
-
-    private func setupViewModel() {
-        guard vm == nil else { return }
-        let challenges = (try? ChallengeLoader.loadChallenges()) ?? []
-        let badgeService = BadgeService(modelContext: modelContext)
-        let challengeService = ChallengeService(
-            modelContext: modelContext, challenges: challenges, badgeService: badgeService
-        )
-        vm = CalendarViewModel(challengeService: challengeService)
     }
 
     private func monthYearString(from date: Date) -> String {

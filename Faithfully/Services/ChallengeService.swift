@@ -4,13 +4,14 @@ import SwiftData
 enum ChallengeServiceError: Error {
     case gracePeriodExpired
     case alreadyCompleted
+    case emptyChallengePool
 }
 
 protocol ChallengeServiceProtocol {
     func loadChallenges() -> [DailyChallenge]
     func challengeForDate(_ date: Date) -> DailyChallenge
     func completeChallenge(_ challenge: DailyChallenge, on scheduledDate: Date, journal: String?) throws -> [BadgeDefinition]
-    func isCompleted(challengeId: String) -> Bool
+    func isCompleted(on scheduledDate: Date) -> Bool
     func fetchCompletions(for dateRange: ClosedRange<Date>) -> [CompletedChallenge]
     func calculateStreak() -> Int
 }
@@ -20,18 +21,29 @@ final class ChallengeService: ChallengeServiceProtocol {
     private let challenges: [DailyChallenge]
     private let scheduler: ChallengeScheduler
     private let badgeService: BadgeServiceProtocol
+    private let userStartDate: Date
     private let dateProvider: () -> Date
+
+    /// Called after a completion is persisted. The composition root uses this to
+    /// refresh the other tabs' view models so they share the same completion truth.
+    var onCompletionRecorded: (() -> Void)?
 
     init(
         modelContext: ModelContext,
         challenges: [DailyChallenge],
         badgeService: BadgeServiceProtocol,
+        userStartDate: Date = .now,
         dateProvider: @escaping () -> Date = { .now }
-    ) {
+    ) throws {
+        // Fail closed: never build a scheduler over an empty non-giving pool.
+        guard let scheduler = ChallengeScheduler(challenges: challenges) else {
+            throw ChallengeServiceError.emptyChallengePool
+        }
         self.modelContext = modelContext
         self.challenges = challenges
-        self.scheduler = ChallengeScheduler(challenges: challenges)
+        self.scheduler = scheduler
         self.badgeService = badgeService
+        self.userStartDate = userStartDate
         self.dateProvider = dateProvider
     }
 
@@ -40,7 +52,11 @@ final class ChallengeService: ChallengeServiceProtocol {
     }
 
     func challengeForDate(_ date: Date) -> DailyChallenge {
-        scheduler.challengeForDate(date)
+        // Year rotation rule: the offset is the number of whole years between the
+        // user's start date and the target date (PRD §11.4, SPARC getYearOffset),
+        // so a returning user's Year 2 pairs dates with different challenges than Year 1.
+        let offset = ChallengeScheduler.yearOffset(from: userStartDate, to: date)
+        return scheduler.challengeForDate(date, yearOffset: offset)
     }
 
     func completeChallenge(_ challenge: DailyChallenge, on scheduledDate: Date, journal: String?) throws -> [BadgeDefinition] {
@@ -50,7 +66,10 @@ final class ChallengeService: ChallengeServiceProtocol {
             throw ChallengeServiceError.gracePeriodExpired
         }
 
-        guard !isCompleted(challengeId: challenge.id) else {
+        // Completion identity is the scheduled calendar day, not the challenge ID:
+        // the scheduler reuses IDs within a year, so keying by ID would wrongly
+        // block (or mark done) a later day that reuses the same challenge.
+        guard !isCompleted(on: scheduledDate) else {
             throw ChallengeServiceError.alreadyCompleted
         }
 
@@ -61,7 +80,7 @@ final class ChallengeService: ChallengeServiceProtocol {
             challengeId: challenge.id,
             challengeCategory: challenge.category.rawValue,
             completedDate: today,
-            scheduledDate: scheduledDate,
+            scheduledDate: scheduledDate.startOfDay,
             journalEntry: finalJournal
         )
 
@@ -69,12 +88,15 @@ final class ChallengeService: ChallengeServiceProtocol {
         try modelContext.save()
 
         let newBadges = badgeService.evaluateAndAward()
+        onCompletionRecorded?()
         return newBadges
     }
 
-    func isCompleted(challengeId: String) -> Bool {
+    func isCompleted(on scheduledDate: Date) -> Bool {
+        let dayStart = scheduledDate.startOfDay
+        let dayEnd = dayStart.addingDays(1)
         let descriptor = FetchDescriptor<CompletedChallenge>(
-            predicate: #Predicate { $0.challengeId == challengeId }
+            predicate: #Predicate { $0.scheduledDate >= dayStart && $0.scheduledDate < dayEnd }
         )
         let results = (try? modelContext.fetch(descriptor)) ?? []
         return !results.isEmpty

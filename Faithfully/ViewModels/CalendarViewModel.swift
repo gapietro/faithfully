@@ -48,26 +48,28 @@ final class CalendarViewModel {
         let calendar = Calendar.current
         let components = calendar.dateComponents([.year, .month], from: currentMonth)
         guard let startOfMonth = calendar.date(from: components),
-              let range = calendar.range(of: .day, in: .month, for: startOfMonth) else { return }
+              let range = calendar.range(of: .day, in: .month, for: startOfMonth),
+              let endOfMonth = calendar.date(byAdding: .day, value: range.count - 1, to: startOfMonth) else { return }
 
         let todayStart = calendar.startOfDay(for: today)
 
-        // Fetch completions for this month
-        let endOfMonth = calendar.date(byAdding: .day, value: range.count - 1, to: startOfMonth)!
-        let completions = challengeService.fetchCompletions(for: startOfMonth...endOfMonth)
-        let completedChallengeIds = Set(completions.map(\.challengeId))
-        let journalMap = Dictionary(
+        // Completion truth is keyed by scheduled calendar day, not challenge ID —
+        // the scheduler reuses IDs within a year, so an ID lookup would mark
+        // unrelated days as done. Fetch past end-of-day so late-day timestamps match.
+        let completions = challengeService.fetchCompletions(for: startOfMonth...endOfMonth.addingDays(1))
+        let completedDays = Set(completions.map { calendar.startOfDay(for: $0.scheduledDate) })
+        let journalByDay = Dictionary(
             completions.compactMap { c in
-                c.journalEntry.map { (c.challengeId, $0) }
+                c.journalEntry.map { (calendar.startOfDay(for: c.scheduledDate), $0) }
             },
             uniquingKeysWith: { first, _ in first }
         )
 
-        calendarDays = range.map { dayOffset in
-            let date = calendar.date(byAdding: .day, value: dayOffset - 1, to: startOfMonth)!
+        calendarDays = range.compactMap { dayNumber in
+            guard let date = calendar.date(byAdding: .day, value: dayNumber - 1, to: startOfMonth) else { return nil }
             let dateStart = calendar.startOfDay(for: date)
             let challenge = challengeService.challengeForDate(date)
-            let isCompleted = completedChallengeIds.contains(challenge.id)
+            let isCompleted = completedDays.contains(dateStart)
 
             let status: CalendarDayStatus
             if dateStart > todayStart {
@@ -84,7 +86,7 @@ final class CalendarViewModel {
                 date: date,
                 challenge: challenge,
                 status: status,
-                journalEntry: journalMap[challenge.id]
+                journalEntry: journalByDay[dateStart]
             )
         }
     }
