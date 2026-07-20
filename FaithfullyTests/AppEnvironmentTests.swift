@@ -125,6 +125,104 @@ final class AppEnvironmentTests: XCTestCase {
         XCTAssertNotNil(env.services)
     }
 
+    // MARK: - Day rollover on foreground (PR #15)
+
+    /// Builds an environment whose date provider reads a mutable box, so tests
+    /// can cross midnight while the service graph stays in memory.
+    private func makeRolloverEnvironment(startingAt start: Date) throws -> (AppServices, (Date) -> Void) {
+        var now = start
+        let env = AppEnvironment(
+            modelContext: context,
+            loadChallenges: { self.challenges },
+            dateProvider: { now }
+        )
+        let services = try XCTUnwrap(env.services)
+        return (services, { now = $0 })
+    }
+
+    func testForegroundRefreshRollsDailyWalkToNewDay() throws {
+        let day15 = Date.from(year: 2026, month: 6, day: 15)
+        let (services, setNow) = try makeRolloverEnvironment(startingAt: day15)
+
+        services.dailyWalkViewModel.complete(journal: nil)
+        XCTAssertTrue(services.dailyWalkViewModel.isCompleted)
+        let day15Challenge = services.dailyWalkViewModel.todayChallenge
+
+        let day16 = Date.from(year: 2026, month: 6, day: 16)
+        setNow(day16)
+        services.refreshForCurrentDate()
+
+        XCTAssertEqual(services.dailyWalkViewModel.todayChallenge.id,
+                       services.challengeService.challengeForDate(day16).id,
+                       "Daily Walk must show the new day's challenge after foregrounding")
+        XCTAssertEqual(services.dailyWalkViewModel.yesterdayChallenge.id, day15Challenge.id)
+        XCTAssertFalse(services.dailyWalkViewModel.isCompleted,
+                       "The new day must not inherit yesterday's completed state")
+    }
+
+    func testForegroundRefreshOnSameDayKeepsDailyWalkState() throws {
+        let day15 = Date.from(year: 2026, month: 6, day: 15)
+        let (services, setNow) = try makeRolloverEnvironment(startingAt: day15)
+
+        services.dailyWalkViewModel.complete(journal: nil)
+        setNow(day15.addingTimeInterval(3600))
+        services.refreshForCurrentDate()
+
+        XCTAssertTrue(services.dailyWalkViewModel.isCompleted,
+                      "A same-day foreground must not reset completed state")
+    }
+
+    func testForegroundRefreshMovesCalendarTodayBoundaryAndGraceWindows() throws {
+        let day15 = Date.from(year: 2026, month: 6, day: 15)
+        let (services, setNow) = try makeRolloverEnvironment(startingAt: day15)
+
+        func status(day: Int) -> CalendarDayStatus? {
+            services.calendarViewModel.calendarDays.first {
+                Calendar.current.component(.day, from: $0.date) == day
+            }?.status
+        }
+
+        XCTAssertEqual(status(day: 16), .future)
+        XCTAssertEqual(status(day: 12), .missedRecoverable,
+                       "June 12 is inside the 3-day grace window on the 15th")
+
+        setNow(Date.from(year: 2026, month: 6, day: 16))
+        services.refreshForCurrentDate()
+
+        XCTAssertEqual(status(day: 16), .missedRecoverable,
+                       "The real current day must no longer be labeled future")
+        XCTAssertEqual(status(day: 17), .future)
+        XCTAssertEqual(status(day: 12), .missed,
+                       "The grace window for June 12 expires when the day rolls to the 16th")
+    }
+
+    func testForegroundRefreshAcrossMonthBoundaryFollowsToNewMonth() throws {
+        let june30 = Date.from(year: 2026, month: 6, day: 30)
+        let (services, setNow) = try makeRolloverEnvironment(startingAt: june30)
+
+        setNow(Date.from(year: 2026, month: 7, day: 1))
+        services.refreshForCurrentDate()
+
+        let components = Calendar.current.dateComponents(
+            [.year, .month], from: services.calendarViewModel.currentMonth
+        )
+        XCTAssertEqual(components.month, 7,
+                       "A user viewing the current month follows the rollover into July")
+        XCTAssertEqual(services.calendarViewModel.calendarDays.count, 31)
+    }
+
+    func testForegroundRefreshPreservesBrowsedMonth() throws {
+        let day15 = Date.from(year: 2026, month: 6, day: 15)
+        let (services, setNow) = try makeRolloverEnvironment(startingAt: day15)
+
+        services.calendarViewModel.previousMonth()
+        setNow(Date.from(year: 2026, month: 6, day: 16))
+        services.refreshForCurrentDate()
+
+        XCTAssertEqual(Calendar.current.component(.month, from: services.calendarViewModel.currentMonth), 5,
+                       "A day rollover must not yank the user away from a month they were browsing")
+    }
+
     // MARK: - Year rotation in the live app path (#4)
 
     func testLiveServicePathAppliesYearRotationFromProfileStartDate() throws {
