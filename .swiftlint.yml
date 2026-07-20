@@ -1,0 +1,15 @@
+# Light-touch config (Sprint E). Goal: catch real problems, not restyle the codebase.
+# Stylistic rules that only generate churn are disabled; see docs/ship/TEST_RUN.md.
+included:
+  - Faithfully
+  - FaithfullyTests
+  - FaithfullyUITests
+
+disabled_rules:
+  - identifier_name # short local names (vm, d) are idiomatic in this codebase
+  - line_length
+  - trailing_comma
+  - multiple_closures_with_trailing_closure
+
+force_try:
+  severity: warning # single occurrence, in test fixture setup

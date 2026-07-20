@@ -27,6 +27,7 @@
 		3C8DB7EF750C25D868EB1B88 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0011191C28B01F3B06B8D632 /* Theme.swift */; };
 		3EEF85F3C8562871FED7D891 /* GracePeriodTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 367AA3DC56C1C6FB78899646 /* GracePeriodTests.swift */; };
 		405E36F1F235143788943FE8 /* ChallengeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0648FA1C864A0347BDCE9783 /* ChallengeService.swift */; };
+		47F909F85F5306FFC67E0310 /* AppInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AE914DE3D6DDC914A10EA4E /* AppInfo.swift */; };
 		49E36B30BA57C2A8336A4198 /* BadgeType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CE0FF4F36D3DACDC3093E21 /* BadgeType.swift */; };
 		4B8B25A0654C8F88E8B2507C /* BadgeEvaluator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 950A441B84B488EB25DBCE4C /* BadgeEvaluator.swift */; };
 		5249EE8E55CCC8C7B483B023 /* ShareCardData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9339C5BD24A2D97D1BF744C8 /* ShareCardData.swift */; };
@@ -49,6 +50,7 @@
 		9795E344571C1F8C6D0BE104 /* DateExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7E82070E2328FA2AAD0BDBD /* DateExtensions.swift */; };
 		99E419A156CD38ED7E540C72 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C315CB3CE3641793CCDCCA9 /* OnboardingView.swift */; };
 		9D5D35D1BD90DD09EE7706BF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6B31150D89C22F4555406336 /* Assets.xcassets */; };
+		9EDAB48DEEF4A7A0C05335B3 /* AppInfoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FFDBB292FD64BF875C8C219 /* AppInfoTests.swift */; };
 		A4FCCBCD3C7E8C7FD622A38A /* DailyChallenge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37879E79DEFABA9060E9BB0F /* DailyChallenge.swift */; };
 		B20DDDAEFD9BD02F9252EACA /* CalendarViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADDBB06120517520730446F6 /* CalendarViewModel.swift */; };
 		B214B11C94FA056C14C9BA1D /* ChallengeLoadErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39F46BEE80A0313990208AAA /* ChallengeLoadErrorView.swift */; };
@@ -108,6 +110,7 @@
 		0C315CB3CE3641793CCDCCA9 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		11C0AEBB32632832F69B4E08 /* ChallengeSchedulerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeSchedulerTests.swift; sourceTree = "<group>"; };
 		1979FDB28EF6789FCCFAFB61 /* HomeScreenUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeScreenUITests.swift; sourceTree = "<group>"; };
+		1AE914DE3D6DDC914A10EA4E /* AppInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppInfo.swift; sourceTree = "<group>"; };
 		1C84840D14A258F54B26F511 /* IntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntegrationTests.swift; sourceTree = "<group>"; };
 		203ACCDF10A9C0DBC5AF367C /* BadgeDisplayItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeDisplayItem.swift; sourceTree = "<group>"; };
 		20711FA1DBD7AAD7EDA28C9B /* ChallengeScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeScheduler.swift; sourceTree = "<group>"; };
@@ -120,6 +123,7 @@
 		37879E79DEFABA9060E9BB0F /* DailyChallenge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyChallenge.swift; sourceTree = "<group>"; };
 		39F46BEE80A0313990208AAA /* ChallengeLoadErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeLoadErrorView.swift; sourceTree = "<group>"; };
 		3CE0FF4F36D3DACDC3093E21 /* BadgeType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeType.swift; sourceTree = "<group>"; };
+		3FFDBB292FD64BF875C8C219 /* AppInfoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppInfoTests.swift; sourceTree = "<group>"; };
 		40112D2A32CEE6503E2E62D3 /* JournalDisplayItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalDisplayItem.swift; sourceTree = "<group>"; };
 		44480AD2FE11B11DFAA602AC /* ChallengeCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeCardView.swift; sourceTree = "<group>"; };
 		450D139FDDBC7B0F87A6A5D7 /* CompletedChallenge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletedChallenge.swift; sourceTree = "<group>"; };
@@ -267,6 +271,7 @@
 			isa = PBXGroup;
 			children = (
 				E8C50D05FD014055C68FB56E /* AppEnvironmentTests.swift */,
+				3FFDBB292FD64BF875C8C219 /* AppInfoTests.swift */,
 				C790891C0DCDD4C7DB6C2D0F /* BadgeEvaluationTests.swift */,
 				DDB91F756DEEBA088E6AA18F /* BadgeServiceTests.swift */,
 				335717FF73C0F30EDC70CC2B /* CalendarViewModelTests.swift */,
@@ -310,6 +315,7 @@
 		7939A6021F250C6244E0901B /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
+				1AE914DE3D6DDC914A10EA4E /* AppInfo.swift */,
 				950A441B84B488EB25DBCE4C /* BadgeEvaluator.swift */,
 				54DE59ED320B7ECF201DD87B /* ChallengeLoader.swift */,
 				20711FA1DBD7AAD7EDA28C9B /* ChallengeScheduler.swift */,
@@ -529,6 +535,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E07E47A6353DAA38FF4F6041 /* AppEnvironmentTests.swift in Sources */,
+				9EDAB48DEEF4A7A0C05335B3 /* AppInfoTests.swift in Sources */,
 				360B310D937097319D020531 /* BadgeEvaluationTests.swift in Sources */,
 				06120571F60986FF3DB7CB43 /* BadgeServiceTests.swift in Sources */,
 				B851569CDC6AACF2F1731BA8 /* CalendarViewModelTests.swift in Sources */,
@@ -566,6 +573,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2FE1C5B4185830A889A4A773 /* AppEnvironment.swift in Sources */,
+				47F909F85F5306FFC67E0310 /* AppInfo.swift in Sources */,
 				26EA93B98F1A872DABA92321 /* BadgeCelebrationView.swift in Sources */,
 				BB2AD676CEF4056D9A6D3CD8 /* BadgeDefinition.swift in Sources */,
 				C98AB36AA430514B29E6AAE9 /* BadgeDisplayItem.swift in Sources */,
