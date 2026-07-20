@@ -6,27 +6,24 @@ struct DailyChallenge: Codable, Identifiable, Equatable {
     let title: String
     let category: ChallengeCategory
     let scriptureReference: String
-    let scriptureTextESV: String
-    let scriptureTextNIV: String
-    let scriptureTextNKJV: String
+    let scriptureTextWEB: String
+    let scriptureTextKJV: String
     let challengeDescription: String
     let reflectionPrompt: String
     let difficulty: Difficulty
 
     func scriptureText(for translation: BibleTranslation) -> String {
         switch translation {
-        case .esv: return scriptureTextESV
-        case .niv: return scriptureTextNIV
-        case .nkjv: return scriptureTextNKJV
+        case .web: return scriptureTextWEB
+        case .kjv: return scriptureTextKJV
         }
     }
 
     enum CodingKeys: String, CodingKey {
         case id, day, title, category, difficulty
         case scriptureReference = "scripture_reference"
-        case scriptureTextESV = "scripture_text_esv"
-        case scriptureTextNIV = "scripture_text_niv"
-        case scriptureTextNKJV = "scripture_text_nkjv"
+        case scriptureTextWEB = "scripture_text_web"
+        case scriptureTextKJV = "scripture_text_kjv"
         case challengeDescription = "challenge_description"
         case reflectionPrompt = "reflection_prompt"
     }

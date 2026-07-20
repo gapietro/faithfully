@@ -9,7 +9,7 @@ final class DailyWalkViewModel {
     var currentStreak: Int = 0
     var showCelebration: Bool = false
     var newBadges: [BadgeDefinition] = []
-    var translation: BibleTranslation = .esv
+    var translation: BibleTranslation = .web
 
     private(set) var yesterdayChallenge: DailyChallenge
 
@@ -20,7 +20,7 @@ final class DailyWalkViewModel {
         todayChallenge.scriptureText(for: translation)
     }
 
-    init(challengeService: ChallengeServiceProtocol, today: Date = .now, translation: BibleTranslation = .esv) {
+    init(challengeService: ChallengeServiceProtocol, today: Date = .now, translation: BibleTranslation = .web) {
         self.challengeService = challengeService
         self.today = today
         self.translation = translation

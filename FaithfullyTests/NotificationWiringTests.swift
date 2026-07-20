@@ -239,23 +239,23 @@ final class NotificationWiringTests: XCTestCase {
     // MARK: - #8 Translation propagates to Daily Walk
 
     func testDailyWalkStartsWithProfileTranslation() throws {
-        context.insert(UserProfile(preferredTranslation: .niv))
+        context.insert(UserProfile(preferredTranslation: .kjv))
         try context.save()
 
         let services = try makeServices(today: Date.from(year: 2026, month: 6, day: 15))
-        XCTAssertEqual(services.dailyWalkViewModel.translation, .niv,
-                       "Daily Walk must load the persisted translation, not default to ESV")
+        XCTAssertEqual(services.dailyWalkViewModel.translation, .kjv,
+                       "Daily Walk must load the persisted translation, not default to WEB")
     }
 
     func testChangingTranslationInSettingsUpdatesDailyWalkLive() throws {
         let services = try makeServices(today: Date.from(year: 2026, month: 6, day: 15))
-        XCTAssertEqual(services.dailyWalkViewModel.translation, .esv)
+        XCTAssertEqual(services.dailyWalkViewModel.translation, .web)
 
-        services.settingsViewModel.updateTranslation(.nkjv)
+        services.settingsViewModel.updateTranslation(.kjv)
 
-        XCTAssertEqual(services.dailyWalkViewModel.translation, .nkjv,
+        XCTAssertEqual(services.dailyWalkViewModel.translation, .kjv,
                        "A Settings translation change must reach Daily Walk without relaunch")
         XCTAssertEqual(services.dailyWalkViewModel.scriptureText,
-                       services.dailyWalkViewModel.todayChallenge.scriptureText(for: .nkjv))
+                       services.dailyWalkViewModel.todayChallenge.scriptureText(for: .kjv))
     }
 }

@@ -176,7 +176,7 @@ Category-specific badge names:
 
 - Notification preferences (morning time, evening reminder, badge alerts)
 - Start-of-day time (when new challenge appears)
-- Bible translation preference (ESV default, NIV, NKJV)
+- Bible translation preference (WEB default, KJV; see decision 1 revision)
 - Display preferences (dark mode / light mode)
 - About / Contact
 - Data export (journal entries as text/PDF)
@@ -238,7 +238,7 @@ User
   - id: UUID
   - displayName: String
   - startDate: Date
-  - preferredTranslation: BibleTranslation (enum: .esv, .niv, .nkjv — default .esv)
+  - preferredTranslation: BibleTranslation (enum: .web, .kjv — default .web)
   - notificationPreferences: NotificationPrefs
   - streakCount: Int (computed)
   - totalCompleted: Int (computed)
@@ -248,9 +248,8 @@ DailyChallenge
   - title: String
   - category: ChallengeCategory (enum)
   - scriptureReference: String
-  - scriptureTextESV: String
-  - scriptureTextNIV: String
-  - scriptureTextNKJV: String
+  - scriptureTextWEB: String
+  - scriptureTextKJV: String
   - challengeDescription: String
   - reflectionPrompt: String
   - scheduledDate: Date
@@ -372,7 +371,7 @@ ChallengeCategory (enum)
 
 ## 10. Resolved Decisions
 
-1. **Bible translation:** Default is ESV. Users can choose between ESV, NIV, and NKJV in Settings. Scripture text for all three translations must be included in the challenge data (or fetched via API). The app ships with ESV as the bundled default; NIV and NKJV text is also bundled or fetched on first selection.
+1. **Bible translation:** ~~Default is ESV. Users can choose between ESV, NIV, and NKJV in Settings.~~ **Revised for v1 (Sprint F1, issue #22):** v1 ships public-domain scripture only — World English Bible (WEB, default) and King James Version (KJV), both fully bundled offline. Commercial translations (ESV/NIV/NKJV) are deferred to a later release pending publisher permission; see `docs/content/TRANSLATION_LICENSING.md`.
 2. **Content creation:** AI-assisted generation with human curation. The initial 365-challenge library will be generated with AI assistance, then personally reviewed and curated by the creator before shipping.
 3. **Badge art:** Custom-designed badge artwork generated via Recraft.ai, not SF Symbols. Each badge gets a unique, polished design that feels like a real achievement. Badge assets will be created during Phase 4 (Content & Launch).
 
