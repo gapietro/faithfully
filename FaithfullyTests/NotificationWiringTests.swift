@@ -182,6 +182,22 @@ final class NotificationWiringTests: XCTestCase {
                        "A newly earned badge must schedule a celebration when enabled")
     }
 
+    func testRefreshBeforeBadgeTriggerFiresPreservesCelebration() async throws {
+        let today = Date.from(year: 2026, month: 6, day: 15)
+        let services = try makeServices(today: today)
+        // 30 prior completions so the 31st awards the journey badge.
+        try insertCompletions(endingOn: today.addingDays(-1), count: 30, service: services.challengeService)
+
+        services.dailyWalkViewModel.complete(journal: nil)
+        // A settings-change / foreground refresh landing inside the badge's 1s
+        // trigger window must not swallow the pending celebration.
+        services.refreshNotifications()
+        await notificationService.waitForPendingOperations()
+
+        XCTAssertFalse(mockCenter.addedRequests.filter { $0.identifier.hasPrefix("badge_") }.isEmpty,
+                       "A refresh before the badge push fires must leave it pending")
+    }
+
     // MARK: - #7 Onboarding permission
 
     func testOnboardingFinishRequestsPermissionAndSchedules() async throws {

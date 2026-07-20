@@ -12,7 +12,6 @@ protocol NotificationServiceProtocol {
 protocol NotificationCenterProtocol {
     func requestAuthorization(options: UNAuthorizationOptions) async throws -> Bool
     func add(_ request: UNNotificationRequest) async throws
-    func removeAllPendingNotificationRequests()
     func removePendingNotificationRequests(withIdentifiers identifiers: [String])
     func pendingNotificationRequests() async -> [UNNotificationRequest]
 }
@@ -68,7 +67,14 @@ final class NotificationService: NotificationServiceProtocol {
             : nil
 
         enqueue { [center] in
-            center.removeAllPendingNotificationRequests()
+            // Remove only the recurring daily ids, never the whole pending set:
+            // a refresh (settings change, foreground, launch) must not swallow a
+            // one-shot badge_* celebration still waiting on its 1s trigger.
+            center.removePendingNotificationRequests(withIdentifiers: [
+                "morning_challenge",
+                "evening_reminder",
+                "streak_warning"
+            ])
             if let morning { try? await center.add(morning) }
             if let evening { try? await center.add(evening) }
         }
