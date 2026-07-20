@@ -24,9 +24,11 @@ final class ChallengeService: ChallengeServiceProtocol {
     private let userStartDate: Date
     private let dateProvider: () -> Date
 
-    /// Called after a completion is persisted. The composition root uses this to
-    /// refresh the other tabs' view models so they share the same completion truth.
-    var onCompletionRecorded: (() -> Void)?
+    /// Called after a completion is persisted, with the day that was completed
+    /// and any badges the completion earned. The composition root uses this to
+    /// refresh the other tabs' view models and drive notification side effects
+    /// (cancel today's reminders, celebrate new badges).
+    var onCompletionRecorded: ((_ scheduledDate: Date, _ newBadges: [BadgeDefinition]) -> Void)?
 
     init(
         modelContext: ModelContext,
@@ -88,7 +90,7 @@ final class ChallengeService: ChallengeServiceProtocol {
         try modelContext.save()
 
         let newBadges = badgeService.evaluateAndAward()
-        onCompletionRecorded?()
+        onCompletionRecorded?(scheduledDate, newBadges)
         return newBadges
     }
 

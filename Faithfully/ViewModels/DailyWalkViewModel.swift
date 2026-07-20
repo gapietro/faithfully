@@ -20,9 +20,10 @@ final class DailyWalkViewModel {
         todayChallenge.scriptureText(for: translation)
     }
 
-    init(challengeService: ChallengeServiceProtocol, today: Date = .now) {
+    init(challengeService: ChallengeServiceProtocol, today: Date = .now, translation: BibleTranslation = .esv) {
         self.challengeService = challengeService
         self.today = today
+        self.translation = translation
         self.todayChallenge = challengeService.challengeForDate(today)
         self.yesterdayChallenge = challengeService.challengeForDate(today.addingDays(-1))
         self.isCompleted = challengeService.isCompleted(on: today)

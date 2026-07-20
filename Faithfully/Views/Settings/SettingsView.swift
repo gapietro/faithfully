@@ -26,11 +26,25 @@ struct SettingsView: View {
                         ))
                         .accessibilityIdentifier("morningToggle")
 
+                        DatePicker("Morning Time", selection: Binding(
+                            get: { vm.morningTime },
+                            set: { vm.updateMorningTime($0) }
+                        ), displayedComponents: .hourAndMinute)
+                        .disabled(!vm.morningEnabled)
+                        .accessibilityIdentifier("morningTimePicker")
+
                         Toggle("Evening Reminder", isOn: Binding(
                             get: { vm.eveningEnabled },
                             set: { vm.toggleEveningReminders($0) }
                         ))
                         .accessibilityIdentifier("eveningToggle")
+
+                        DatePicker("Evening Time", selection: Binding(
+                            get: { vm.eveningTime },
+                            set: { vm.updateEveningTime($0) }
+                        ), displayedComponents: .hourAndMinute)
+                        .disabled(!vm.eveningEnabled)
+                        .accessibilityIdentifier("eveningTimePicker")
 
                         Toggle("Streak Warnings", isOn: Binding(
                             get: { vm.streakWarningsEnabled },

@@ -46,6 +46,42 @@ final class CalendarViewModelTests: XCTestCase {
         XCTAssertEqual(day10?.status, .completed)
     }
 
+    func testTodayNotCompletedShowsTodayStatus() {
+        let today = Date.from(year: 2026, month: 4, day: 15)
+        let service = makeService(today: today)
+        let vm = CalendarViewModel(challengeService: service, today: today)
+
+        let day15 = vm.calendarDays.first { Calendar.current.component(.day, from: $0.date) == 15 }
+        XCTAssertEqual(day15?.status, .today,
+                       "An incomplete today must be distinguishable, not styled as a recoverable miss")
+    }
+
+    func testTodayCompletedShowsCompletedNotToday() throws {
+        let today = Date.from(year: 2026, month: 4, day: 15)
+        let service = makeService(today: today)
+        let challenge = service.challengeForDate(today)
+        _ = try service.completeChallenge(challenge, on: today, journal: nil)
+
+        let vm = CalendarViewModel(challengeService: service, today: today)
+        let day15 = vm.calendarDays.first { Calendar.current.component(.day, from: $0.date) == 15 }
+        XCTAssertEqual(day15?.status, .completed, "Completed takes precedence over .today")
+    }
+
+    func testCompletingTodayViaGracePathMovesTodayToCompleted() throws {
+        let today = Date.from(year: 2026, month: 4, day: 15)
+        let service = makeService(today: today)
+        let vm = CalendarViewModel(challengeService: service, today: today)
+
+        let day15 = try XCTUnwrap(vm.calendarDays.first { Calendar.current.component(.day, from: $0.date) == 15 })
+        XCTAssertEqual(day15.status, .today)
+
+        vm.completeGracePeriod(day15, journal: nil)
+
+        let updated = vm.calendarDays.first { Calendar.current.component(.day, from: $0.date) == 15 }
+        XCTAssertEqual(updated?.status, .completed,
+                       "Today must remain completable from the calendar and update without relaunch")
+    }
+
     func testMissedDaysWithinGracePeriodShowMissedRecoverable() {
         let today = Date.from(year: 2026, month: 4, day: 15)
         let service = makeService(today: today)

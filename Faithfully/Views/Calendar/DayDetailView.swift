@@ -20,7 +20,10 @@ struct DayDetailView: View {
                         .italic()
                 }
 
-                if day.status == .missedRecoverable {
+                // Today is completable here too — before the .today status
+                // existed it rode the grace path, and losing that would regress
+                // completing today from the calendar.
+                if day.status == .missedRecoverable || day.status == .today {
                     Button("Complete Now") {
                         onComplete()
                     }
