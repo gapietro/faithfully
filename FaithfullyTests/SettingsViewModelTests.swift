@@ -1,5 +1,6 @@
 import XCTest
 import SwiftData
+import SwiftUI
 @testable import Faithfully
 
 final class SettingsViewModelTests: XCTestCase {
@@ -52,6 +53,47 @@ final class SettingsViewModelTests: XCTestCase {
         let profiles = try context.fetch(descriptor)
         XCTAssertFalse(profiles.first?.morningNotificationsEnabled ?? true)
         XCTAssertFalse(profiles.first?.eveningRemindersEnabled ?? true)
+    }
+
+    func testUpdateNotificationTimesPersistToSwiftData() throws {
+        let vm = SettingsViewModel(modelContext: context)
+        let calendar = Calendar.current
+        let morning = try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 7, day: 20, hour: 6, minute: 45)))
+        let evening = try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 7, day: 20, hour: 21, minute: 30)))
+
+        vm.updateMorningTime(morning)
+        vm.updateEveningTime(evening)
+
+        XCTAssertEqual(vm.morningTime, morning)
+        XCTAssertEqual(vm.eveningTime, evening)
+
+        let profile = try XCTUnwrap(try context.fetch(FetchDescriptor<UserProfile>()).first)
+        XCTAssertEqual(profile.morningNotificationTime, morning)
+        XCTAssertEqual(profile.eveningReminderTime, evening)
+    }
+
+    func testEveryPreferenceMutationFiresOnPreferencesChanged() {
+        let vm = SettingsViewModel(modelContext: context)
+        var changeCount = 0
+        vm.onPreferencesChanged = { changeCount += 1 }
+
+        vm.updateTranslation(.niv)
+        vm.updateMorningTime(.now)
+        vm.updateEveningTime(.now)
+        vm.toggleMorningNotifications(false)
+        vm.toggleEveningReminders(false)
+        vm.toggleStreakWarnings(false)
+        vm.toggleBadgeNotifications(false)
+        vm.updateDarkMode(.dark)
+
+        XCTAssertEqual(changeCount, 8,
+                       "Every persisted preference change must notify the composition root")
+    }
+
+    func testDarkModePreferenceMapsToColorScheme() {
+        XCTAssertNil(DarkModePreference.system.colorScheme)
+        XCTAssertEqual(DarkModePreference.light.colorScheme, .light)
+        XCTAssertEqual(DarkModePreference.dark.colorScheme, .dark)
     }
 
     func testDarkModeChangePersists() throws {
