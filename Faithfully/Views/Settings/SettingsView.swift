@@ -2,12 +2,10 @@ import SwiftUI
 import SwiftData
 
 struct SettingsView: View {
-    @Environment(\.modelContext) private var modelContext
-    @State private var vm: SettingsViewModel?
+    let vm: SettingsViewModel
 
     var body: some View {
         NavigationStack {
-            if let vm {
                 List {
                     Section("Bible Translation") {
                         Picker("Translation", selection: Binding(
@@ -69,16 +67,6 @@ struct SettingsView: View {
                     }
                 }
                 .navigationTitle("Settings")
-            } else {
-                ProgressView()
-                    .onAppear { setupViewModel() }
-            }
         }
-        .onAppear { setupViewModel() }
-    }
-
-    private func setupViewModel() {
-        guard vm == nil else { return }
-        vm = SettingsViewModel(modelContext: modelContext)
     }
 }
