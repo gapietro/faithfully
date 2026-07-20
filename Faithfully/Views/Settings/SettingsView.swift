@@ -81,6 +81,9 @@ struct SettingsView: View {
                         .accessibilityElement(children: .combine)
                         .accessibilityIdentifier("versionRow")
 
+                        Link("Privacy Policy", destination: AppInfo.privacyPolicyURL)
+                            .accessibilityIdentifier("privacyPolicyLink")
+
                         Text("No account, no ads, no tracking. Everything you do in Faithfully stays on this device.")
                             .font(.footnote)
                             .foregroundStyle(.secondary)

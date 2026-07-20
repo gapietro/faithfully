@@ -70,7 +70,7 @@ Draft (139):
 |---|---|
 | Support URL | TBD — placeholder: `https://github.com/gapietro/faithfully` (or a faithfully.app page) |
 | Marketing URL | optional, TBD |
-| Privacy policy URL | **Required.** Host `docs/ship/PRIVACY_POLICY.md` publicly first — see that file's header. |
+| Privacy policy URL | **https://gist.github.com/scoutapietro/96c48a68f12efe3950b5bc359db70974** (live). Source: `docs/privacy/index.html` — [PRIVACY_POLICY.md](PRIVACY_POLICY.md) |
 
 ## Privacy nutrition label (App Store Connect questionnaire)
 
