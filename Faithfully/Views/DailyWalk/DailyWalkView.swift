@@ -13,7 +13,7 @@ struct DailyWalkView: View {
                     // Streak counter
                     HStack {
                         Image(systemName: "flame.fill")
-                            .foregroundStyle(.orange)
+                            .foregroundStyle(Color.brandGold)
                         Text("\(vm.currentStreak) day streak")
                             .font(.subheadline)
                             .fontWeight(.medium)
@@ -27,7 +27,7 @@ struct DailyWalkView: View {
                     if vm.isCompleted {
                         Label("Completed", systemImage: "checkmark.circle.fill")
                             .font(.headline)
-                            .foregroundStyle(.green)
+                            .foregroundStyle(Color.brandForest)
                             .accessibilityIdentifier("completedLabel")
                     } else {
                         Button(action: {
@@ -38,7 +38,7 @@ struct DailyWalkView: View {
                                 .fontWeight(.bold)
                                 .frame(maxWidth: .infinity)
                                 .padding()
-                                .background(Color.accentColor)
+                                .background(Color.brandNavy)
                                 .foregroundStyle(.white)
                                 .clipShape(RoundedRectangle(cornerRadius: 12))
                         }
