@@ -24,15 +24,18 @@ final class AppEnvironment {
 
     private let modelContext: ModelContext
     private let loadChallenges: () throws -> [DailyChallenge]
+    private let notificationService: NotificationServiceProtocol
     private let dateProvider: () -> Date
 
     init(
         modelContext: ModelContext,
         loadChallenges: @escaping () throws -> [DailyChallenge] = { try ChallengeLoader.loadChallenges() },
+        notificationService: NotificationServiceProtocol = NotificationService(),
         dateProvider: @escaping () -> Date = { .now }
     ) {
         self.modelContext = modelContext
         self.loadChallenges = loadChallenges
+        self.notificationService = notificationService
         self.dateProvider = dateProvider
         load()
     }
@@ -59,12 +62,12 @@ final class AppEnvironment {
                 profile: profile,
                 challengeService: challengeService,
                 badgeService: badgeService,
-                notificationService: NotificationService(),
+                notificationService: notificationService,
                 modelContext: modelContext,
                 dateProvider: dateProvider
             )
-            challengeService.onCompletionRecorded = { [weak services] in
-                services?.refreshAfterCompletion()
+            challengeService.onCompletionRecorded = { [weak services] scheduledDate, newBadges in
+                services?.handleCompletionRecorded(on: scheduledDate, newBadges: newBadges)
             }
             state = .ready(services)
         } catch {
@@ -131,10 +134,23 @@ final class AppServices {
         self.dateProvider = dateProvider
 
         let today = dateProvider()
-        self.dailyWalkViewModel = DailyWalkViewModel(challengeService: challengeService, today: today)
+        self.dailyWalkViewModel = DailyWalkViewModel(
+            challengeService: challengeService,
+            today: today,
+            translation: profile.preferredTranslation
+        )
         self.calendarViewModel = CalendarViewModel(challengeService: challengeService, today: today)
         self.journeyViewModel = JourneyViewModel(challengeService: challengeService, badgeService: badgeService)
         self.settingsViewModel = SettingsViewModel(modelContext: modelContext)
+
+        // Settings is the single writer of preferences; every save flows back
+        // through here so the other tabs and the pending notifications always
+        // reflect the profile as it is now.
+        settingsViewModel.onPreferencesChanged = { [weak self] in
+            guard let self else { return }
+            self.dailyWalkViewModel.updateTranslation(self.profile.preferredTranslation)
+            self.refreshNotifications()
+        }
     }
 
     /// Keeps every tab consistent after a completion (from Daily Walk or a
@@ -143,6 +159,54 @@ final class AppServices {
         dailyWalkViewModel.refresh()
         calendarViewModel.loadMonth()
         journeyViewModel.refresh()
+    }
+
+    /// Runs after a completion is persisted: refreshes the tabs, re-runs the
+    /// notification policy, and fires a celebration for any newly earned
+    /// badges. The full policy pass — not just a same-day cancel — is what
+    /// makes a grace recovery that lifts the streak past 7 arm the streak
+    /// warning immediately; completing today still cancels tonight's evening
+    /// reminder and streak warning via the policy's completed-today branch.
+    /// Badge celebrations are enqueued after the policy pass so they can never
+    /// race the daily rebuild (whose selective remove spares badge_* anyway).
+    func handleCompletionRecorded(on scheduledDate: Date, newBadges: [BadgeDefinition]) {
+        refreshAfterCompletion()
+        refreshNotifications()
+
+        guard !newBadges.isEmpty else { return }
+        let earned = badgeService.earnedBadges()
+        for definition in newBadges {
+            if let badge = earned.first(where: { $0.badgeName == definition.id }) {
+                notificationService.scheduleBadgeCelebration(badge, profile: profile)
+            }
+        }
+    }
+
+    /// Rebuilds the pending notification set from the profile as it is now:
+    /// morning/evening per their flags and times, plus the streak warning when
+    /// it applies (enabled, streak ≥ 7, today not yet completed). When today is
+    /// already done, the evening reminder and streak warning are cancelled.
+    /// Identifiers are stable, so re-running this replaces rather than stacks —
+    /// safe to call on every foreground and settings change.
+    func refreshNotifications() {
+        notificationService.scheduleAllNotifications(profile: profile)
+        if challengeService.isCompleted(on: dateProvider()) {
+            notificationService.cancelTodayReminders()
+        } else {
+            notificationService.scheduleStreakWarning(
+                streak: challengeService.calculateStreak(),
+                profile: profile
+            )
+        }
+    }
+
+    /// Onboarding's finish path: ask for permission, then schedule. Scheduling
+    /// even after a denial is intentional — the requests are inert until the
+    /// user grants notifications in iOS Settings, at which point they fire
+    /// without the app needing another pass.
+    func requestNotificationPermissionAndSchedule() async {
+        _ = await notificationService.requestPermission()
+        refreshNotifications()
     }
 
     /// Foreground refresh: re-reads the live date so a day rollover while the
@@ -154,5 +218,9 @@ final class AppServices {
         dailyWalkViewModel.refresh(for: today)
         calendarViewModel.refresh(for: today)
         journeyViewModel.refresh()
+        // Daily scheduling path: re-arms the evening reminder for the new day
+        // (it is cancelled outright when a day is completed) and re-evaluates
+        // the streak warning against the current streak and completion state.
+        refreshNotifications()
     }
 }

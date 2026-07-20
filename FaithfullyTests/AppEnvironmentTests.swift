@@ -7,11 +7,13 @@ final class AppEnvironmentTests: XCTestCase {
     var container: ModelContainer!
     var context: ModelContext!
     var challenges: [DailyChallenge]!
+    var mockNotificationCenter: MockNotificationCenter!
 
     override func setUpWithError() throws {
         container = try TestHelpers.makeModelContainer()
         context = ModelContext(container)
         challenges = try TestHelpers.loadTestChallenges()
+        mockNotificationCenter = MockNotificationCenter()
     }
 
     private func makeEnvironment(
@@ -21,6 +23,7 @@ final class AppEnvironmentTests: XCTestCase {
         AppEnvironment(
             modelContext: context,
             loadChallenges: loader ?? { self.challenges },
+            notificationService: NotificationService(center: mockNotificationCenter),
             dateProvider: { today }
         )
     }
@@ -134,6 +137,7 @@ final class AppEnvironmentTests: XCTestCase {
         let env = AppEnvironment(
             modelContext: context,
             loadChallenges: { self.challenges },
+            notificationService: NotificationService(center: mockNotificationCenter),
             dateProvider: { now }
         )
         let services = try XCTUnwrap(env.services)
@@ -189,7 +193,7 @@ final class AppEnvironmentTests: XCTestCase {
         setNow(Date.from(year: 2026, month: 6, day: 16))
         services.refreshForCurrentDate()
 
-        XCTAssertEqual(status(day: 16), .missedRecoverable,
+        XCTAssertEqual(status(day: 16), .today,
                        "The real current day must no longer be labeled future")
         XCTAssertEqual(status(day: 17), .future)
         XCTAssertEqual(status(day: 12), .missed,

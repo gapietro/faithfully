@@ -103,6 +103,56 @@ final class DailyWalkViewModelTests: XCTestCase {
         XCTAssertTrue(vm.showCelebration)
     }
 
+    func testDayRolloverClearsCelebrationState() throws {
+        let today = Date.now
+        for i in 1...30 {
+            let date = today.addingDays(-i)
+            let challenge = challengeService.challengeForDate(date)
+            let completion = CompletedChallenge(
+                challengeId: challenge.id,
+                challengeCategory: challenge.category.rawValue,
+                completedDate: date,
+                scheduledDate: date
+            )
+            context.insert(completion)
+        }
+        try context.save()
+
+        let vm = DailyWalkViewModel(challengeService: challengeService, today: today)
+        vm.complete(journal: nil)
+        XCTAssertTrue(vm.showCelebration)
+
+        vm.refresh(for: today.addingDays(1))
+        XCTAssertFalse(vm.showCelebration,
+                       "A celebration left open overnight must not block the new day's UI")
+        XCTAssertTrue(vm.newBadges.isEmpty)
+    }
+
+    func testSameDayRefreshPreservesCelebrationState() throws {
+        let today = Date.now
+        for i in 1...30 {
+            let date = today.addingDays(-i)
+            let challenge = challengeService.challengeForDate(date)
+            let completion = CompletedChallenge(
+                challengeId: challenge.id,
+                challengeCategory: challenge.category.rawValue,
+                completedDate: date,
+                scheduledDate: date
+            )
+            context.insert(completion)
+        }
+        try context.save()
+
+        let vm = DailyWalkViewModel(challengeService: challengeService, today: today)
+        vm.complete(journal: nil)
+        XCTAssertTrue(vm.showCelebration)
+
+        vm.refresh(for: today)
+        XCTAssertTrue(vm.showCelebration,
+                      "A same-day refresh must not dismiss a celebration mid-show")
+        XCTAssertFalse(vm.newBadges.isEmpty)
+    }
+
     func testTranslationChangeUpdatesScriptureText() {
         let today = Date.now
         let vm = DailyWalkViewModel(challengeService: challengeService, today: today)

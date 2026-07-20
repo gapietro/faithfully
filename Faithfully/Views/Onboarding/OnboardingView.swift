@@ -2,7 +2,11 @@ import SwiftUI
 
 struct OnboardingView: View {
     let onComplete: () -> Void
+    /// Runs before finishing so the system permission prompt appears as part of
+    /// onboarding; injected by the composition root.
+    var requestNotificationPermission: (() async -> Void)? = nil
     @State private var currentPage = 0
+    @State private var isFinishing = false
 
     var body: some View {
         TabView(selection: $currentPage) {
@@ -61,7 +65,12 @@ struct OnboardingView: View {
                     .multilineTextAlignment(.center)
                 Spacer()
                 Button("Start My Walk") {
-                    onComplete()
+                    guard !isFinishing else { return }
+                    isFinishing = true
+                    Task {
+                        await requestNotificationPermission?()
+                        onComplete()
+                    }
                 }
                 .buttonStyle(.borderedProminent)
                 .accessibilityIdentifier("startWalkButton")
