@@ -20,9 +20,10 @@ final class DailyWalkViewModel {
         todayChallenge.scriptureText(for: translation)
     }
 
-    init(challengeService: ChallengeServiceProtocol, today: Date = .now) {
+    init(challengeService: ChallengeServiceProtocol, today: Date = .now, translation: BibleTranslation = .esv) {
         self.challengeService = challengeService
         self.today = today
+        self.translation = translation
         self.todayChallenge = challengeService.challengeForDate(today)
         self.yesterdayChallenge = challengeService.challengeForDate(today.addingDays(-1))
         self.isCompleted = challengeService.isCompleted(on: today)
@@ -42,6 +43,10 @@ final class DailyWalkViewModel {
             today = newToday
             todayChallenge = challengeService.challengeForDate(newToday)
             yesterdayChallenge = challengeService.challengeForDate(newToday.addingDays(-1))
+            // A celebration left showing overnight belongs to the previous day's
+            // completion; carrying it into the new day blocks the fresh UI.
+            showCelebration = false
+            newBadges = []
         }
         refresh()
     }

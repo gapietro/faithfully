@@ -46,6 +46,42 @@ final class CalendarViewModelTests: XCTestCase {
         XCTAssertEqual(day10?.status, .completed)
     }
 
+    func testTodayNotCompletedShowsTodayStatus() {
+        let today = Date.from(year: 2026, month: 4, day: 15)
+        let service = makeService(today: today)
+        let vm = CalendarViewModel(challengeService: service, today: today)
+
+        let day15 = vm.calendarDays.first { Calendar.current.component(.day, from: $0.date) == 15 }
+        XCTAssertEqual(day15?.status, .today,
+                       "An incomplete today must be distinguishable, not styled as a recoverable miss")
+    }
+
+    func testTodayCompletedShowsCompletedNotToday() throws {
+        let today = Date.from(year: 2026, month: 4, day: 15)
+        let service = makeService(today: today)
+        let challenge = service.challengeForDate(today)
+        _ = try service.completeChallenge(challenge, on: today, journal: nil)
+
+        let vm = CalendarViewModel(challengeService: service, today: today)
+        let day15 = vm.calendarDays.first { Calendar.current.component(.day, from: $0.date) == 15 }
+        XCTAssertEqual(day15?.status, .completed, "Completed takes precedence over .today")
+    }
+
+    func testCompletingTodayViaGracePathMovesTodayToCompleted() throws {
+        let today = Date.from(year: 2026, month: 4, day: 15)
+        let service = makeService(today: today)
+        let vm = CalendarViewModel(challengeService: service, today: today)
+
+        let day15 = try XCTUnwrap(vm.calendarDays.first { Calendar.current.component(.day, from: $0.date) == 15 })
+        XCTAssertEqual(day15.status, .today)
+
+        vm.completeGracePeriod(day15, journal: nil)
+
+        let updated = vm.calendarDays.first { Calendar.current.component(.day, from: $0.date) == 15 }
+        XCTAssertEqual(updated?.status, .completed,
+                       "Today must remain completable from the calendar and update without relaunch")
+    }
+
     func testMissedDaysWithinGracePeriodShowMissedRecoverable() {
         let today = Date.from(year: 2026, month: 4, day: 15)
         let service = makeService(today: today)
@@ -181,6 +217,39 @@ final class CalendarViewModelTests: XCTestCase {
         let day20 = vm.calendarDays.first { Calendar.current.component(.day, from: $0.date) == 20 }
         XCTAssertEqual(day10?.status, .completed, "The scheduled day itself must show completed")
         XCTAssertEqual(day20?.status, .future, "A later day sharing the challenge ID must not show completed")
+    }
+
+    func testRefreshRebindsSelectedDayToRebuiltStatus() {
+        // Select a recoverable day, then roll past its grace window: the open
+        // detail must re-bind to the rebuilt day so it no longer offers Complete.
+        let today = Date.from(year: 2026, month: 4, day: 15)
+        let service = makeService(today: today)
+        let vm = CalendarViewModel(challengeService: service, today: today)
+
+        let day13 = vm.calendarDays.first { Calendar.current.component(.day, from: $0.date) == 13 }
+        vm.selectDay(day13!)
+        XCTAssertEqual(vm.selectedDay?.status, .missedRecoverable)
+
+        vm.refresh(for: Date.from(year: 2026, month: 4, day: 19))
+        XCTAssertEqual(vm.selectedDay?.status, .missed,
+                       "Stale detail must not still offer Complete after grace expiry")
+        XCTAssertEqual(vm.selectedDay.map { Calendar.current.component(.day, from: $0.date) }, 13,
+                       "Re-bind keeps the same date selected")
+    }
+
+    func testRefreshClearsSelectedDayWhenDateLeavesGrid() {
+        // Rolling into a new month (while viewing the current month) rebuilds the
+        // grid for the new month; a selection from the old month has no matching
+        // day and must be dropped rather than left stale.
+        let today = Date.from(year: 2026, month: 4, day: 30)
+        let service = makeService(today: today)
+        let vm = CalendarViewModel(challengeService: service, today: today)
+
+        let day13 = vm.calendarDays.first { Calendar.current.component(.day, from: $0.date) == 13 }
+        vm.selectDay(day13!)
+
+        vm.refresh(for: Date.from(year: 2026, month: 5, day: 1))
+        XCTAssertNil(vm.selectedDay)
     }
 
     func testCompleteGracePeriodCallsChallengeServiceAndUpdatesCalendar() throws {

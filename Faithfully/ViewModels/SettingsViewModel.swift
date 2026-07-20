@@ -13,6 +13,11 @@ final class SettingsViewModel {
     var badgeNotificationsEnabled: Bool
     var darkMode: DarkModePreference
 
+    /// Fired after every persisted preference change. The composition root uses
+    /// this to propagate the new preferences (translation to Daily Walk,
+    /// notification reschedule) without Settings knowing about the other tabs.
+    var onPreferencesChanged: (() -> Void)?
+
     private let modelContext: ModelContext
     private var profile: UserProfile
 
@@ -43,36 +48,53 @@ final class SettingsViewModel {
     func updateTranslation(_ newTranslation: BibleTranslation) {
         translation = newTranslation
         profile.preferredTranslation = newTranslation
-        try? modelContext.save()
+        saveAndNotify()
+    }
+
+    func updateMorningTime(_ time: Date) {
+        morningTime = time
+        profile.morningNotificationTime = time
+        saveAndNotify()
+    }
+
+    func updateEveningTime(_ time: Date) {
+        eveningTime = time
+        profile.eveningReminderTime = time
+        saveAndNotify()
     }
 
     func toggleMorningNotifications(_ enabled: Bool) {
         morningEnabled = enabled
         profile.morningNotificationsEnabled = enabled
-        try? modelContext.save()
+        saveAndNotify()
     }
 
     func toggleEveningReminders(_ enabled: Bool) {
         eveningEnabled = enabled
         profile.eveningRemindersEnabled = enabled
-        try? modelContext.save()
+        saveAndNotify()
     }
 
     func toggleStreakWarnings(_ enabled: Bool) {
         streakWarningsEnabled = enabled
         profile.streakWarningsEnabled = enabled
-        try? modelContext.save()
+        saveAndNotify()
     }
 
     func toggleBadgeNotifications(_ enabled: Bool) {
         badgeNotificationsEnabled = enabled
         profile.badgeNotificationsEnabled = enabled
-        try? modelContext.save()
+        saveAndNotify()
     }
 
     func updateDarkMode(_ mode: DarkModePreference) {
         darkMode = mode
         profile.darkModePreference = mode
+        saveAndNotify()
+    }
+
+    private func saveAndNotify() {
         try? modelContext.save()
+        onPreferencesChanged?()
     }
 }

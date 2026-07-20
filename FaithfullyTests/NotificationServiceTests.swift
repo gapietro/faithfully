@@ -7,7 +7,6 @@ final class MockNotificationCenter: NotificationCenterProtocol {
     var requestAuthorizationCalled = false
     var addedRequests: [UNNotificationRequest] = []
     var removedIdentifiers: [String] = []
-    var allRemoved = false
 
     func requestAuthorization(options: UNAuthorizationOptions) async throws -> Bool {
         requestAuthorizationCalled = true
@@ -15,12 +14,10 @@ final class MockNotificationCenter: NotificationCenterProtocol {
     }
 
     func add(_ request: UNNotificationRequest) async throws {
+        // Mirror UNUserNotificationCenter: adding with an existing identifier
+        // replaces the pending request rather than stacking a duplicate.
+        addedRequests.removeAll { $0.identifier == request.identifier }
         addedRequests.append(request)
-    }
-
-    func removeAllPendingNotificationRequests() {
-        allRemoved = true
-        addedRequests.removeAll()
     }
 
     func removePendingNotificationRequests(withIdentifiers identifiers: [String]) {
@@ -55,9 +52,7 @@ final class NotificationServiceTests: XCTestCase {
             eveningRemindersEnabled: false
         )
         service.scheduleAllNotifications(profile: profile)
-
-        // Give async Task time to complete
-        try? await Task.sleep(for: .milliseconds(100))
+        await service.waitForPendingOperations()
 
         let morning = mockCenter.addedRequests.first { $0.identifier == "morning_challenge" }
         XCTAssertNotNil(morning, "Morning notification should be scheduled")
@@ -69,11 +64,33 @@ final class NotificationServiceTests: XCTestCase {
             eveningRemindersEnabled: true
         )
         service.scheduleAllNotifications(profile: profile)
-
-        try? await Task.sleep(for: .milliseconds(100))
+        await service.waitForPendingOperations()
 
         let evening = mockCenter.addedRequests.first { $0.identifier == "evening_reminder" }
         XCTAssertNotNil(evening, "Evening notification should be scheduled")
+    }
+
+    func testScheduledTriggersUseProfileTimes() async throws {
+        let calendar = Calendar.current
+        let profile = UserProfile(
+            morningNotificationTime: try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 7, day: 20, hour: 9, minute: 30))),
+            eveningReminderTime: try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 7, day: 20, hour: 21, minute: 15))),
+            morningNotificationsEnabled: true,
+            eveningRemindersEnabled: true
+        )
+        service.scheduleAllNotifications(profile: profile)
+        await service.waitForPendingOperations()
+
+        let morning = try XCTUnwrap(mockCenter.addedRequests.first { $0.identifier == "morning_challenge" })
+        let morningTrigger = try XCTUnwrap(morning.trigger as? UNCalendarNotificationTrigger)
+        XCTAssertEqual(morningTrigger.dateComponents.hour, 9)
+        XCTAssertEqual(morningTrigger.dateComponents.minute, 30)
+        XCTAssertTrue(morningTrigger.repeats)
+
+        let evening = try XCTUnwrap(mockCenter.addedRequests.first { $0.identifier == "evening_reminder" })
+        let eveningTrigger = try XCTUnwrap(evening.trigger as? UNCalendarNotificationTrigger)
+        XCTAssertEqual(eveningTrigger.dateComponents.hour, 21)
+        XCTAssertEqual(eveningTrigger.dateComponents.minute, 15)
     }
 
     func testCancelTodayRemindersRemovesPendingNotifications() async {
@@ -82,28 +99,98 @@ final class NotificationServiceTests: XCTestCase {
             eveningRemindersEnabled: true
         )
         service.scheduleAllNotifications(profile: profile)
-        try? await Task.sleep(for: .milliseconds(100))
-
         service.cancelTodayReminders()
+        await service.waitForPendingOperations()
 
         XCTAssertTrue(mockCenter.removedIdentifiers.contains("evening_reminder"))
         XCTAssertTrue(mockCenter.removedIdentifiers.contains("streak_warning"))
+        XCTAssertNil(mockCenter.addedRequests.first { $0.identifier == "evening_reminder" },
+                     "A cancel issued after a schedule must win, even though adds are async")
     }
 
     func testScheduleStreakWarningCreatesNotificationOnlyIfStreakGTE7() async {
+        let profile = UserProfile(streakWarningsEnabled: true)
+
         // Streak < 7: should NOT schedule
-        service.scheduleStreakWarning(streak: 5)
-        try? await Task.sleep(for: .milliseconds(100))
+        service.scheduleStreakWarning(streak: 5, profile: profile)
+        await service.waitForPendingOperations()
 
         let noWarning = mockCenter.addedRequests.first { $0.identifier == "streak_warning" }
         XCTAssertNil(noWarning, "Streak < 7 should not schedule warning")
 
         // Streak >= 7: should schedule
-        service.scheduleStreakWarning(streak: 10)
-        try? await Task.sleep(for: .milliseconds(100))
+        service.scheduleStreakWarning(streak: 10, profile: profile)
+        await service.waitForPendingOperations()
 
         let warning = mockCenter.addedRequests.first { $0.identifier == "streak_warning" }
         XCTAssertNotNil(warning, "Streak >= 7 should schedule warning")
+    }
+
+    func testStreakWarningNotScheduledWhenPreferenceDisabled() async {
+        let profile = UserProfile(streakWarningsEnabled: false)
+        service.scheduleStreakWarning(streak: 10, profile: profile)
+        await service.waitForPendingOperations()
+
+        XCTAssertNil(mockCenter.addedRequests.first { $0.identifier == "streak_warning" },
+                     "Streak warnings disabled in preferences must never schedule")
+    }
+
+    func testBadgeCelebrationScheduledOnlyWhenPreferenceEnabled() async {
+        let badge = EarnedBadge(badgeName: "streak_7", badgeType: .streak, threshold: 7)
+
+        service.scheduleBadgeCelebration(badge, profile: UserProfile(badgeNotificationsEnabled: false))
+        await service.waitForPendingOperations()
+        XCTAssertTrue(mockCenter.addedRequests.isEmpty,
+                      "Badge celebrations disabled in preferences must never schedule")
+
+        service.scheduleBadgeCelebration(badge, profile: UserProfile(badgeNotificationsEnabled: true))
+        await service.waitForPendingOperations()
+        XCTAssertNotNil(mockCenter.addedRequests.first { $0.identifier == "badge_streak_7" })
+    }
+
+    func testScheduleAllPreservesPendingBadgeCelebration() async {
+        let badge = EarnedBadge(badgeName: "streak_7", badgeType: .streak, threshold: 7)
+        service.scheduleBadgeCelebration(badge, profile: UserProfile(badgeNotificationsEnabled: true))
+
+        // A refresh (settings change / foreground / launch) before the badge's
+        // 1s trigger fires must not swallow the celebration.
+        service.scheduleAllNotifications(profile: UserProfile(
+            morningNotificationsEnabled: true,
+            eveningRemindersEnabled: true
+        ))
+        await service.waitForPendingOperations()
+
+        XCTAssertNotNil(mockCenter.addedRequests.first { $0.identifier == "badge_streak_7" },
+                        "Re-arming daily notifications must preserve a pending badge celebration")
+        XCTAssertNotNil(mockCenter.addedRequests.first { $0.identifier == "morning_challenge" })
+        XCTAssertNotNil(mockCenter.addedRequests.first { $0.identifier == "evening_reminder" })
+    }
+
+    func testScheduleAllReplacesRatherThanStacksDailyNotifications() async {
+        let profile = UserProfile(
+            morningNotificationsEnabled: true,
+            eveningRemindersEnabled: true
+        )
+        service.scheduleAllNotifications(profile: profile)
+        service.scheduleAllNotifications(profile: profile)
+        await service.waitForPendingOperations()
+
+        XCTAssertEqual(mockCenter.addedRequests.filter { $0.identifier == "morning_challenge" }.count, 1)
+        XCTAssertEqual(mockCenter.addedRequests.filter { $0.identifier == "evening_reminder" }.count, 1)
+    }
+
+    func testScheduleAllRemovesStaleStreakWarning() async {
+        service.scheduleStreakWarning(streak: 10, profile: UserProfile(streakWarningsEnabled: true))
+        await service.waitForPendingOperations()
+        XCTAssertNotNil(mockCenter.addedRequests.first { $0.identifier == "streak_warning" })
+
+        // A refresh after the preference is turned off must clear the armed
+        // warning; refreshNotifications only re-adds it when still eligible.
+        service.scheduleAllNotifications(profile: UserProfile(streakWarningsEnabled: false))
+        await service.waitForPendingOperations()
+
+        XCTAssertNil(mockCenter.addedRequests.first { $0.identifier == "streak_warning" },
+                     "Re-arming daily notifications must clear a previously armed streak warning")
     }
 
     func testNotificationsRespectUserDisabledPreferences() async {
@@ -112,7 +199,7 @@ final class NotificationServiceTests: XCTestCase {
             eveningRemindersEnabled: false
         )
         service.scheduleAllNotifications(profile: profile)
-        try? await Task.sleep(for: .milliseconds(100))
+        await service.waitForPendingOperations()
 
         let morning = mockCenter.addedRequests.first { $0.identifier == "morning_challenge" }
         let evening = mockCenter.addedRequests.first { $0.identifier == "evening_reminder" }

@@ -68,6 +68,7 @@
 		E780F311F6F310D909EA46D0 /* DarkModePreference.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6455D33E9E372079FC16852E /* DarkModePreference.swift */; };
 		E84AA5DF4F5C6F2531E3E293 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C9F110D015B63153650F8E0 /* SettingsView.swift */; };
 		EA4E0BF19D9E4C329010B8A9 /* challenges.json in Resources */ = {isa = PBXBuildFile; fileRef = 2AC1EC2087DAC1FC12589659 /* challenges.json */; };
+		ECB1023E48F78F5C25A67310 /* NotificationWiringTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4CA19120E23773AE82C69EB /* NotificationWiringTests.swift */; };
 		ED54B0A200BB09430BA44193 /* BadgeProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE45B6A55566A5C6CD6F61D7 /* BadgeProgress.swift */; };
 		ED5D32C1E160AB70012BBF50 /* JourneyUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A27AF0C56105C1392BCAD569 /* JourneyUITests.swift */; };
 		F2580215BC5ADC33AA2E8200 /* FaithfullyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8095D01BF1DAA3353F9844F /* FaithfullyApp.swift */; };
@@ -159,6 +160,7 @@
 		E8C50D05FD014055C68FB56E /* AppEnvironmentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEnvironmentTests.swift; sourceTree = "<group>"; };
 		EA267EB7F91419AFE9915C21 /* JourneyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JourneyView.swift; sourceTree = "<group>"; };
 		F3D574F9F63666F724519FC6 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		F4CA19120E23773AE82C69EB /* NotificationWiringTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationWiringTests.swift; sourceTree = "<group>"; };
 		F8095D01BF1DAA3353F9844F /* FaithfullyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaithfullyApp.swift; sourceTree = "<group>"; };
 		FAF18DC773BF9B4454FCD472 /* DayDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayDetailView.swift; sourceTree = "<group>"; };
 		FFDC42639AF2F76056BA97E8 /* DailyWalkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyWalkView.swift; sourceTree = "<group>"; };
@@ -269,6 +271,7 @@
 				1C84840D14A258F54B26F511 /* IntegrationTests.swift */,
 				A2A318E32A093F40BE1C8A1A /* JourneyViewModelTests.swift */,
 				B8122C71833812BE9141D9FB /* NotificationServiceTests.swift */,
+				F4CA19120E23773AE82C69EB /* NotificationWiringTests.swift */,
 				61B34247D486F16BF764DFD3 /* SettingsViewModelTests.swift */,
 				012A5C11A1D363F4A5CF83A8 /* StreakCalculationTests.swift */,
 				4F1135EB5B3E4AF57AC89F08 /* TestHelpers.swift */,
@@ -525,6 +528,7 @@
 				1E6A0D7CDF33AB3F382CB7E5 /* IntegrationTests.swift in Sources */,
 				58401CC0AD276E46FC47065E /* JourneyViewModelTests.swift in Sources */,
 				FCF5947547F47468E4A409BE /* NotificationServiceTests.swift in Sources */,
+				ECB1023E48F78F5C25A67310 /* NotificationWiringTests.swift in Sources */,
 				7D9F89C437E48AC1623AA223 /* SettingsViewModelTests.swift in Sources */,
 				20A9C3D22D5152803C9CFF72 /* StreakCalculationTests.swift in Sources */,
 				09CDB7E9A8E4212113F3CFA8 /* TestHelpers.swift in Sources */,
