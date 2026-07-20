@@ -33,15 +33,46 @@ struct BadgeDefinition: Identifiable, Equatable {
 
     // MARK: - Category Badges
 
+    /// PRD specialty ladder display names per category, ordered by tier
+    /// (10 → 25 → 50 → 100). Ids stay `{category}_{beginner|devoted|warrior|master}`
+    /// so previously earned badges keep resolving after a rename.
+    static func specialtyNames(for category: ChallengeCategory) -> [String] {
+        switch category {
+        case .prayer:
+            return ["Prayer Beginner", "Prayer Devoted", "Prayer Warrior", "Prayer Master"]
+        case .scripture:
+            return ["Scripture Beginner", "Scripture Scholar", "Scripture Warrior", "Scripture Master"]
+        case .obedience:
+            return ["Obedience Beginner", "Faithful Follower", "Obedience Warrior", "Obedience Master"]
+        case .giving:
+            return ["Giver Beginner", "Generous Heart", "Sacrificial Giver", "Cheerful Giver"]
+        case .evangelism:
+            return ["Witness Beginner", "Witness Devoted", "Gospel Warrior", "Gospel Master"]
+        case .spiritualWarfare:
+            return ["Shield Bearer", "Armor Bearer", "Battle Warrior", "Overcomer"]
+        case .discipline:
+            return ["Discipline Beginner", "Steadfast Disciple", "Discipline Warrior", "Discipline Master"]
+        case .worshipAndThanks:
+            return ["Worship Beginner", "Grateful Heart", "Worship Warrior", "Worship Master"]
+        case .service:
+            return ["Service Beginner", "Willing Servant", "Service Warrior", "Servant Master"]
+        case .growth:
+            return ["Growth Beginner", "Rooted Disciple", "Growth Warrior", "Growth Master"]
+        }
+    }
+
     static func categoryBadges(for category: ChallengeCategory) -> [BadgeDefinition] {
-        let levels: [(Int, String)] = [(10, "Beginner"), (25, "Devoted"), (50, "Warrior"), (100, "Master")]
-        return levels.map { threshold, level in
+        let tiers: [(threshold: Int, idKey: String)] = [
+            (10, "beginner"), (25, "devoted"), (50, "warrior"), (100, "master")
+        ]
+        let names = specialtyNames(for: category)
+        return zip(tiers, names).map { tier, name in
             BadgeDefinition(
-                id: "\(category.rawValue)_\(level.lowercased())",
-                name: "\(category.displayName) \(level)",
+                id: "\(category.rawValue)_\(tier.idKey)",
+                name: name,
                 type: .category,
                 category: category,
-                threshold: threshold
+                threshold: tier.threshold
             )
         }
     }
