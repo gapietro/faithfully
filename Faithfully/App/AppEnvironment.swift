@@ -107,6 +107,7 @@ final class AppServices {
     let challengeService: ChallengeServiceProtocol
     let badgeService: BadgeServiceProtocol
     let notificationService: NotificationServiceProtocol
+    private let dateProvider: () -> Date
 
     let dailyWalkViewModel: DailyWalkViewModel
     let calendarViewModel: CalendarViewModel
@@ -120,13 +121,14 @@ final class AppServices {
         badgeService: BadgeServiceProtocol,
         notificationService: NotificationServiceProtocol,
         modelContext: ModelContext,
-        dateProvider: () -> Date
+        dateProvider: @escaping () -> Date
     ) {
         self.challenges = challenges
         self.profile = profile
         self.challengeService = challengeService
         self.badgeService = badgeService
         self.notificationService = notificationService
+        self.dateProvider = dateProvider
 
         let today = dateProvider()
         self.dailyWalkViewModel = DailyWalkViewModel(challengeService: challengeService, today: today)
@@ -140,6 +142,17 @@ final class AppServices {
     func refreshAfterCompletion() {
         dailyWalkViewModel.refresh()
         calendarViewModel.loadMonth()
+        journeyViewModel.refresh()
+    }
+
+    /// Foreground refresh: re-reads the live date so a day rollover while the
+    /// app stayed in memory moves Daily Walk and Calendar to the new day
+    /// (challenge, completed state, today/future boundary, grace windows) —
+    /// not just re-reads completion state for the launch day.
+    func refreshForCurrentDate() {
+        let today = dateProvider()
+        dailyWalkViewModel.refresh(for: today)
+        calendarViewModel.refresh(for: today)
         journeyViewModel.refresh()
     }
 }

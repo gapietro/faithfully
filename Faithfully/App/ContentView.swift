@@ -49,10 +49,11 @@ struct MainTabView: View {
                 }
         }
         .onChange(of: scenePhase) { _, newPhase in
-            // Re-read completion state on foreground so grace-period expiry or
-            // changes made while backgrounded are reflected without a relaunch.
+            // Re-read the current date and completion state on foreground so a
+            // day rollover, grace-period expiry, or changes made while
+            // backgrounded are reflected without a relaunch.
             if newPhase == .active {
-                services.refreshAfterCompletion()
+                services.refreshForCurrentDate()
             }
         }
     }

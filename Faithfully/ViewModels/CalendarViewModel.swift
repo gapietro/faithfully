@@ -9,7 +9,7 @@ final class CalendarViewModel {
     var currentMonth: Date
 
     private let challengeService: ChallengeServiceProtocol
-    private let today: Date
+    private var today: Date
 
     init(challengeService: ChallengeServiceProtocol, today: Date = .now) {
         self.challengeService = challengeService
@@ -27,6 +27,21 @@ final class CalendarViewModel {
     func previousMonth() {
         guard let prev = Calendar.current.date(byAdding: .month, value: -1, to: currentMonth) else { return }
         currentMonth = prev
+        loadMonth()
+    }
+
+    /// Rolls the calendar to the current day: if the day changed while the app
+    /// stayed in memory, the today/future boundary and grace windows must be
+    /// re-evaluated against the new day. Follows a month rollover only when the
+    /// user was viewing the current month, preserving their browsing position.
+    func refresh(for newToday: Date) {
+        let calendar = Calendar.current
+        if !calendar.isDate(newToday, inSameDayAs: today) {
+            if calendar.isDate(currentMonth, equalTo: today, toGranularity: .month) {
+                currentMonth = newToday
+            }
+            today = newToday
+        }
         loadMonth()
     }
 
