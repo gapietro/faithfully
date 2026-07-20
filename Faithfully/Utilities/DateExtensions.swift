@@ -7,11 +7,12 @@ extension Date {
         components.month = month
         components.day = day
         components.hour = 12
-        return Calendar.current.date(from: components)!
+        // Valid components always resolve; fall back to the epoch rather than trapping.
+        return Calendar.current.date(from: components) ?? Date(timeIntervalSince1970: 0)
     }
 
     func addingDays(_ days: Int) -> Date {
-        Calendar.current.date(byAdding: .day, value: days, to: self)!
+        Calendar.current.date(byAdding: .day, value: days, to: self) ?? self
     }
 
     var startOfDay: Date {

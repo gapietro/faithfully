@@ -2,15 +2,13 @@ import SwiftUI
 import SwiftData
 
 struct JourneyView: View {
-    @Environment(\.modelContext) private var modelContext
-    @State private var vm: JourneyViewModel?
+    let vm: JourneyViewModel
     @State private var searchText = ""
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 24) {
-                    if let vm {
                         // Stats
                         HStack(spacing: 24) {
                             StatView(title: "Completed", value: "\(vm.totalCompleted)")
@@ -88,25 +86,11 @@ struct JourneyView: View {
                                 .accessibilityIdentifier("journalEntry_\(entry.id)")
                             }
                         }
-                    } else {
-                        ProgressView()
-                    }
                 }
                 .padding()
             }
             .navigationTitle("My Journey")
-            .onAppear { setupViewModel() }
         }
-    }
-
-    private func setupViewModel() {
-        guard vm == nil else { return }
-        let challenges = (try? ChallengeLoader.loadChallenges()) ?? []
-        let badgeService = BadgeService(modelContext: modelContext)
-        let challengeService = ChallengeService(
-            modelContext: modelContext, challenges: challenges, badgeService: badgeService
-        )
-        vm = JourneyViewModel(challengeService: challengeService, badgeService: badgeService)
     }
 }
 

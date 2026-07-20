@@ -17,7 +17,7 @@ final class CalendarViewModelTests: XCTestCase {
     }
 
     private func makeService(today: Date) -> ChallengeService {
-        ChallengeService(modelContext: context, challenges: challenges, badgeService: badgeService, dateProvider: { today })
+        try! ChallengeService(modelContext: context, challenges: challenges, badgeService: badgeService, dateProvider: { today })
     }
 
     func testCalendarDaysContainsCorrectNumberOfDaysForCurrentMonth() {
@@ -104,6 +104,83 @@ final class CalendarViewModelTests: XCTestCase {
         let day = vm.calendarDays[5]
         vm.selectDay(day)
         XCTAssertEqual(vm.selectedDay, day)
+    }
+
+    func testLeapYearFebruaryHas29Days() {
+        let leapFeb = Date.from(year: 2028, month: 2, day: 10)
+        let service = makeService(today: leapFeb)
+        let vm = CalendarViewModel(challengeService: service, today: leapFeb)
+        XCTAssertEqual(vm.calendarDays.count, 29)
+    }
+
+    func testNonLeapYearFebruaryHas28Days() {
+        let feb = Date.from(year: 2026, month: 2, day: 10)
+        let service = makeService(today: feb)
+        let vm = CalendarViewModel(challengeService: service, today: feb)
+        XCTAssertEqual(vm.calendarDays.count, 28)
+    }
+
+    func testNextMonthCrossesYearBoundary() {
+        let december = Date.from(year: 2026, month: 12, day: 15)
+        let service = makeService(today: december)
+        let vm = CalendarViewModel(challengeService: service, today: december)
+
+        vm.nextMonth()
+        let components = Calendar.current.dateComponents([.year, .month], from: vm.currentMonth)
+        XCTAssertEqual(components.year, 2027)
+        XCTAssertEqual(components.month, 1)
+        XCTAssertEqual(vm.calendarDays.count, 31)
+    }
+
+    func testPreviousMonthCrossesYearBoundary() {
+        let january = Date.from(year: 2026, month: 1, day: 15)
+        let service = makeService(today: january)
+        let vm = CalendarViewModel(challengeService: service, today: january)
+
+        vm.previousMonth()
+        let components = Calendar.current.dateComponents([.year, .month], from: vm.currentMonth)
+        XCTAssertEqual(components.year, 2025)
+        XCTAssertEqual(components.month, 12)
+        XCTAssertEqual(vm.calendarDays.count, 31)
+    }
+
+    func testCompletionOnLastDayOfMonthIsMarkedCompleted() throws {
+        // Regression guard for the month-range fetch: a completion scheduled on the
+        // last day of the month must be visible in the grid.
+        let today = Date.from(year: 2026, month: 4, day: 30)
+        let service = makeService(today: today)
+        let challenge = service.challengeForDate(today)
+        _ = try service.completeChallenge(challenge, on: today, journal: nil)
+
+        let vm = CalendarViewModel(challengeService: service, today: today)
+        let day30 = vm.calendarDays.first { Calendar.current.component(.day, from: $0.date) == 30 }
+        XCTAssertEqual(day30?.status, .completed)
+    }
+
+    func testReusedChallengeIdOnlyMarksItsOwnDayCompleted() throws {
+        // Two days in the grid can share a challenge ID (scheduler reuse). Completing
+        // one must not mark the other. Simulate by inserting a completion whose
+        // challengeId matches another grid day's challenge.
+        let today = Date.from(year: 2026, month: 4, day: 15)
+        let service = makeService(today: today)
+        let april10 = Date.from(year: 2026, month: 4, day: 10)
+        let april20 = Date.from(year: 2026, month: 4, day: 20)
+        // Reuse day 20's challenge ID on day 10's completion record
+        let reusedChallenge = service.challengeForDate(april20)
+        let completion = CompletedChallenge(
+            challengeId: reusedChallenge.id,
+            challengeCategory: reusedChallenge.category.rawValue,
+            completedDate: april10,
+            scheduledDate: april10
+        )
+        context.insert(completion)
+        try context.save()
+
+        let vm = CalendarViewModel(challengeService: service, today: today)
+        let day10 = vm.calendarDays.first { Calendar.current.component(.day, from: $0.date) == 10 }
+        let day20 = vm.calendarDays.first { Calendar.current.component(.day, from: $0.date) == 20 }
+        XCTAssertEqual(day10?.status, .completed, "The scheduled day itself must show completed")
+        XCTAssertEqual(day20?.status, .future, "A later day sharing the challenge ID must not show completed")
     }
 
     func testCompleteGracePeriodCallsChallengeServiceAndUpdatesCalendar() throws {

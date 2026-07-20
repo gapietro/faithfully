@@ -8,7 +8,18 @@ final class ChallengeSchedulerTests: XCTestCase {
 
     override func setUpWithError() throws {
         challenges = try ChallengeLoader.loadChallenges(from: Bundle(for: type(of: self)))
-        scheduler = ChallengeScheduler(challenges: challenges)
+        scheduler = try XCTUnwrap(ChallengeScheduler(challenges: challenges))
+    }
+
+    func testInitFailsWithEmptyChallengePool() {
+        XCTAssertNil(ChallengeScheduler(challenges: []),
+                     "Scheduler must not be constructible with an empty pool")
+    }
+
+    func testInitFailsWithGivingOnlyPool() {
+        let givingOnly = challenges.filter { $0.category == .giving }
+        XCTAssertNil(ChallengeScheduler(challenges: givingOnly),
+                     "Scheduler must not be constructible without non-giving challenges")
     }
 
     func testReturnsAChallengeForAnyValidDate() {

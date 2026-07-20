@@ -1,14 +1,17 @@
 import Foundation
 
 struct ChallengeScheduler {
-    private let challenges: [DailyChallenge]
     private let givingChallenges: [DailyChallenge]
     private let nonGivingChallenges: [DailyChallenge]
 
-    init(challenges: [DailyChallenge]) {
-        self.challenges = challenges
+    /// Fails when the non-giving pool is empty: every non-first-Saturday day draws
+    /// from that pool, so an empty pool would mean modulo-by-zero and no challenge
+    /// to show. Callers must fail closed instead of constructing a broken scheduler.
+    init?(challenges: [DailyChallenge]) {
+        let nonGiving = challenges.filter { $0.category != .giving }
+        guard !nonGiving.isEmpty else { return nil }
         self.givingChallenges = challenges.filter { $0.category == .giving }
-        self.nonGivingChallenges = challenges.filter { $0.category != .giving }
+        self.nonGivingChallenges = nonGiving
     }
 
     func challengeForDate(_ date: Date, yearOffset: Int = 0) -> DailyChallenge {

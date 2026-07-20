@@ -23,9 +23,7 @@ final class JourneyViewModel {
         currentStreak = challengeService.calculateStreak()
 
         // Load all completions
-        let farPast = Date.from(year: 2020, month: 1, day: 1)
-        let farFuture = Date.from(year: 2030, month: 12, day: 31)
-        let completions = challengeService.fetchCompletions(for: farPast...farFuture)
+        let completions = allCompletions()
         totalCompleted = completions.count
 
         // Journey badge progress — find next unearned or highest earned
@@ -51,25 +49,7 @@ final class JourneyViewModel {
         }
 
         // Journal entries — reverse chronological
-        let challenges = challengeService.loadChallenges()
-        let challengeMap = Dictionary(challenges.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
-
-        journalEntries = completions
-            .filter { $0.journalEntry != nil && !$0.journalEntry!.isEmpty }
-            .sorted { $0.completedDate > $1.completedDate }
-            .compactMap { completion in
-                guard let challenge = challengeMap[completion.challengeId],
-                      let journal = completion.journalEntry else { return nil }
-                return JournalDisplayItem(
-                    id: completion.id,
-                    challengeId: completion.challengeId,
-                    challengeTitle: challenge.title,
-                    category: challenge.category,
-                    date: completion.completedDate,
-                    journalText: journal,
-                    scriptureReference: challenge.scriptureReference
-                )
-            }
+        journalEntries = journalItems(from: completions)
     }
 
     func searchJournal(_ query: String) {
@@ -77,32 +57,7 @@ final class JourneyViewModel {
             refresh()
             return
         }
-        let lowered = query.lowercased()
-        let farPast = Date.from(year: 2020, month: 1, day: 1)
-        let farFuture = Date.from(year: 2030, month: 12, day: 31)
-        let completions = challengeService.fetchCompletions(for: farPast...farFuture)
-        let challenges = challengeService.loadChallenges()
-        let challengeMap = Dictionary(challenges.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
-
-        journalEntries = completions
-            .filter { $0.journalEntry != nil && !$0.journalEntry!.isEmpty }
-            .sorted { $0.completedDate > $1.completedDate }
-            .compactMap { completion in
-                guard let challenge = challengeMap[completion.challengeId],
-                      let journal = completion.journalEntry else { return nil }
-                let matchesText = journal.lowercased().contains(lowered)
-                let matchesTitle = challenge.title.lowercased().contains(lowered)
-                guard matchesText || matchesTitle else { return nil }
-                return JournalDisplayItem(
-                    id: completion.id,
-                    challengeId: completion.challengeId,
-                    challengeTitle: challenge.title,
-                    category: challenge.category,
-                    date: completion.completedDate,
-                    journalText: journal,
-                    scriptureReference: challenge.scriptureReference
-                )
-            }
+        journalEntries = journalItems(from: allCompletions(), matching: query)
     }
 
     func shareEntry(_ entry: JournalDisplayItem) -> ShareCardData {
@@ -114,5 +69,39 @@ final class JourneyViewModel {
             journalText: entry.journalText,
             streakCount: currentStreak
         )
+    }
+
+    private func allCompletions() -> [CompletedChallenge] {
+        let farPast = Date.from(year: 2020, month: 1, day: 1)
+        let farFuture = Date.from(year: 2030, month: 12, day: 31)
+        return challengeService.fetchCompletions(for: farPast...farFuture)
+    }
+
+    private func journalItems(from completions: [CompletedChallenge], matching query: String? = nil) -> [JournalDisplayItem] {
+        let challenges = challengeService.loadChallenges()
+        let challengeMap = Dictionary(challenges.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        let lowered = query?.lowercased()
+
+        return completions
+            .sorted { $0.completedDate > $1.completedDate }
+            .compactMap { completion in
+                guard let challenge = challengeMap[completion.challengeId],
+                      let journal = completion.journalEntry,
+                      !journal.isEmpty else { return nil }
+                if let lowered {
+                    let matchesText = journal.lowercased().contains(lowered)
+                    let matchesTitle = challenge.title.lowercased().contains(lowered)
+                    guard matchesText || matchesTitle else { return nil }
+                }
+                return JournalDisplayItem(
+                    id: completion.id,
+                    challengeId: completion.challengeId,
+                    challengeTitle: challenge.title,
+                    category: challenge.category,
+                    date: completion.completedDate,
+                    journalText: journal,
+                    scriptureReference: challenge.scriptureReference
+                )
+            }
     }
 }
