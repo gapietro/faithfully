@@ -43,6 +43,14 @@ final class CalendarViewModel {
             today = newToday
         }
         loadMonth()
+        // An open day detail must reflect the rebuilt truth: re-bind the
+        // selection to the same date's new CalendarDay (status and grace
+        // window may have changed), or drop it if the day left the grid.
+        if let selected = selectedDay {
+            selectedDay = calendarDays.first {
+                Calendar.current.isDate($0.date, inSameDayAs: selected.date)
+            }
+        }
     }
 
     func selectDay(_ day: CalendarDay) {
