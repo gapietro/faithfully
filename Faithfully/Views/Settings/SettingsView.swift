@@ -75,9 +75,16 @@ struct SettingsView: View {
                         HStack {
                             Text("Version")
                             Spacer()
-                            Text("1.0")
+                            Text(AppInfo.current())
                                 .foregroundStyle(.secondary)
                         }
+                        .accessibilityElement(children: .combine)
+                        .accessibilityIdentifier("versionRow")
+
+                        Text("No account, no ads, no tracking. Everything you do in Faithfully stays on this device.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .accessibilityIdentifier("privacyBlurb")
                     }
                 }
                 .navigationTitle("Settings")
