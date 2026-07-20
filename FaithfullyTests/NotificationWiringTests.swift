@@ -86,6 +86,30 @@ final class NotificationWiringTests: XCTestCase {
                         "Recovering a past day must not cancel today's evening reminder")
     }
 
+    func testGraceRecoveryLiftingStreakPastSevenArmsStreakWarning() async throws {
+        let today = Date.from(year: 2026, month: 6, day: 15)
+        let services = try makeServices(today: today)
+        // Completions on the 7th–12th and the 14th: the gap on the 13th holds
+        // the streak at 1 until a grace recovery bridges it to 8.
+        try insertCompletions(endingOn: today.addingDays(-3), count: 6, service: services.challengeService)
+        try insertCompletions(endingOn: today.addingDays(-1), count: 1, service: services.challengeService)
+        services.refreshNotifications()
+        await notificationService.waitForPendingOperations()
+        XCTAssertNil(pending("streak_warning"),
+                     "A broken streak below 7 must not arm the warning")
+
+        let graceDay = try XCTUnwrap(services.calendarViewModel.calendarDays.first {
+            Calendar.current.component(.day, from: $0.date) == 13
+        })
+        services.calendarViewModel.completeGracePeriod(graceDay, journal: nil)
+        await notificationService.waitForPendingOperations()
+
+        XCTAssertNotNil(pending("streak_warning"),
+                        "A grace recovery that lifts the streak past 7 with today still open must arm the warning immediately, not wait for the next foreground pass")
+        XCTAssertNotNil(pending("evening_reminder"),
+                        "Today is still incomplete, so the evening reminder stays")
+    }
+
     // MARK: - #7 Settings changes reschedule
 
     func testDisablingEveningReminderInSettingsRemovesItFromPending() async throws {

@@ -161,16 +161,17 @@ final class AppServices {
         journeyViewModel.refresh()
     }
 
-    /// Runs after a completion is persisted: refreshes the tabs, cancels
-    /// today's evening reminder and streak warning when the completed day *is*
-    /// today (a grace recovery of a past day leaves today's reminders alone),
-    /// and fires a celebration for any newly earned badges.
+    /// Runs after a completion is persisted: refreshes the tabs, re-runs the
+    /// notification policy, and fires a celebration for any newly earned
+    /// badges. The full policy pass — not just a same-day cancel — is what
+    /// makes a grace recovery that lifts the streak past 7 arm the streak
+    /// warning immediately; completing today still cancels tonight's evening
+    /// reminder and streak warning via the policy's completed-today branch.
+    /// Badge celebrations are enqueued after the policy pass so they can never
+    /// race the daily rebuild (whose selective remove spares badge_* anyway).
     func handleCompletionRecorded(on scheduledDate: Date, newBadges: [BadgeDefinition]) {
         refreshAfterCompletion()
-
-        if Calendar.current.isDate(scheduledDate, inSameDayAs: dateProvider()) {
-            notificationService.cancelTodayReminders()
-        }
+        refreshNotifications()
 
         guard !newBadges.isEmpty else { return }
         let earned = badgeService.earnedBadges()
