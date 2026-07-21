@@ -14,7 +14,7 @@ One-page status for the owner. Detail lives in the linked docs.
 | CloudKit | ⚪ Deferred (v1.x) | v1 is local SwiftData only, by decision — [CLOUDKIT_DECISION.md](CLOUDKIT_DECISION.md) |
 | Real badge art | 🟡 Outstanding | Recraft pack not commissioned; placeholder art ships internally fine |
 | Marketing screenshots | 🟡 Planned | Sizes + storyboard documented; capture after content/icon final — [SCREENSHOTS_AND_ICON.md](SCREENSHOTS_AND_ICON.md) |
-| App icon | 🟡 Placeholder | Navy/cross placeholder; final 1024×1024 needed before store |
+| App icon | 🟢 Ready | Recraft v3 open-book + cross installed — [icons/README.md](icons/README.md) |
 
 **Bottom line:** scripture/licensing and privacy URL are green. Public release now waits on icon + screenshots (#26) and the owner's signing / explicit OK for external TF (#27, #28).
 
