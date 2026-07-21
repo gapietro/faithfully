@@ -29,6 +29,6 @@ Style pass (later, with real icon art): consistent device frame or flat full-ble
 ## Blocking realities
 
 - **Screenshots should wait for the real app icon and any content fix** — shots showing "ESV" text that is actually NIV (see `docs/content/SCRIPTURE_SPOT_CHECK.md`) shouldn't be marketing material. Capture after the content/licensing resolution.
-- **App icon is a placeholder.** `Faithfully/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon.png` is the Sprint C placeholder (navy background, simple cross). Replace with final 1024×1024 art (single-size icon; Xcode generates variants) **before** store submission — and before screenshots, since the icon appears in nothing but still sets the listing's visual identity alongside them. Real badge art (Recraft pack) is likewise outstanding; the Journey screenshot will look better after it lands.
+- **App icon is installed.** `Faithfully/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon.png` is the Greg-selected Recraft v3 (open book + gold cross). Candidates live under `docs/ship/icons/`. **Screenshots still outstanding** — capture after rebuilding/running the app with the new icon.
 
 No screenshot PNGs were captured in Sprint E — documenting was the deliverable; capture is quick once content/icon are final.
