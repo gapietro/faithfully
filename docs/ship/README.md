@@ -1,4 +1,4 @@
-# Ship Readiness — Sprint F1 summary (2026-07-20)
+# Ship Readiness — Sprint F2 screenshots (2026-07-30)
 
 One-page status for Greg. Detail lives in the linked docs.
 
@@ -13,9 +13,9 @@ One-page status for Greg. Detail lives in the linked docs.
 | Signing / TestFlight | 🟡 Greg's clicks | Runbook ready; internal TestFlight possible anytime — [TESTFLIGHT_RUNBOOK.md](TESTFLIGHT_RUNBOOK.md) |
 | CloudKit | ⚪ Deferred (v1.x) | v1 is local SwiftData only, by decision — [CLOUDKIT_DECISION.md](CLOUDKIT_DECISION.md) |
 | Real badge art | 🟡 Outstanding | Recraft pack not commissioned; placeholder art ships internally fine |
-| Marketing screenshots | 🟡 Planned | Sizes + storyboard documented; capture after content/icon final — [SCREENSHOTS_AND_ICON.md](SCREENSHOTS_AND_ICON.md) |
+| Marketing screenshots | 🟢 Ready | 6× 1320×2868 PNGs in [screenshots/6.9/](screenshots/6.9/) — [SCREENSHOTS_AND_ICON.md](SCREENSHOTS_AND_ICON.md) |
 | App icon | 🟢 Ready | Recraft v3 open-book + cross installed — [icons/README.md](icons/README.md) |
 
-**Bottom line:** scripture/licensing and privacy URL are green. Public release now waits on icon + screenshots (#26) and Greg's signing / explicit OK for external TF (#27, #28).
+**Bottom line:** Icon + screenshots green (#26). Public release waits on Greg's signing / explicit OK for external TF (#27, #28).
 
 Honest launch checklist: [`sparc/completion/checklist.md`](../../sparc/completion/checklist.md).

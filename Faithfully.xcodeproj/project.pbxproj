@@ -27,6 +27,7 @@
 		3C8DB7EF750C25D868EB1B88 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0011191C28B01F3B06B8D632 /* Theme.swift */; };
 		3EEF85F3C8562871FED7D891 /* GracePeriodTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 367AA3DC56C1C6FB78899646 /* GracePeriodTests.swift */; };
 		405E36F1F235143788943FE8 /* ChallengeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0648FA1C864A0347BDCE9783 /* ChallengeService.swift */; };
+		47CF0BF53F9906DE8E2D7270 /* ScreenshotStoryboardTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16FD0B741CC29F8297D1EF03 /* ScreenshotStoryboardTests.swift */; };
 		47F909F85F5306FFC67E0310 /* AppInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AE914DE3D6DDC914A10EA4E /* AppInfo.swift */; };
 		49E36B30BA57C2A8336A4198 /* BadgeType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CE0FF4F36D3DACDC3093E21 /* BadgeType.swift */; };
 		4B8B25A0654C8F88E8B2507C /* BadgeEvaluator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 950A441B84B488EB25DBCE4C /* BadgeEvaluator.swift */; };
@@ -109,6 +110,7 @@
 		0AA434CB8B30887102A76D77 /* DailyWalkViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyWalkViewModel.swift; sourceTree = "<group>"; };
 		0C315CB3CE3641793CCDCCA9 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		11C0AEBB32632832F69B4E08 /* ChallengeSchedulerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeSchedulerTests.swift; sourceTree = "<group>"; };
+		16FD0B741CC29F8297D1EF03 /* ScreenshotStoryboardTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotStoryboardTests.swift; sourceTree = "<group>"; };
 		1979FDB28EF6789FCCFAFB61 /* HomeScreenUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeScreenUITests.swift; sourceTree = "<group>"; };
 		1AE914DE3D6DDC914A10EA4E /* AppInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppInfo.swift; sourceTree = "<group>"; };
 		1C84840D14A258F54B26F511 /* IntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntegrationTests.swift; sourceTree = "<group>"; };
@@ -233,6 +235,7 @@
 				1979FDB28EF6789FCCFAFB61 /* HomeScreenUITests.swift */,
 				A27AF0C56105C1392BCAD569 /* JourneyUITests.swift */,
 				C4633BCA761A773CACA56C30 /* OnboardingUITests.swift */,
+				16FD0B741CC29F8297D1EF03 /* ScreenshotStoryboardTests.swift */,
 				93B7089D45C604FF9B8A04C3 /* SettingsUITests.swift */,
 			);
 			path = FaithfullyUITests;
@@ -564,6 +567,7 @@
 				D2351C05B6290F7FB8A58049 /* HomeScreenUITests.swift in Sources */,
 				ED5D32C1E160AB70012BBF50 /* JourneyUITests.swift in Sources */,
 				6DD47A1B457B8BDE6093EB97 /* OnboardingUITests.swift in Sources */,
+				47CF0BF53F9906DE8E2D7270 /* ScreenshotStoryboardTests.swift in Sources */,
 				D1AC06C345ACDF65186C1B86 /* SettingsUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
