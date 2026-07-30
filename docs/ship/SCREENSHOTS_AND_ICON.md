@@ -6,29 +6,50 @@ App Store Connect currently requires only the largest iPhone size and scales it 
 
 | Display | Portrait pixels | Capture device | Status |
 |---|---|---|---|
-| **6.9" (required)** | 1320 × 2868 | iPhone 17 Pro Max / 16 Pro Max simulator | ⛔ not captured |
+| **6.9" (required)** | 1320 × 2868 | iPhone 17 Pro Max simulator | ✅ captured 2026-07-30 |
 | 6.5"/6.7" (optional override) | 1290 × 2796 or 1284 × 2778 | iPhone 17 / 15 Pro Max simulator | optional |
 
-No iPad set needed (iPhone-only target, portrait-only). 3–10 screenshots per set; plan for 6 below. Simulator capture: run the app, then `xcrun simctl io booted screenshot shot.png` (simulator captures are exact device-resolution PNGs — ASC accepts them).
+No iPad set needed (iPhone-only target, portrait-only). 3–10 screenshots per set; plan for 6 below. Simulator capture: full-device PNG via UITest `XCUIScreen.main.screenshot()` (exact device resolution — ASC accepts them).
 
-## Storyboard — 6 shots
+## Storyboard — 6 shots (checked in)
 
-Order matters: the first 2–3 are what shows in search results.
+Files live under [`screenshots/6.9/`](screenshots/6.9/):
 
-1. **Daily Walk (hero)** — today's challenge card with scripture, category, and Complete button. Caption idea: "One challenge. Every day."
-2. **Completion moment** — completion sheet / celebration with journal field. "Walk it out, then write it down."
-3. **Calendar** — month view with completed days filled and today highlighted. "Watch your year fill in."
-4. **Journey / badges** — streak + earned badges grid. "Milestones on your walk."
-5. **Onboarding / promise screen** — the no-account, offline pitch. "No account. No ads. Yours alone."
-6. **Settings / appearance** — notification times + dark mode (could swap for a dark-mode Daily Walk shot instead, which markets better).
+| # | File | Screen | Caption idea |
+|---|------|--------|----------------|
+| 1 | `01_daily_walk.png` | Daily Walk hero — scripture card + Complete | "One challenge. Every day." |
+| 2 | `02_completion.png` | Completion / Reflection sheet + journal | "Walk it out, then write it down." |
+| 3 | `03_calendar.png` | Calendar month grid | "Watch your year fill in." |
+| 4 | `04_journey.png` | Journey stats + badges | "Milestones on your walk." |
+| 5 | `05_onboarding.png` | Welcome / promise | "No account. No ads. Yours alone." *(copy can be refined in ASC)* |
+| 6 | `06_settings.png` | Settings / appearance + notifications | Settings polish |
 
-Optional 7–8: a dark-mode variant of shot 1; a giving-challenge example to show challenge variety.
+Optional later: dark-mode Daily Walk; giving-challenge variety shot.
 
-Style pass (later, with real icon art): consistent device frame or flat full-bleed, caption text top, one accent color from the app palette (navy/gold/cream).
+## How to re-capture
 
-## Blocking realities
+```bash
+cd path/to/faithfully
+UDID=$(xcrun simctl list devices available | awk -F '[()]' '/iPhone 17 Pro Max/ {print $2; exit}')
+export FAITHFULLY_SCREENSHOT_DIR=/tmp/faithfully-screenshots-6.9
+rm -rf "$FAITHFULLY_SCREENSHOT_DIR" && mkdir -p "$FAITHFULLY_SCREENSHOT_DIR"
+xcrun simctl boot "$UDID" 2>/dev/null || true
+xcodegen generate
+xcodebuild test -scheme Faithfully \
+  -destination "platform=iOS Simulator,id=$UDID" \
+  -only-testing:FaithfullyUITests/ScreenshotStoryboardTests/testCaptureStoryboard
+cp -f "$FAITHFULLY_SCREENSHOT_DIR"/*.png docs/ship/screenshots/6.9/
+```
 
-- **Screenshots should wait for the real app icon and any content fix** — shots showing "ESV" text that is actually NIV (see `docs/content/SCRIPTURE_SPOT_CHECK.md`) shouldn't be marketing material. Capture after the content/licensing resolution.
-- **App icon is installed.** `Faithfully/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon.png` is the the owner-selected Recraft v3 (open book + gold cross). Candidates live under `docs/ship/icons/`. **Screenshots still outstanding** — capture after rebuilding/running the app with the new icon.
+Driver: `FaithfullyUITests/ScreenshotStoryboardTests.swift`  
+Uses launch arg `-hasCompletedOnboarding YES/NO` and accessibility IDs. Unique MD5s required (no duplicate frames).
 
-No screenshot PNGs were captured in Sprint E — documenting was the deliverable; capture is quick once content/icon are final.
+## App icon
+
+**Installed.** `Faithfully/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon.png` is the owner-selected Recraft v3 (open book + gold cross). Candidates under `docs/ship/icons/`.
+
+## Blocking realities (resolved for v1 capture)
+
+- Scripture strategy settled (WEB + KJV PD) — shots show shipping text.
+- Icon final before capture.
+- Prefer UITest full-screen PNG over flaky host-window grabs.
