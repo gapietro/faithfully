@@ -27,9 +27,8 @@ final class BadgeService: BadgeServiceProtocol {
         let completions = fetchAllCompletions()
         let totalCompleted = completions.count
 
-        // Calculate streak from scheduled dates
-        let scheduledDates = completions.map(\.scheduledDate)
-        let currentStreak = StreakCalculator.calculateStreak(completionDates: scheduledDates)
+        // Streak from frozen civil days, never from re-read instants.
+        let currentStreak = StreakCalculator.calculateStreak(completedDayKeys: completions.map(\.dayKey))
 
         // Count per category
         var categoryCounts: [ChallengeCategory: Int] = [:]
@@ -80,8 +79,7 @@ final class BadgeService: BadgeServiceProtocol {
         case .journey:
             current = completions.count
         case .streak:
-            let dates = completions.map(\.scheduledDate)
-            current = StreakCalculator.calculateStreak(completionDates: dates)
+            current = StreakCalculator.calculateStreak(completedDayKeys: completions.map(\.dayKey))
         case .category:
             if let cat = badge.category {
                 current = completions.filter { $0.challengeCategory == cat.rawValue }.count
