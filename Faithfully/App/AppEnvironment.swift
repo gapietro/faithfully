@@ -17,26 +17,53 @@ final class AppEnvironment {
 
     private(set) var state: LoadState = .loading
 
+    /// Non-nil when the on-disk store could not be opened and the app is running
+    /// on an in-memory stand-in. Surfaced by ContentView; nothing the user does
+    /// in this state will persist, and they are told so.
+    private(set) var storeFailure: PersistenceError?
+
+    /// Set by the app entry point. Rebuilds the store after the user explicitly
+    /// asks to reset an unreadable one.
+    var onResetStore: (() -> Void)?
+
     var services: AppServices? {
         if case .ready(let services) = state { return services }
         return nil
     }
 
-    private let modelContext: ModelContext
+    private let persistence: PersistenceCoordinating
     private let loadChallenges: () throws -> [DailyChallenge]
     private let notificationService: NotificationServiceProtocol
     private let dateProvider: () -> Date
 
-    init(
+    convenience init(
         modelContext: ModelContext,
         loadChallenges: @escaping () throws -> [DailyChallenge] = { try ChallengeLoader.loadChallenges() },
         notificationService: NotificationServiceProtocol = NotificationService(),
-        dateProvider: @escaping () -> Date = { .now }
+        dateProvider: @escaping () -> Date = { .now },
+        storeFailure: PersistenceError? = nil
     ) {
-        self.modelContext = modelContext
+        self.init(
+            persistence: PersistenceCoordinator(context: modelContext),
+            loadChallenges: loadChallenges,
+            notificationService: notificationService,
+            dateProvider: dateProvider,
+            storeFailure: storeFailure
+        )
+    }
+
+    init(
+        persistence: PersistenceCoordinating,
+        loadChallenges: @escaping () throws -> [DailyChallenge] = { try ChallengeLoader.loadChallenges() },
+        notificationService: NotificationServiceProtocol = NotificationService(),
+        dateProvider: @escaping () -> Date = { .now },
+        storeFailure: PersistenceError? = nil
+    ) {
+        self.persistence = persistence
         self.loadChallenges = loadChallenges
         self.notificationService = notificationService
         self.dateProvider = dateProvider
+        self.storeFailure = storeFailure
         load()
     }
 
@@ -48,22 +75,34 @@ final class AppEnvironment {
         state = .loading
         do {
             let challenges = try loadChallenges()
-            let profile = bootstrapProfile()
-            let badgeService = BadgeService(modelContext: modelContext)
+            let profile = try bootstrapProfile()
+            let badgeService = BadgeService(persistence: persistence)
             let challengeService = try ChallengeService(
-                modelContext: modelContext,
+                persistence: persistence,
                 challenges: challenges,
                 badgeService: badgeService,
                 enrollmentDate: profile.startDate,
                 dateProvider: dateProvider
             )
+
+            // Reconciliation on launch. Awarding is idempotent — it skips badges
+            // already earned — so this is a cheap standing guarantee that the
+            // badge set matches the completions actually on disk, whatever
+            // happened during a previous run.
+            //
+            // Best-effort on purpose, and the only remaining `try?` on a write:
+            // this is a repair the user never asked for, so a failure must leave
+            // the badge set exactly as it was and let the next launch retry,
+            // not block the app from starting.
+            try? persistence.transaction { _ = badgeService.evaluateAndStageAwards() }
+
             let services = AppServices(
                 challenges: challenges,
                 profile: profile,
                 challengeService: challengeService,
                 badgeService: badgeService,
                 notificationService: notificationService,
-                modelContext: modelContext,
+                persistence: persistence,
                 dateProvider: dateProvider
             )
             challengeService.onCompletionRecorded = { [weak services] scheduledDate, newBadges in
@@ -77,9 +116,13 @@ final class AppEnvironment {
 
     /// Fetches the existing profile or creates it exactly once per install.
     /// Every consumer (tabs, settings, onboarding) sees this same profile.
-    private func bootstrapProfile() -> UserProfile {
-        let descriptor = FetchDescriptor<UserProfile>()
-        if let existing = ((try? modelContext.fetch(descriptor)) ?? []).first {
+    ///
+    /// A failed fetch now propagates instead of collapsing to "no profile
+    /// found". Swallowing it meant a transient read error created a *second*
+    /// profile — a new enrollment date, reset preferences, and two owners of
+    /// state that is supposed to be unique.
+    private func bootstrapProfile() throws -> UserProfile {
+        if let existing = try persistence.fetch(FetchDescriptor<UserProfile>()).first {
             return existing
         }
         // Enroll on the app's notion of today, not the wall clock: the injected
@@ -87,13 +130,14 @@ final class AppEnvironment {
         // an enrollment date drawn from elsewhere would put the boundary out of
         // step with the calendar the user is actually looking at.
         let profile = UserProfile(startDate: dateProvider())
-        modelContext.insert(profile)
-        try? modelContext.save()
+        try persistence.transaction { persistence.insert(profile) }
         return profile
     }
 
     private func errorMessage(for error: Error) -> String {
         switch error {
+        case let persistenceError as PersistenceError:
+            return persistenceError.message
         case ChallengeLoader.LoadError.fileNotFound:
             return "The challenge content could not be found. Please try again, or reinstall the app if the problem persists."
         case ChallengeLoader.LoadError.decodingFailed:
@@ -127,7 +171,7 @@ final class AppServices {
         challengeService: ChallengeServiceProtocol,
         badgeService: BadgeServiceProtocol,
         notificationService: NotificationServiceProtocol,
-        modelContext: ModelContext,
+        persistence: PersistenceCoordinating,
         dateProvider: @escaping () -> Date
     ) {
         self.challenges = challenges
@@ -145,7 +189,7 @@ final class AppServices {
         )
         self.calendarViewModel = CalendarViewModel(challengeService: challengeService, today: today)
         self.journeyViewModel = JourneyViewModel(challengeService: challengeService, badgeService: badgeService)
-        self.settingsViewModel = SettingsViewModel(modelContext: modelContext)
+        self.settingsViewModel = SettingsViewModel(persistence: persistence, profile: profile)
 
         // Settings is the single writer of preferences; every save flows back
         // through here so the other tabs and the pending notifications always

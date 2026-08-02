@@ -2,21 +2,28 @@ import Foundation
 import SwiftData
 
 protocol BadgeServiceProtocol {
+    /// Inserts any newly earned badges into the context **without saving**, and
+    /// returns them. The caller commits, so a completion and the badges it earns
+    /// land in one transaction instead of two independent ones.
     @discardableResult
-    func evaluateAndAward() -> [BadgeDefinition]
+    func evaluateAndStageAwards() -> [BadgeDefinition]
     func allBadgeDefinitions() -> [BadgeDefinition]
     func progress(for badge: BadgeDefinition) -> BadgeProgress
     func earnedBadges() -> [EarnedBadge]
 }
 
 final class BadgeService: BadgeServiceProtocol {
-    private let modelContext: ModelContext
+    private let persistence: PersistenceCoordinating
 
-    init(modelContext: ModelContext) {
-        self.modelContext = modelContext
+    init(persistence: PersistenceCoordinating) {
+        self.persistence = persistence
     }
 
-    func evaluateAndAward() -> [BadgeDefinition] {
+    convenience init(modelContext: ModelContext) {
+        self.init(persistence: PersistenceCoordinator(context: modelContext))
+    }
+
+    func evaluateAndStageAwards() -> [BadgeDefinition] {
         let completions = fetchAllCompletions()
         let totalCompleted = completions.count
 
@@ -51,13 +58,10 @@ final class BadgeService: BadgeServiceProtocol {
                 category: badge.category,
                 threshold: badge.threshold
             )
-            modelContext.insert(earnedBadge)
+            persistence.insert(earnedBadge)
         }
 
-        if !newBadges.isEmpty {
-            try? modelContext.save()
-        }
-
+        // Deliberately no save here: the caller owns the transaction boundary.
         return newBadges
     }
 
@@ -94,13 +98,13 @@ final class BadgeService: BadgeServiceProtocol {
         )
     }
 
+    // Reads stay lenient: a failed read degrades a progress bar, while a failed
+    // *write* silently loses user data. Only writes are made to throw.
     func earnedBadges() -> [EarnedBadge] {
-        let descriptor = FetchDescriptor<EarnedBadge>()
-        return (try? modelContext.fetch(descriptor)) ?? []
+        (try? persistence.fetch(FetchDescriptor<EarnedBadge>())) ?? []
     }
 
     private func fetchAllCompletions() -> [CompletedChallenge] {
-        let descriptor = FetchDescriptor<CompletedChallenge>()
-        return (try? modelContext.fetch(descriptor)) ?? []
+        (try? persistence.fetch(FetchDescriptor<CompletedChallenge>())) ?? []
     }
 }
