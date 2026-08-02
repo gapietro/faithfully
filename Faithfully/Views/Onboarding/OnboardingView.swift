@@ -4,7 +4,13 @@ struct OnboardingView: View {
     let onComplete: () -> Void
     /// Runs before finishing so the system permission prompt appears as part of
     /// onboarding; injected by the composition root.
-    var requestNotificationPermission: (() async -> Void)? = nil
+    ///
+    /// `@MainActor` because the caller hands it the app's service graph, which is
+    /// not `Sendable`. Without the annotation the closure is nonisolated, so
+    /// passing `services` into it is sending a non-Sendable value across an
+    /// isolation boundary — a data race under Swift 6, and a real one: those
+    /// objects are only ever touched from the UI.
+    var requestNotificationPermission: (@MainActor () async -> Void)? = nil
     @State private var currentPage = 0
     @State private var isFinishing = false
 
