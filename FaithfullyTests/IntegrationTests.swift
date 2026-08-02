@@ -71,8 +71,12 @@ final class IntegrationTests: XCTestCase {
         }
         try context.save()
 
-        // Evaluate badges
-        let newBadges = badgeService.evaluateAndAward()
+        // Evaluate badges. Staging + committing mirrors the production path:
+        // BadgeService no longer owns a save, the transaction does.
+        var newBadges: [BadgeDefinition] = []
+        try PersistenceCoordinator(context: context).transaction {
+            newBadges = badgeService.evaluateAndStageAwards()
+        }
         XCTAssertTrue(newBadges.contains(where: { $0.name == "5K" }))
 
         // Verify in JourneyViewModel
@@ -255,7 +259,7 @@ final class IntegrationTests: XCTestCase {
 
         // Measure badge evaluation performance
         let badgeStart = CFAbsoluteTimeGetCurrent()
-        _ = badgeService.evaluateAndAward()
+        _ = badgeService.evaluateAndStageAwards()
         let badgeTime = CFAbsoluteTimeGetCurrent() - badgeStart
 
         XCTAssertLessThan(badgeTime, 2.0, "Badge evaluation should complete in under 2 seconds with 1000 completions")

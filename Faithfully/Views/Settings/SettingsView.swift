@@ -7,6 +7,18 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
                 List {
+                    // First row, so a failed write is seen before the user keeps
+                    // toggling. The toggles themselves have already snapped back
+                    // to their stored values.
+                    if let saveError = vm.saveError {
+                        Section {
+                            Label(saveError, systemImage: "exclamationmark.triangle.fill")
+                                .font(.footnote)
+                                .foregroundStyle(.orange)
+                                .accessibilityIdentifier("settingsSaveError")
+                        }
+                    }
+
                     Section("Bible Translation") {
                         Picker("Translation", selection: Binding(
                             get: { vm.translation },

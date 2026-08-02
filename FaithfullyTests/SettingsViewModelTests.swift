@@ -13,8 +13,24 @@ final class SettingsViewModelTests: XCTestCase {
         context = ModelContext(container)
     }
 
-    func testInitLoadsAllPreferencesFromUserProfile() {
-        let vm = SettingsViewModel(modelContext: context)
+    /// The profile is now injected rather than fetched-or-created by Settings
+    /// itself (CLEAN-004/CLEAN-012), so tests bootstrap it the way the
+    /// composition root does: exactly once, and shared.
+    private func makeViewModel(
+        persistence: PersistenceCoordinating? = nil
+    ) throws -> SettingsViewModel {
+        let coordinator = persistence ?? PersistenceCoordinator(context: context)
+        let profile = try coordinator.fetch(FetchDescriptor<UserProfile>()).first ?? {
+            let created = UserProfile()
+            coordinator.insert(created)
+            try coordinator.save()
+            return created
+        }()
+        return SettingsViewModel(persistence: coordinator, profile: profile)
+    }
+
+    func testInitLoadsAllPreferencesFromUserProfile() throws {
+        let vm = try makeViewModel()
         // Default values
         XCTAssertEqual(vm.translation, .web)
         XCTAssertTrue(vm.morningEnabled)
@@ -25,7 +41,7 @@ final class SettingsViewModelTests: XCTestCase {
     }
 
     func testUpdateTranslationPersistsToSwiftData() throws {
-        let vm = SettingsViewModel(modelContext: context)
+        let vm = try makeViewModel()
         vm.updateTranslation(.kjv)
 
         // Read back from SwiftData
@@ -34,15 +50,15 @@ final class SettingsViewModelTests: XCTestCase {
         XCTAssertEqual(profiles.first?.preferredTranslation, .kjv)
     }
 
-    func testUpdateTranslationImmediatelyReflectsInPublishedProperty() {
-        let vm = SettingsViewModel(modelContext: context)
+    func testUpdateTranslationImmediatelyReflectsInPublishedProperty() throws {
+        let vm = try makeViewModel()
         XCTAssertEqual(vm.translation, .web)
         vm.updateTranslation(.kjv)
         XCTAssertEqual(vm.translation, .kjv)
     }
 
     func testToggleNotificationsUpdatesPreferences() throws {
-        let vm = SettingsViewModel(modelContext: context)
+        let vm = try makeViewModel()
         vm.toggleMorningNotifications(false)
         vm.toggleEveningReminders(false)
 
@@ -56,7 +72,7 @@ final class SettingsViewModelTests: XCTestCase {
     }
 
     func testUpdateNotificationTimesPersistToSwiftData() throws {
-        let vm = SettingsViewModel(modelContext: context)
+        let vm = try makeViewModel()
         let calendar = Calendar.current
         let morning = try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 7, day: 20, hour: 6, minute: 45)))
         let evening = try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 7, day: 20, hour: 21, minute: 30)))
@@ -72,8 +88,8 @@ final class SettingsViewModelTests: XCTestCase {
         XCTAssertEqual(profile.eveningReminderTime, evening)
     }
 
-    func testEveryPreferenceMutationFiresOnPreferencesChanged() {
-        let vm = SettingsViewModel(modelContext: context)
+    func testEveryPreferenceMutationFiresOnPreferencesChanged() throws {
+        let vm = try makeViewModel()
         var changeCount = 0
         vm.onPreferencesChanged = { changeCount += 1 }
 
@@ -97,7 +113,7 @@ final class SettingsViewModelTests: XCTestCase {
     }
 
     func testDarkModeChangePersists() throws {
-        let vm = SettingsViewModel(modelContext: context)
+        let vm = try makeViewModel()
         vm.updateDarkMode(.dark)
 
         XCTAssertEqual(vm.darkMode, .dark)
