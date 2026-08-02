@@ -71,7 +71,7 @@ final class NotificationServiceTests: XCTestCase {
             morningNotificationsEnabled: true,
             eveningRemindersEnabled: false
         )
-        service.scheduleAllNotifications(profile: profile)
+        service.scheduleAllNotifications(preferences: NotificationPreferences(profile))
         await service.waitForPendingOperations()
 
         let morning = mockCenter.addedRequests.first { $0.identifier == "morning_challenge" }
@@ -83,7 +83,7 @@ final class NotificationServiceTests: XCTestCase {
             morningNotificationsEnabled: false,
             eveningRemindersEnabled: true
         )
-        service.scheduleAllNotifications(profile: profile)
+        service.scheduleAllNotifications(preferences: NotificationPreferences(profile))
         await service.waitForPendingOperations()
 
         let evening = mockCenter.addedRequests.first { $0.identifier == "evening_reminder" }
@@ -98,7 +98,7 @@ final class NotificationServiceTests: XCTestCase {
             morningNotificationsEnabled: true,
             eveningRemindersEnabled: true
         )
-        service.scheduleAllNotifications(profile: profile)
+        service.scheduleAllNotifications(preferences: NotificationPreferences(profile))
         await service.waitForPendingOperations()
 
         let morning = try XCTUnwrap(mockCenter.addedRequests.first { $0.identifier == "morning_challenge" })
@@ -118,7 +118,7 @@ final class NotificationServiceTests: XCTestCase {
             morningNotificationsEnabled: true,
             eveningRemindersEnabled: true
         )
-        service.scheduleAllNotifications(profile: profile)
+        service.scheduleAllNotifications(preferences: NotificationPreferences(profile))
         service.cancelTodayReminders()
         await service.waitForPendingOperations()
 
@@ -132,14 +132,14 @@ final class NotificationServiceTests: XCTestCase {
         let profile = UserProfile(streakWarningsEnabled: true)
 
         // Streak < 7: should NOT schedule
-        service.scheduleStreakWarning(streak: 5, profile: profile)
+        service.scheduleStreakWarning(streak: 5, preferences: NotificationPreferences(profile))
         await service.waitForPendingOperations()
 
         let noWarning = mockCenter.addedRequests.first { $0.identifier == "streak_warning" }
         XCTAssertNil(noWarning, "Streak < 7 should not schedule warning")
 
         // Streak >= 7: should schedule
-        service.scheduleStreakWarning(streak: 10, profile: profile)
+        service.scheduleStreakWarning(streak: 10, preferences: NotificationPreferences(profile))
         await service.waitForPendingOperations()
 
         let warning = mockCenter.addedRequests.first { $0.identifier == "streak_warning" }
@@ -148,7 +148,7 @@ final class NotificationServiceTests: XCTestCase {
 
     func testStreakWarningNotScheduledWhenPreferenceDisabled() async {
         let profile = UserProfile(streakWarningsEnabled: false)
-        service.scheduleStreakWarning(streak: 10, profile: profile)
+        service.scheduleStreakWarning(streak: 10, preferences: NotificationPreferences(profile))
         await service.waitForPendingOperations()
 
         XCTAssertNil(mockCenter.addedRequests.first { $0.identifier == "streak_warning" },
@@ -158,26 +158,26 @@ final class NotificationServiceTests: XCTestCase {
     func testBadgeCelebrationScheduledOnlyWhenPreferenceEnabled() async {
         let badge = EarnedBadge(badgeName: "streak_7", badgeType: .streak, threshold: 7)
 
-        service.scheduleBadgeCelebration(badge, profile: UserProfile(badgeNotificationsEnabled: false))
+        service.scheduleBadgeCelebration(named: badge.badgeName, preferences: NotificationPreferences(UserProfile(badgeNotificationsEnabled: false)))
         await service.waitForPendingOperations()
         XCTAssertTrue(mockCenter.addedRequests.isEmpty,
                       "Badge celebrations disabled in preferences must never schedule")
 
-        service.scheduleBadgeCelebration(badge, profile: UserProfile(badgeNotificationsEnabled: true))
+        service.scheduleBadgeCelebration(named: badge.badgeName, preferences: NotificationPreferences(UserProfile(badgeNotificationsEnabled: true)))
         await service.waitForPendingOperations()
         XCTAssertNotNil(mockCenter.addedRequests.first { $0.identifier == "badge_streak_7" })
     }
 
     func testScheduleAllPreservesPendingBadgeCelebration() async {
         let badge = EarnedBadge(badgeName: "streak_7", badgeType: .streak, threshold: 7)
-        service.scheduleBadgeCelebration(badge, profile: UserProfile(badgeNotificationsEnabled: true))
+        service.scheduleBadgeCelebration(named: badge.badgeName, preferences: NotificationPreferences(UserProfile(badgeNotificationsEnabled: true)))
 
         // A refresh (settings change / foreground / launch) before the badge's
         // 1s trigger fires must not swallow the celebration.
-        service.scheduleAllNotifications(profile: UserProfile(
+        service.scheduleAllNotifications(preferences: NotificationPreferences(UserProfile(
             morningNotificationsEnabled: true,
             eveningRemindersEnabled: true
-        ))
+        )))
         await service.waitForPendingOperations()
 
         XCTAssertNotNil(mockCenter.addedRequests.first { $0.identifier == "badge_streak_7" },
@@ -191,8 +191,8 @@ final class NotificationServiceTests: XCTestCase {
             morningNotificationsEnabled: true,
             eveningRemindersEnabled: true
         )
-        service.scheduleAllNotifications(profile: profile)
-        service.scheduleAllNotifications(profile: profile)
+        service.scheduleAllNotifications(preferences: NotificationPreferences(profile))
+        service.scheduleAllNotifications(preferences: NotificationPreferences(profile))
         await service.waitForPendingOperations()
 
         XCTAssertEqual(mockCenter.addedRequests.filter { $0.identifier == "morning_challenge" }.count, 1)
@@ -200,13 +200,13 @@ final class NotificationServiceTests: XCTestCase {
     }
 
     func testScheduleAllRemovesStaleStreakWarning() async {
-        service.scheduleStreakWarning(streak: 10, profile: UserProfile(streakWarningsEnabled: true))
+        service.scheduleStreakWarning(streak: 10, preferences: NotificationPreferences(UserProfile(streakWarningsEnabled: true)))
         await service.waitForPendingOperations()
         XCTAssertNotNil(mockCenter.addedRequests.first { $0.identifier == "streak_warning" })
 
         // A refresh after the preference is turned off must clear the armed
         // warning; refreshNotifications only re-adds it when still eligible.
-        service.scheduleAllNotifications(profile: UserProfile(streakWarningsEnabled: false))
+        service.scheduleAllNotifications(preferences: NotificationPreferences(UserProfile(streakWarningsEnabled: false)))
         await service.waitForPendingOperations()
 
         XCTAssertNil(mockCenter.addedRequests.first { $0.identifier == "streak_warning" },
@@ -218,7 +218,7 @@ final class NotificationServiceTests: XCTestCase {
             morningNotificationsEnabled: false,
             eveningRemindersEnabled: false
         )
-        service.scheduleAllNotifications(profile: profile)
+        service.scheduleAllNotifications(preferences: NotificationPreferences(profile))
         await service.waitForPendingOperations()
 
         let morning = mockCenter.addedRequests.first { $0.identifier == "morning_challenge" }
@@ -239,14 +239,17 @@ final class NotificationServiceTests: XCTestCase {
     /// enqueues, some adds went missing and `waitForPendingOperations` returned
     /// before they ran.
     func testConcurrentEnqueuesNeverDropAnOperation() async {
-        let profile = UserProfile()
+        // The task group is handed only value data. Snapshotting the profile and
+        // the badge names here — on the actor that owns them — is exactly what
+        // the production call sites do, so the test exercises the real boundary.
+        let preferences = NotificationPreferences(UserProfile())
         let count = 200
         let service = self.service!
-        let badges = (0..<count).map { makeBadge("stress_\($0)") }
+        let badgeNames = (0..<count).map { "stress_\($0)" }
 
         await withTaskGroup(of: Void.self) { group in
-            for badge in badges {
-                group.addTask { service.scheduleBadgeCelebration(badge, profile: profile) }
+            for name in badgeNames {
+                group.addTask { service.scheduleBadgeCelebration(named: name, preferences: preferences) }
             }
         }
         await service.waitForPendingOperations()
@@ -264,20 +267,20 @@ final class NotificationServiceTests: XCTestCase {
     /// foreground, completion, settings save).
     func testOverlappingAuthorizeScheduleCancelAndSettingsChangesSettleDeterministically() async {
         let service = self.service!
-        let profiles = (0..<40).map { index -> UserProfile in
+        let settings = (0..<40).map { index -> NotificationPreferences in
             let profile = UserProfile()
             // Alternate the settings each iteration, as a user toggling would.
             profile.morningNotificationsEnabled = index % 2 == 0
             profile.eveningRemindersEnabled = true
             profile.streakWarningsEnabled = true
-            return profile
+            return NotificationPreferences(profile)
         }
 
         await withTaskGroup(of: Void.self) { group in
-            for profile in profiles {
+            for preferences in settings {
                 group.addTask { _ = await service.requestPermission() }
-                group.addTask { service.scheduleAllNotifications(profile: profile) }
-                group.addTask { service.scheduleStreakWarning(streak: 10, profile: profile) }
+                group.addTask { service.scheduleAllNotifications(preferences: preferences) }
+                group.addTask { service.scheduleStreakWarning(streak: 10, preferences: preferences) }
                 group.addTask { service.cancelTodayReminders() }
             }
         }
@@ -301,7 +304,7 @@ final class NotificationServiceTests: XCTestCase {
         profile.eveningRemindersEnabled = true
 
         for _ in 0..<50 {
-            service.scheduleAllNotifications(profile: profile)
+            service.scheduleAllNotifications(preferences: NotificationPreferences(profile))
             service.cancelTodayReminders()
         }
         await service.waitForPendingOperations()
@@ -315,13 +318,13 @@ final class NotificationServiceTests: XCTestCase {
     }
 
     func testWaitForPendingOperationsDrainsWorkEnqueuedFromManyTasks() async {
-        let profile = UserProfile()
+        let preferences = NotificationPreferences(UserProfile())
         let service = self.service!
-        let badges = (0..<50).map { makeBadge("drain_\($0)") }
+        let badgeNames = (0..<50).map { "drain_\($0)" }
 
         await withTaskGroup(of: Void.self) { group in
-            for badge in badges {
-                group.addTask { service.scheduleBadgeCelebration(badge, profile: profile) }
+            for name in badgeNames {
+                group.addTask { service.scheduleBadgeCelebration(named: name, preferences: preferences) }
             }
         }
         await service.waitForPendingOperations()

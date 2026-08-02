@@ -94,7 +94,7 @@ final class AppEnvironment {
             // migration stage — a store created before the plan existed arrives
             // at V2 directly, and a row left at dayKey 0 would disappear from
             // every query. Idempotent and a no-op once done.
-            try? FaithfullyMigrationPlan.backfillDayKeys(in: persistence.context)
+            _ = try? FaithfullyMigrationPlan.backfillDayKeys(in: persistence.context)
 
             // Best-effort on purpose, and the only remaining `try?` on a write:
             // this is a repair the user never asked for, so a failure must leave
@@ -231,7 +231,10 @@ final class AppServices {
         let earned = badgeService.earnedBadges()
         for definition in newBadges {
             if let badge = earned.first(where: { $0.badgeName == definition.id }) {
-                notificationService.scheduleBadgeCelebration(badge, profile: profile)
+                notificationService.scheduleBadgeCelebration(
+                    named: badge.badgeName,
+                    preferences: NotificationPreferences(profile)
+                )
             }
         }
     }
@@ -243,13 +246,15 @@ final class AppServices {
     /// Identifiers are stable, so re-running this replaces rather than stacks —
     /// safe to call on every foreground and settings change.
     func refreshNotifications() {
-        notificationService.scheduleAllNotifications(profile: profile)
+        // One snapshot per pass: read the model here, on the actor that owns it.
+        let preferences = NotificationPreferences(profile)
+        notificationService.scheduleAllNotifications(preferences: preferences)
         if challengeService.isCompleted(on: dateProvider()) {
             notificationService.cancelTodayReminders()
         } else {
             notificationService.scheduleStreakWarning(
                 streak: challengeService.calculateStreak(),
-                profile: profile
+                preferences: preferences
             )
         }
     }
@@ -258,6 +263,11 @@ final class AppServices {
     /// even after a denial is intentional — the requests are inert until the
     /// user grants notifications in iOS Settings, at which point they fire
     /// without the app needing another pass.
+    ///
+    /// `@MainActor` because it reaches the view models and the profile, which
+    /// only the UI ever touches. Left nonisolated, awaiting it from a SwiftUI
+    /// view sends the whole non-Sendable service graph off the main actor.
+    @MainActor
     func requestNotificationPermissionAndSchedule() async {
         _ = await notificationService.requestPermission()
         refreshNotifications()

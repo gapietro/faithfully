@@ -1,12 +1,16 @@
 import Foundation
 import UserNotifications
 
-protocol NotificationServiceProtocol {
+/// `Sendable` because the graph awaits `requestPermission()` from the main
+/// actor, which sends the service across an isolation boundary. The concrete
+/// implementation holds no mutable state — its ordering invariant lives inside a
+/// lock-guarded chain (CLEAN-006) — so the guarantee is real rather than assumed.
+protocol NotificationServiceProtocol: Sendable {
     func requestPermission() async -> Bool
-    func scheduleAllNotifications(profile: UserProfile)
+    func scheduleAllNotifications(preferences: NotificationPreferences)
     func cancelTodayReminders()
-    func scheduleStreakWarning(streak: Int, profile: UserProfile)
-    func scheduleBadgeCelebration(_ badge: EarnedBadge, profile: UserProfile)
+    func scheduleStreakWarning(streak: Int, preferences: NotificationPreferences)
+    func scheduleBadgeCelebration(named badgeName: String, preferences: NotificationPreferences)
 }
 
 /// `Sendable` because implementations are reached from the serialized operation
@@ -97,22 +101,21 @@ final class NotificationService: NotificationServiceProtocol, Sendable {
         }
     }
 
-    func scheduleAllNotifications(profile: UserProfile) {
-        // Snapshot the model's values before hopping off the caller's context.
-        let morning = profile.morningNotificationsEnabled
+    func scheduleAllNotifications(preferences: NotificationPreferences) {
+        let morning = preferences.morningEnabled
             ? Self.makeDailyRequest(
                 identifier: "morning_challenge",
                 title: "Your Daily Walk",
                 body: "Today's challenge is waiting for you.",
-                time: profile.morningNotificationTime
+                time: preferences.morningTime
             )
             : nil
-        let evening = profile.eveningRemindersEnabled
+        let evening = preferences.eveningEnabled
             ? Self.makeDailyRequest(
                 identifier: "evening_reminder",
                 title: "Don't Forget Your Walk",
                 body: "You haven't completed today's challenge yet.",
-                time: profile.eveningReminderTime
+                time: preferences.eveningTime
             )
             : nil
 
@@ -139,8 +142,8 @@ final class NotificationService: NotificationServiceProtocol, Sendable {
         }
     }
 
-    func scheduleStreakWarning(streak: Int, profile: UserProfile) {
-        guard profile.streakWarningsEnabled, streak >= 7 else { return }
+    func scheduleStreakWarning(streak: Int, preferences: NotificationPreferences) {
+        guard preferences.streakWarningsEnabled, streak >= 7 else { return }
 
         let content = UNMutableNotificationContent()
         content.title = "Protect Your Streak!"
@@ -156,16 +159,16 @@ final class NotificationService: NotificationServiceProtocol, Sendable {
         enqueue { [center] in try? await center.add(request) }
     }
 
-    func scheduleBadgeCelebration(_ badge: EarnedBadge, profile: UserProfile) {
-        guard profile.badgeNotificationsEnabled else { return }
+    func scheduleBadgeCelebration(named badgeName: String, preferences: NotificationPreferences) {
+        guard preferences.badgeNotificationsEnabled else { return }
 
         let content = UNMutableNotificationContent()
         content.title = "Badge Earned!"
-        content.body = "You earned the \(badge.badgeName) badge!"
+        content.body = "You earned the \(badgeName) badge!"
         content.sound = .default
 
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
-        let request = UNNotificationRequest(identifier: "badge_\(badge.badgeName)", content: content, trigger: trigger)
+        let request = UNNotificationRequest(identifier: "badge_\(badgeName)", content: content, trigger: trigger)
         enqueue { [center] in try? await center.add(request) }
     }
 
