@@ -122,4 +122,31 @@ final class SettingsViewModelTests: XCTestCase {
         let profiles = try context.fetch(descriptor)
         XCTAssertEqual(profiles.first?.darkModePreference, .dark)
     }
+
+    // MARK: - Single ownership and live constants (CLEAN-012)
+
+    /// The composition root is the only component that creates a profile.
+    /// Settings used to fetch-or-create its own, so a transient read error
+    /// produced a second profile with a fresh enrollment date.
+    func testSettingsDoesNotCreateItsOwnProfile() throws {
+        let coordinator = PersistenceCoordinator(context: context)
+        let profile = UserProfile()
+        coordinator.insert(profile)
+        try coordinator.save()
+
+        _ = SettingsViewModel(persistence: coordinator, profile: profile)
+        _ = SettingsViewModel(persistence: coordinator, profile: profile)
+
+        XCTAssertEqual(try context.fetch(FetchDescriptor<UserProfile>()).count, 1,
+                       "Building Settings must never mint another profile")
+    }
+
+    func testDefaultReminderTimesComeFromConstants() throws {
+        let profile = UserProfile()
+        let calendar = Calendar.current
+        XCTAssertEqual(calendar.component(.hour, from: profile.morningNotificationTime),
+                       Constants.defaultMorningHour)
+        XCTAssertEqual(calendar.component(.hour, from: profile.eveningReminderTime),
+                       Constants.defaultEveningHour)
+    }
 }
