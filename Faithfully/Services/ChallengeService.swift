@@ -1,11 +1,15 @@
 import Foundation
 import SwiftData
 
-enum ChallengeServiceError: Error {
+enum ChallengeServiceError: Error, Equatable {
     case gracePeriodExpired
     case alreadyCompleted
     case emptyChallengePool
     case beforeEnrollment
+    /// The journal exceeded the limit. Reported rather than trimmed: silently
+    /// discarding the tail of a private reflection is data loss the user never
+    /// consented to and cannot detect.
+    case journalTooLong(limit: Int, actual: Int)
 }
 
 protocol ChallengeServiceProtocol {
@@ -89,8 +93,16 @@ final class ChallengeService: ChallengeServiceProtocol {
             throw ChallengeServiceError.alreadyCompleted
         }
 
+        // Length is judged after trimming, so trailing whitespace never costs the
+        // user their reflection, and rejected rather than truncated.
         let trimmedJournal = journal?.trimmingCharacters(in: .whitespacesAndNewlines)
-        let finalJournal = trimmedJournal.flatMap { $0.isEmpty ? nil : String($0.prefix(Constants.maxJournalLength)) }
+        if let trimmedJournal, trimmedJournal.count > Constants.maxJournalLength {
+            throw ChallengeServiceError.journalTooLong(
+                limit: Constants.maxJournalLength,
+                actual: trimmedJournal.count
+            )
+        }
+        let finalJournal = trimmedJournal.flatMap { $0.isEmpty ? nil : $0 }
 
         let completion = CompletedChallenge(
             challengeId: challenge.id,

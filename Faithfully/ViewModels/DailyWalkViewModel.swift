@@ -51,8 +51,12 @@ final class DailyWalkViewModel {
         refresh()
     }
 
-    func complete(journal: String? = nil) {
-        guard !isCompleted else { return }
+    /// Reports the outcome instead of swallowing it. The caller owns the editor
+    /// and the user's draft, and must keep both until it sees `.completed` —
+    /// otherwise a rejected or failed save silently destroys the reflection.
+    @discardableResult
+    func complete(journal: String? = nil) -> CompletionResult {
+        guard !isCompleted else { return .failed(.alreadyCompleted) }
         do {
             let badges = try challengeService.completeChallenge(todayChallenge, on: today, journal: journal)
             isCompleted = true
@@ -61,8 +65,13 @@ final class DailyWalkViewModel {
                 newBadges = badges
                 showCelebration = true
             }
+            return .completed(newBadges: badges)
+        } catch let error as ChallengeServiceError {
+            return .failed(CompletionFailure(error))
         } catch {
-            // Completion failed (grace period expired or already completed)
+            // Anything else is a persistence failure: the draft is still the only
+            // copy of what the user wrote, so say so rather than implying success.
+            return .failed(.couldNotSave)
         }
     }
 

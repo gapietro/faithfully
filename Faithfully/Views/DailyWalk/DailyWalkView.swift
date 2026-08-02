@@ -5,6 +5,7 @@ struct DailyWalkView: View {
     let vm: DailyWalkViewModel
     @State private var journalText = ""
     @State private var showJournalSheet = false
+    @State private var completionError: String?
 
     var body: some View {
         NavigationStack {
@@ -31,6 +32,7 @@ struct DailyWalkView: View {
                             .accessibilityIdentifier("completedLabel")
                     } else {
                         Button(action: {
+                            completionError = nil
                             showJournalSheet = true
                         }) {
                             Text("I Did It")
@@ -62,10 +64,19 @@ struct DailyWalkView: View {
             .sheet(isPresented: $showJournalSheet) {
                 CompletionSheetView(
                     journalText: $journalText,
+                    errorMessage: completionError,
                     onComplete: {
-                        vm.complete(journal: journalText.isEmpty ? nil : journalText)
-                        showJournalSheet = false
-                        journalText = ""
+                        // The draft is cleared and the sheet dismissed only on a
+                        // confirmed success. On any failure both survive, so the
+                        // user still has what they wrote.
+                        switch vm.complete(journal: journalText.isEmpty ? nil : journalText) {
+                        case .completed:
+                            completionError = nil
+                            showJournalSheet = false
+                            journalText = ""
+                        case .failed(let failure):
+                            completionError = failure.message
+                        }
                     }
                 )
             }
