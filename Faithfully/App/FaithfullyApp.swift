@@ -3,26 +3,46 @@ import SwiftData
 
 @main
 struct FaithfullyApp: App {
-    private let modelContainer: ModelContainer
+    @State private var stack: PersistenceStack.Outcome
     @State private var appEnvironment: AppEnvironment
 
     init() {
-        do {
-            let container = try ModelContainer(
-                for: UserProfile.self, CompletedChallenge.self, EarnedBadge.self
-            )
-            modelContainer = container
-            _appEnvironment = State(initialValue: AppEnvironment(modelContext: container.mainContext))
-        } catch {
-            fatalError("Unable to create SwiftData container: \(error)")
-        }
+        let outcome = PersistenceStack.open()
+        _stack = State(initialValue: outcome)
+        _appEnvironment = State(initialValue: AppEnvironment(
+            modelContext: Self.container(for: outcome).mainContext,
+            storeFailure: Self.failure(for: outcome)
+        ))
     }
 
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .environment(appEnvironment)
+                .onAppear { appEnvironment.onResetStore = resetStore }
         }
-        .modelContainer(modelContainer)
+        .modelContainer(Self.container(for: stack))
+    }
+
+    /// Rebuilds the whole stack after the user chooses to reset an unreadable
+    /// store. Reached only from the recovery screen.
+    private func resetStore() {
+        let outcome = PersistenceStack.resetStore()
+        stack = outcome
+        appEnvironment = AppEnvironment(
+            modelContext: Self.container(for: outcome).mainContext,
+            storeFailure: Self.failure(for: outcome)
+        )
+    }
+
+    private static func container(for outcome: PersistenceStack.Outcome) -> ModelContainer {
+        switch outcome {
+        case .ready(let container), .degraded(let container, _): return container
+        }
+    }
+
+    private static func failure(for outcome: PersistenceStack.Outcome) -> PersistenceError? {
+        if case .degraded(_, let error) = outcome { return error }
+        return nil
     }
 }
