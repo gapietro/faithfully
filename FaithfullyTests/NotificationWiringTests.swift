@@ -231,6 +231,10 @@ final class NotificationWiringTests: XCTestCase {
 
     // MARK: - #7 Onboarding permission
 
+    /// `@MainActor` to match the production call site: the onboarding path is
+    /// main-actor isolated (MAINT-001), and a nonisolated test would be
+    /// exercising a boundary the app never crosses.
+    @MainActor
     func testOnboardingFinishRequestsPermissionAndSchedules() async throws {
         let today = Date.from(year: 2026, month: 6, day: 15)
         let services = try makeServices(today: today)

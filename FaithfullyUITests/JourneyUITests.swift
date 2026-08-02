@@ -64,11 +64,16 @@ final class JourneyUITests: UITestCase {
         launch(.seeded)
         openTab("Journey")
 
-        let entry = app.staticTexts.containing(
-            NSPredicate(format: "label CONTAINS %@", "seeded-journal-marker-alpha")
-        ).firstMatch
+        let entry = journalEntry(containing: "seeded-journal-marker-alpha")
         XCTAssertTrue(entry.waitForExistence(timeout: 10),
                       "A completion with journal text must appear in the journal")
+    }
+
+    /// NSPredicate is not Sendable, so under Swift 6 it cannot be held in a
+    /// local and reused across `await`-adjacent calls. Building it per lookup
+    /// costs nothing and keeps the tests in the language mode the app ships in.
+    private func journalEntry(containing marker: String) -> XCUIElement {
+        app.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", marker)).firstMatch
     }
 
     /// Was: assert the "Completed" stat exists. It never touched the search field.
@@ -76,11 +81,9 @@ final class JourneyUITests: UITestCase {
         launch(.seeded)
         openTab("Journey")
 
-        let alpha = NSPredicate(format: "label CONTAINS %@", "seeded-journal-marker-alpha")
-        let beta = NSPredicate(format: "label CONTAINS %@", "seeded-journal-marker-beta")
-
-        XCTAssertTrue(app.staticTexts.containing(alpha).firstMatch.waitForExistence(timeout: 10))
-        XCTAssertTrue(app.staticTexts.containing(beta).firstMatch.exists,
+        XCTAssertTrue(journalEntry(containing: "seeded-journal-marker-alpha")
+            .waitForExistence(timeout: 10))
+        XCTAssertTrue(journalEntry(containing: "seeded-journal-marker-beta").exists,
                       "Precondition: both seeded entries are visible before filtering")
 
         let search = app.textFields["journalSearch"]
@@ -88,9 +91,9 @@ final class JourneyUITests: UITestCase {
         search.tap()
         search.typeText("alpha")
 
-        XCTAssertTrue(app.staticTexts.containing(alpha).firstMatch.waitForExistence(timeout: 5),
-                      "The matching entry must survive the filter")
-        XCTAssertFalse(app.staticTexts.containing(beta).firstMatch.exists,
+        XCTAssertTrue(journalEntry(containing: "seeded-journal-marker-alpha")
+            .waitForExistence(timeout: 5), "The matching entry must survive the filter")
+        XCTAssertFalse(journalEntry(containing: "seeded-journal-marker-beta").exists,
                        "The non-matching entry must be filtered out")
     }
 
@@ -103,13 +106,12 @@ final class JourneyUITests: UITestCase {
         search.tap()
         search.typeText("alpha")
 
-        let beta = NSPredicate(format: "label CONTAINS %@", "seeded-journal-marker-beta")
-        XCTAssertFalse(app.staticTexts.containing(beta).firstMatch.exists)
+        XCTAssertFalse(journalEntry(containing: "seeded-journal-marker-beta").exists)
 
         // Delete the query.
         search.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 5))
 
-        XCTAssertTrue(app.staticTexts.containing(beta).firstMatch.waitForExistence(timeout: 5),
-                      "Clearing the search must bring every entry back")
+        XCTAssertTrue(journalEntry(containing: "seeded-journal-marker-beta")
+            .waitForExistence(timeout: 5), "Clearing the search must bring every entry back")
     }
 }
