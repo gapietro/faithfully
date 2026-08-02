@@ -5,6 +5,10 @@ enum CalendarDayStatus: Equatable {
     case missed
     case missedRecoverable
     case future
+    /// Before the user enrolled. Distinct from `.missed`: the user did not fail
+    /// to do these days, they simply were not here for them, so the calendar must
+    /// not show them as a deficit and they can never be completed.
+    case preEnrollment
     case today
 }
 

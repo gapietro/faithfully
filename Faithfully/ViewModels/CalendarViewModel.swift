@@ -59,6 +59,9 @@ final class CalendarViewModel {
 
     func completeGracePeriod(_ day: CalendarDay, journal: String? = nil) {
         guard let challenge = day.challenge else { return }
+        // Defence in depth: the detail view already hides Complete for these,
+        // but a stale selection must not be able to reach the service.
+        guard day.status == .missedRecoverable || day.status == .today else { return }
         do {
             _ = try challengeService.completeChallenge(challenge, on: day.date, journal: journal)
             loadMonth()
@@ -75,6 +78,7 @@ final class CalendarViewModel {
               let endOfMonth = calendar.date(byAdding: .day, value: range.count - 1, to: startOfMonth) else { return }
 
         let todayStart = calendar.startOfDay(for: today)
+        let enrollmentStart = calendar.startOfDay(for: challengeService.enrollmentDate)
 
         // Completion truth is keyed by scheduled calendar day, not challenge ID —
         // the scheduler reuses IDs within a year, so an ID lookup would mark
@@ -96,10 +100,15 @@ final class CalendarViewModel {
 
             // Precedence: a completed today shows completed; an incomplete
             // today shows .today (distinguishable per PRD), not the grace
-            // styling that raw GracePeriod math would give it.
+            // styling that raw GracePeriod math would give it. Days before
+            // enrollment are neither missed nor recoverable — a brand-new user
+            // must not open the calendar to a wall of failures they never had
+            // the chance to attempt.
             let status: CalendarDayStatus
             if dateStart > todayStart {
                 status = .future
+            } else if dateStart < enrollmentStart {
+                status = .preEnrollment
             } else if isCompleted {
                 status = .completed
             } else if dateStart == todayStart {

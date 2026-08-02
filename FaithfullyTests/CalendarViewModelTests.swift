@@ -16,8 +16,17 @@ final class CalendarViewModelTests: XCTestCase {
         badgeService = BadgeService(modelContext: context)
     }
 
-    private func makeService(today: Date) -> ChallengeService {
-        try! ChallengeService(modelContext: context, challenges: challenges, badgeService: badgeService, dateProvider: { today })
+    /// Enrollment defaults to well before any date these tests use, so they keep
+    /// exercising grace/missed/future semantics rather than the enrollment
+    /// boundary. Tests that are about the boundary pass `enrolledOn` explicitly.
+    private func makeService(today: Date, enrolledOn: Date = Date.from(year: 2020, month: 1, day: 1)) -> ChallengeService {
+        try! ChallengeService(
+            modelContext: context,
+            challenges: challenges,
+            badgeService: badgeService,
+            enrollmentDate: enrolledOn,
+            dateProvider: { today }
+        )
     }
 
     func testCalendarDaysContainsCorrectNumberOfDaysForCurrentMonth() {
@@ -250,6 +259,61 @@ final class CalendarViewModelTests: XCTestCase {
 
         vm.refresh(for: Date.from(year: 2026, month: 5, day: 1))
         XCTAssertNil(vm.selectedDay)
+    }
+
+    // MARK: - Enrollment boundary (CLEAN-002)
+
+    func testDaysBeforeEnrollmentAreMarkedPreEnrollmentNotMissed() {
+        let today = Date.from(year: 2026, month: 4, day: 15)
+        let service = makeService(today: today, enrolledOn: Date.from(year: 2026, month: 4, day: 10))
+        let vm = CalendarViewModel(challengeService: service, today: today)
+
+        func status(day: Int) -> CalendarDayStatus? {
+            vm.calendarDays.first { Calendar.current.component(.day, from: $0.date) == day }?.status
+        }
+
+        XCTAssertEqual(status(day: 9), .preEnrollment, "The day before enrollment is not a miss")
+        XCTAssertEqual(status(day: 1), .preEnrollment)
+        XCTAssertEqual(status(day: 10), .missed,
+                       "The enrollment day is a real day the user was here for — a genuine miss "
+                       + "once its grace window closes, not pre-enrollment")
+        XCTAssertEqual(status(day: 13), .missedRecoverable,
+                       "A post-enrollment day inside the grace window stays recoverable")
+        XCTAssertEqual(status(day: 15), .today)
+
+        let preEnrollmentDays = vm.calendarDays.filter { $0.status == .preEnrollment }
+        XCTAssertEqual(preEnrollmentDays.count, 9, "April 1–9 precede enrollment on the 10th")
+    }
+
+    func testCompleteGracePeriodRefusesPreEnrollmentDays() throws {
+        let today = Date.from(year: 2026, month: 4, day: 15)
+        let service = makeService(today: today, enrolledOn: Date.from(year: 2026, month: 4, day: 14))
+        let vm = CalendarViewModel(challengeService: service, today: today)
+
+        // April 13 is inside the grace window but precedes enrollment.
+        let day13 = try XCTUnwrap(vm.calendarDays.first {
+            Calendar.current.component(.day, from: $0.date) == 13
+        })
+        XCTAssertEqual(day13.status, .preEnrollment)
+
+        vm.completeGracePeriod(day13, journal: "should not persist")
+
+        let after = vm.calendarDays.first { Calendar.current.component(.day, from: $0.date) == 13 }
+        XCTAssertEqual(after?.status, .preEnrollment, "The day must not flip to completed")
+        XCTAssertEqual(try context.fetch(FetchDescriptor<CompletedChallenge>()).count, 0,
+                       "No completion may be written for a pre-enrollment day")
+    }
+
+    func testEnrollingTodayLeavesNoRecoverableHistory() {
+        let today = Date.from(year: 2026, month: 4, day: 15)
+        let service = makeService(today: today, enrolledOn: today)
+        let vm = CalendarViewModel(challengeService: service, today: today)
+
+        XCTAssertTrue(
+            vm.calendarDays.filter { Calendar.current.component(.day, from: $0.date) < 15 }
+                .allSatisfy { $0.status == .preEnrollment },
+            "A user who enrolled today has no earlier days to recover"
+        )
     }
 
     func testCompleteGracePeriodCallsChallengeServiceAndUpdatesCalendar() throws {
