@@ -10,7 +10,7 @@ struct OnboardingView: View {
     /// passing `services` into it is sending a non-Sendable value across an
     /// isolation boundary — a data race under Swift 6, and a real one: those
     /// objects are only ever touched from the UI.
-    var requestNotificationPermission: (@MainActor () async -> Void)? = nil
+    var requestNotificationPermission: (@MainActor () async -> Void)?
     @State private var currentPage = 0
     @State private var isFinishing = false
 

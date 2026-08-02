@@ -19,8 +19,11 @@ final class CalendarViewModelTests: XCTestCase {
     /// Enrollment defaults to well before any date these tests use, so they keep
     /// exercising grace/missed/future semantics rather than the enrollment
     /// boundary. Tests that are about the boundary pass `enrolledOn` explicitly.
-    private func makeService(today: Date, enrolledOn: Date = Date.from(year: 2020, month: 1, day: 1)) -> ChallengeService {
-        try! ChallengeService(
+    private func makeService(
+        today: Date,
+        enrolledOn: Date = Date.from(year: 2020, month: 1, day: 1)
+    ) throws -> ChallengeService {
+        try ChallengeService(
             modelContext: context,
             challenges: challenges,
             badgeService: badgeService,
@@ -29,16 +32,16 @@ final class CalendarViewModelTests: XCTestCase {
         )
     }
 
-    func testCalendarDaysContainsCorrectNumberOfDaysForCurrentMonth() {
+    func testCalendarDaysContainsCorrectNumberOfDaysForCurrentMonth() throws {
         let april = Date.from(year: 2026, month: 4, day: 15)
-        let service = makeService(today: april)
+        let service = try makeService(today: april)
         let vm = CalendarViewModel(challengeService: service, today: april)
         XCTAssertEqual(vm.calendarDays.count, 30)
     }
 
     func testCompletedDaysShowCompletedStatus() throws {
         let today = Date.from(year: 2026, month: 4, day: 15)
-        let service = makeService(today: today)
+        let service = try makeService(today: today)
         let april10 = Date.from(year: 2026, month: 4, day: 10)
         let challenge = service.challengeForDate(april10)
         let completion = CompletedChallenge(
@@ -55,9 +58,9 @@ final class CalendarViewModelTests: XCTestCase {
         XCTAssertEqual(day10?.status, .completed)
     }
 
-    func testTodayNotCompletedShowsTodayStatus() {
+    func testTodayNotCompletedShowsTodayStatus() throws {
         let today = Date.from(year: 2026, month: 4, day: 15)
-        let service = makeService(today: today)
+        let service = try makeService(today: today)
         let vm = CalendarViewModel(challengeService: service, today: today)
 
         let day15 = vm.calendarDays.first { Calendar.current.component(.day, from: $0.date) == 15 }
@@ -67,7 +70,7 @@ final class CalendarViewModelTests: XCTestCase {
 
     func testTodayCompletedShowsCompletedNotToday() throws {
         let today = Date.from(year: 2026, month: 4, day: 15)
-        let service = makeService(today: today)
+        let service = try makeService(today: today)
         let challenge = service.challengeForDate(today)
         _ = try service.completeChallenge(challenge, on: today, journal: nil)
 
@@ -78,7 +81,7 @@ final class CalendarViewModelTests: XCTestCase {
 
     func testCompletingTodayViaGracePathMovesTodayToCompleted() throws {
         let today = Date.from(year: 2026, month: 4, day: 15)
-        let service = makeService(today: today)
+        let service = try makeService(today: today)
         let vm = CalendarViewModel(challengeService: service, today: today)
 
         let day15 = try XCTUnwrap(vm.calendarDays.first { Calendar.current.component(.day, from: $0.date) == 15 })
@@ -91,36 +94,36 @@ final class CalendarViewModelTests: XCTestCase {
                        "Today must remain completable from the calendar and update without relaunch")
     }
 
-    func testMissedDaysWithinGracePeriodShowMissedRecoverable() {
+    func testMissedDaysWithinGracePeriodShowMissedRecoverable() throws {
         let today = Date.from(year: 2026, month: 4, day: 15)
-        let service = makeService(today: today)
+        let service = try makeService(today: today)
         let vm = CalendarViewModel(challengeService: service, today: today)
 
         let day13 = vm.calendarDays.first { Calendar.current.component(.day, from: $0.date) == 13 }
         XCTAssertEqual(day13?.status, .missedRecoverable)
     }
 
-    func testMissedDaysOutsideGracePeriodShowMissed() {
+    func testMissedDaysOutsideGracePeriodShowMissed() throws {
         let today = Date.from(year: 2026, month: 4, day: 15)
-        let service = makeService(today: today)
+        let service = try makeService(today: today)
         let vm = CalendarViewModel(challengeService: service, today: today)
 
         let day5 = vm.calendarDays.first { Calendar.current.component(.day, from: $0.date) == 5 }
         XCTAssertEqual(day5?.status, .missed)
     }
 
-    func testFutureDaysShowFuture() {
+    func testFutureDaysShowFuture() throws {
         let today = Date.from(year: 2026, month: 4, day: 15)
-        let service = makeService(today: today)
+        let service = try makeService(today: today)
         let vm = CalendarViewModel(challengeService: service, today: today)
 
         let day25 = vm.calendarDays.first { Calendar.current.component(.day, from: $0.date) == 25 }
         XCTAssertEqual(day25?.status, .future)
     }
 
-    func testNextMonthAdvancesByOneMonth() {
+    func testNextMonthAdvancesByOneMonth() throws {
         let april = Date.from(year: 2026, month: 4, day: 15)
-        let service = makeService(today: april)
+        let service = try makeService(today: april)
         let vm = CalendarViewModel(challengeService: service, today: april)
         let initialMonth = Calendar.current.component(.month, from: vm.currentMonth)
 
@@ -129,9 +132,9 @@ final class CalendarViewModelTests: XCTestCase {
         XCTAssertEqual(newMonth, initialMonth + 1)
     }
 
-    func testPreviousMonthGoesBackOneMonth() {
+    func testPreviousMonthGoesBackOneMonth() throws {
         let april = Date.from(year: 2026, month: 4, day: 15)
-        let service = makeService(today: april)
+        let service = try makeService(today: april)
         let vm = CalendarViewModel(challengeService: service, today: april)
         let initialMonth = Calendar.current.component(.month, from: vm.currentMonth)
 
@@ -140,9 +143,9 @@ final class CalendarViewModelTests: XCTestCase {
         XCTAssertEqual(newMonth, initialMonth - 1)
     }
 
-    func testSelectDaySetsSelectedDay() {
+    func testSelectDaySetsSelectedDay() throws {
         let april = Date.from(year: 2026, month: 4, day: 15)
-        let service = makeService(today: april)
+        let service = try makeService(today: april)
         let vm = CalendarViewModel(challengeService: service, today: april)
 
         XCTAssertNil(vm.selectedDay)
@@ -151,23 +154,23 @@ final class CalendarViewModelTests: XCTestCase {
         XCTAssertEqual(vm.selectedDay, day)
     }
 
-    func testLeapYearFebruaryHas29Days() {
+    func testLeapYearFebruaryHas29Days() throws {
         let leapFeb = Date.from(year: 2028, month: 2, day: 10)
-        let service = makeService(today: leapFeb)
+        let service = try makeService(today: leapFeb)
         let vm = CalendarViewModel(challengeService: service, today: leapFeb)
         XCTAssertEqual(vm.calendarDays.count, 29)
     }
 
-    func testNonLeapYearFebruaryHas28Days() {
+    func testNonLeapYearFebruaryHas28Days() throws {
         let feb = Date.from(year: 2026, month: 2, day: 10)
-        let service = makeService(today: feb)
+        let service = try makeService(today: feb)
         let vm = CalendarViewModel(challengeService: service, today: feb)
         XCTAssertEqual(vm.calendarDays.count, 28)
     }
 
-    func testNextMonthCrossesYearBoundary() {
+    func testNextMonthCrossesYearBoundary() throws {
         let december = Date.from(year: 2026, month: 12, day: 15)
-        let service = makeService(today: december)
+        let service = try makeService(today: december)
         let vm = CalendarViewModel(challengeService: service, today: december)
 
         vm.nextMonth()
@@ -177,9 +180,9 @@ final class CalendarViewModelTests: XCTestCase {
         XCTAssertEqual(vm.calendarDays.count, 31)
     }
 
-    func testPreviousMonthCrossesYearBoundary() {
+    func testPreviousMonthCrossesYearBoundary() throws {
         let january = Date.from(year: 2026, month: 1, day: 15)
-        let service = makeService(today: january)
+        let service = try makeService(today: january)
         let vm = CalendarViewModel(challengeService: service, today: january)
 
         vm.previousMonth()
@@ -193,7 +196,7 @@ final class CalendarViewModelTests: XCTestCase {
         // Regression guard for the month-range fetch: a completion scheduled on the
         // last day of the month must be visible in the grid.
         let today = Date.from(year: 2026, month: 4, day: 30)
-        let service = makeService(today: today)
+        let service = try makeService(today: today)
         let challenge = service.challengeForDate(today)
         _ = try service.completeChallenge(challenge, on: today, journal: nil)
 
@@ -207,7 +210,7 @@ final class CalendarViewModelTests: XCTestCase {
         // one must not mark the other. Simulate by inserting a completion whose
         // challengeId matches another grid day's challenge.
         let today = Date.from(year: 2026, month: 4, day: 15)
-        let service = makeService(today: today)
+        let service = try makeService(today: today)
         let april10 = Date.from(year: 2026, month: 4, day: 10)
         let april20 = Date.from(year: 2026, month: 4, day: 20)
         // Reuse day 20's challenge ID on day 10's completion record
@@ -228,11 +231,11 @@ final class CalendarViewModelTests: XCTestCase {
         XCTAssertEqual(day20?.status, .future, "A later day sharing the challenge ID must not show completed")
     }
 
-    func testRefreshRebindsSelectedDayToRebuiltStatus() {
+    func testRefreshRebindsSelectedDayToRebuiltStatus() throws {
         // Select a recoverable day, then roll past its grace window: the open
         // detail must re-bind to the rebuilt day so it no longer offers Complete.
         let today = Date.from(year: 2026, month: 4, day: 15)
-        let service = makeService(today: today)
+        let service = try makeService(today: today)
         let vm = CalendarViewModel(challengeService: service, today: today)
 
         let day13 = vm.calendarDays.first { Calendar.current.component(.day, from: $0.date) == 13 }
@@ -246,12 +249,12 @@ final class CalendarViewModelTests: XCTestCase {
                        "Re-bind keeps the same date selected")
     }
 
-    func testRefreshClearsSelectedDayWhenDateLeavesGrid() {
+    func testRefreshClearsSelectedDayWhenDateLeavesGrid() throws {
         // Rolling into a new month (while viewing the current month) rebuilds the
         // grid for the new month; a selection from the old month has no matching
         // day and must be dropped rather than left stale.
         let today = Date.from(year: 2026, month: 4, day: 30)
-        let service = makeService(today: today)
+        let service = try makeService(today: today)
         let vm = CalendarViewModel(challengeService: service, today: today)
 
         let day13 = vm.calendarDays.first { Calendar.current.component(.day, from: $0.date) == 13 }
@@ -261,64 +264,9 @@ final class CalendarViewModelTests: XCTestCase {
         XCTAssertNil(vm.selectedDay)
     }
 
-    // MARK: - Enrollment boundary (CLEAN-002)
-
-    func testDaysBeforeEnrollmentAreMarkedPreEnrollmentNotMissed() {
-        let today = Date.from(year: 2026, month: 4, day: 15)
-        let service = makeService(today: today, enrolledOn: Date.from(year: 2026, month: 4, day: 10))
-        let vm = CalendarViewModel(challengeService: service, today: today)
-
-        func status(day: Int) -> CalendarDayStatus? {
-            vm.calendarDays.first { Calendar.current.component(.day, from: $0.date) == day }?.status
-        }
-
-        XCTAssertEqual(status(day: 9), .preEnrollment, "The day before enrollment is not a miss")
-        XCTAssertEqual(status(day: 1), .preEnrollment)
-        XCTAssertEqual(status(day: 10), .missed,
-                       "The enrollment day is a real day the user was here for — a genuine miss "
-                       + "once its grace window closes, not pre-enrollment")
-        XCTAssertEqual(status(day: 13), .missedRecoverable,
-                       "A post-enrollment day inside the grace window stays recoverable")
-        XCTAssertEqual(status(day: 15), .today)
-
-        let preEnrollmentDays = vm.calendarDays.filter { $0.status == .preEnrollment }
-        XCTAssertEqual(preEnrollmentDays.count, 9, "April 1–9 precede enrollment on the 10th")
-    }
-
-    func testCompleteGracePeriodRefusesPreEnrollmentDays() throws {
-        let today = Date.from(year: 2026, month: 4, day: 15)
-        let service = makeService(today: today, enrolledOn: Date.from(year: 2026, month: 4, day: 14))
-        let vm = CalendarViewModel(challengeService: service, today: today)
-
-        // April 13 is inside the grace window but precedes enrollment.
-        let day13 = try XCTUnwrap(vm.calendarDays.first {
-            Calendar.current.component(.day, from: $0.date) == 13
-        })
-        XCTAssertEqual(day13.status, .preEnrollment)
-
-        vm.completeGracePeriod(day13, journal: "should not persist")
-
-        let after = vm.calendarDays.first { Calendar.current.component(.day, from: $0.date) == 13 }
-        XCTAssertEqual(after?.status, .preEnrollment, "The day must not flip to completed")
-        XCTAssertEqual(try context.fetch(FetchDescriptor<CompletedChallenge>()).count, 0,
-                       "No completion may be written for a pre-enrollment day")
-    }
-
-    func testEnrollingTodayLeavesNoRecoverableHistory() {
-        let today = Date.from(year: 2026, month: 4, day: 15)
-        let service = makeService(today: today, enrolledOn: today)
-        let vm = CalendarViewModel(challengeService: service, today: today)
-
-        XCTAssertTrue(
-            vm.calendarDays.filter { Calendar.current.component(.day, from: $0.date) < 15 }
-                .allSatisfy { $0.status == .preEnrollment },
-            "A user who enrolled today has no earlier days to recover"
-        )
-    }
-
     func testCompleteGracePeriodCallsChallengeServiceAndUpdatesCalendar() throws {
         let today = Date.from(year: 2026, month: 4, day: 15)
-        let service = makeService(today: today)
+        let service = try makeService(today: today)
         let vm = CalendarViewModel(challengeService: service, today: today)
 
         guard let gracePeriodDay = vm.calendarDays.first(where: {

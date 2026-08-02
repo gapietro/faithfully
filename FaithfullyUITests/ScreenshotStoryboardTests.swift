@@ -16,7 +16,19 @@ final class ScreenshotStoryboardTests: XCTestCase {
     }
 
     func testCaptureStoryboard() throws {
-        // ===== Pass A: onboarding only =====
+        try captureOnboarding()
+        let app = try launchPastOnboarding()
+        try captureDailyWalk(app)
+        try captureCompletionSheet(app)
+        try captureCalendar(app)
+        try captureJourney(app)
+        try captureSettings(app)
+    }
+
+    // Split into one function per shot: the single 80-line function exceeded the
+    // linter's limit, and a failure in it gave no clue which shot broke.
+
+    private func captureOnboarding() throws {
         let appA = XCUIApplication()
         appA.launchArguments = ["-hasCompletedOnboarding", "NO"]
         appA.launch()
@@ -24,8 +36,9 @@ final class ScreenshotStoryboardTests: XCTestCase {
         sleep(1)
         try saveShot(name: "05_onboarding")
         appA.terminate()
+    }
 
-        // ===== Pass B: main app (skip onboarding) =====
+    private func launchPastOnboarding() throws -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments = ["-hasCompletedOnboarding", "YES"]
         app.launch()
@@ -39,8 +52,10 @@ final class ScreenshotStoryboardTests: XCTestCase {
         // Dismiss any leftover system alerts
         allowNotificationsIfPresent()
         sleep(1)
+        return app
+    }
 
-        // Shot 1 — Daily Walk hero
+    private func captureDailyWalk(_ app: XCUIApplication) throws {
         waitForAny([
             app.staticTexts["challengeTitle"],
             app.staticTexts["scriptureText"],
@@ -49,8 +64,9 @@ final class ScreenshotStoryboardTests: XCTestCase {
         ], timeout: 10)
         sleep(1)
         try saveShot(name: "01_daily_walk")
+    }
 
-        // Shot 2 — Completion sheet
+    private func captureCompletionSheet(_ app: XCUIApplication) throws {
         let iDidIt = app.buttons["iDidItButton"]
         if iDidIt.waitForExistence(timeout: 3), iDidIt.isHittable {
             iDidIt.tap()
@@ -75,8 +91,9 @@ final class ScreenshotStoryboardTests: XCTestCase {
             // Already completed — capture completed Daily Walk as fallback
             try saveShot(name: "02_completion")
         }
+    }
 
-        // Shot 3 — Calendar
+    private func captureCalendar(_ app: XCUIApplication) throws {
         tapTab(app, "Calendar")
         waitForAny([
             app.otherElements["monthGrid"],
@@ -85,17 +102,20 @@ final class ScreenshotStoryboardTests: XCTestCase {
         ], timeout: 8)
         sleep(1)
         try saveShot(name: "03_calendar")
+    }
 
-        // Shot 4 — Journey
+    private func captureJourney(_ app: XCUIApplication) throws {
         tapTab(app, "Journey")
         waitForAny([
-            app.otherElements["statsSection"],
+            app.staticTexts["statTotalCompleted"],
             app.staticTexts["Completed"],
             app.staticTexts["Streak"],
         ], timeout: 8)
         sleep(1)
         try saveShot(name: "04_journey")
+    }
 
+    private func captureSettings(_ app: XCUIApplication) throws {
         // Shot 6 — Settings
         tapTab(app, "Settings")
         waitForAny([
