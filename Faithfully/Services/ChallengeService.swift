@@ -131,6 +131,7 @@ final class ChallengeService: ChallengeServiceProtocol {
             challengeCategory: challenge.category.rawValue,
             completedDate: today,
             scheduledDate: scheduledDate.startOfDay,
+            dayKey: CivilDay.key(for: scheduledDate),
             journalEntry: finalJournal
         )
 
@@ -148,21 +149,24 @@ final class ChallengeService: ChallengeServiceProtocol {
         return newBadges
     }
 
+    /// Matches on the frozen civil day, not on an instant range. The old
+    /// half-open `scheduledDate` window re-derived the day from the device's
+    /// current time zone on every read, so the same row could fall inside the
+    /// window before a trip and outside it after.
     func isCompleted(on scheduledDate: Date) -> Bool {
-        let dayStart = scheduledDate.startOfDay
-        let dayEnd = dayStart.addingDays(1)
+        let key = CivilDay.key(for: scheduledDate)
         let descriptor = FetchDescriptor<CompletedChallenge>(
-            predicate: #Predicate { $0.scheduledDate >= dayStart && $0.scheduledDate < dayEnd }
+            predicate: #Predicate { $0.dayKey == key }
         )
         let results = (try? persistence.fetch(descriptor)) ?? []
         return !results.isEmpty
     }
 
     func fetchCompletions(for dateRange: ClosedRange<Date>) -> [CompletedChallenge] {
-        let start = dateRange.lowerBound
-        let end = dateRange.upperBound
+        let start = CivilDay.key(for: dateRange.lowerBound)
+        let end = CivilDay.key(for: dateRange.upperBound)
         let descriptor = FetchDescriptor<CompletedChallenge>(
-            predicate: #Predicate { $0.scheduledDate >= start && $0.scheduledDate <= end }
+            predicate: #Predicate { $0.dayKey >= start && $0.dayKey <= end }
         )
         return (try? persistence.fetch(descriptor)) ?? []
     }
@@ -174,7 +178,9 @@ final class ChallengeService: ChallengeServiceProtocol {
     func calculateStreak() -> Int {
         let descriptor = FetchDescriptor<CompletedChallenge>()
         let completions = (try? persistence.fetch(descriptor)) ?? []
-        let dates = completions.map(\.scheduledDate)
-        return StreakCalculator.calculateStreak(completionDates: dates, today: dateProvider())
+        return StreakCalculator.calculateStreak(
+            completedDayKeys: completions.map(\.dayKey),
+            today: dateProvider()
+        )
     }
 }

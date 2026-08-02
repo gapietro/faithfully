@@ -90,6 +90,12 @@ final class AppEnvironment {
             // badge set matches the completions actually on disk, whatever
             // happened during a previous run.
             //
+            // Backfill any completion that reached V2 without passing through the
+            // migration stage — a store created before the plan existed arrives
+            // at V2 directly, and a row left at dayKey 0 would disappear from
+            // every query. Idempotent and a no-op once done.
+            try? FaithfullyMigrationPlan.backfillDayKeys(in: persistence.context)
+
             // Best-effort on purpose, and the only remaining `try?` on a write:
             // this is a repair the user never asked for, so a failure must leave
             // the badge set exactly as it was and let the next launch retry,

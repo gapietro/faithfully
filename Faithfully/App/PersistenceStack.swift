@@ -23,7 +23,10 @@ enum PersistenceStack {
 
     static func open() -> Outcome {
         do {
-            return .ready(try ModelContainer(for: Schema(models)))
+            return .ready(try ModelContainer(
+                for: Schema(models),
+                migrationPlan: FaithfullyMigrationPlan.self
+            ))
         } catch {
             return degrade(after: error)
         }
