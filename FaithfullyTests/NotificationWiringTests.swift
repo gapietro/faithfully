@@ -22,7 +22,14 @@ final class NotificationWiringTests: XCTestCase {
         notificationService = NotificationService(center: mockCenter)
     }
 
+    /// Seeds a long-standing profile before bootstrapping. These tests build
+    /// streaks out of past days, which a user enrolling on `today` would not be
+    /// eligible for (CLEAN-002).
     private func makeServices(today: Date) throws -> AppServices {
+        if try context.fetch(FetchDescriptor<UserProfile>()).isEmpty {
+            context.insert(UserProfile(startDate: TestHelpers.longEnrolledDate))
+            try context.save()
+        }
         let env = AppEnvironment(
             modelContext: context,
             loadChallenges: { self.challenges },

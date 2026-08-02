@@ -97,6 +97,7 @@ struct CalendarScreenView: View {
         case .missed: return .gray.opacity(0.2)
         case .missedRecoverable: return .orange.opacity(0.3)
         case .future: return .clear
+        case .preEnrollment: return .clear
         case .today: return .blue.opacity(0.2)
         }
     }
@@ -107,6 +108,10 @@ struct CalendarScreenView: View {
         case .missed: return .gray
         case .missedRecoverable: return .orange
         case .future: return .secondary
+        // Dimmer than .future and .missed alike: these days are outside the
+        // user's journey entirely, so they must not read as either upcoming
+        // work or a failure.
+        case .preEnrollment: return .secondary.opacity(0.4)
         case .today: return .primary
         }
     }
