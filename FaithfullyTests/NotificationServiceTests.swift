@@ -2,31 +2,51 @@ import XCTest
 import UserNotifications
 @testable import Faithfully
 
-final class MockNotificationCenter: NotificationCenterProtocol {
-    var permissionGranted = true
-    var requestAuthorizationCalled = false
-    var addedRequests: [UNNotificationRequest] = []
-    var removedIdentifiers: [String] = []
+/// Lock-guarded because `NotificationCenterProtocol` is `Sendable`: the real
+/// center is reached from the serialized operation chain, which runs off the
+/// caller's context, and the concurrency stress tests hit this mock from many
+/// tasks at once. An unguarded mock would make those tests flaky rather than
+/// meaningful.
+final class MockNotificationCenter: NotificationCenterProtocol, @unchecked Sendable {
+    private let lock = NSLock()
+    private var _permissionGranted = true
+    private var _requestAuthorizationCalled = false
+    private var _addedRequests: [UNNotificationRequest] = []
+    private var _removedIdentifiers: [String] = []
+
+    var permissionGranted: Bool {
+        get { lock.withLock { _permissionGranted } }
+        set { lock.withLock { _permissionGranted = newValue } }
+    }
+    var requestAuthorizationCalled: Bool { lock.withLock { _requestAuthorizationCalled } }
+    var addedRequests: [UNNotificationRequest] { lock.withLock { _addedRequests } }
+    var removedIdentifiers: [String] { lock.withLock { _removedIdentifiers } }
 
     func requestAuthorization(options: UNAuthorizationOptions) async throws -> Bool {
-        requestAuthorizationCalled = true
-        return permissionGranted
+        lock.withLock {
+            _requestAuthorizationCalled = true
+            return _permissionGranted
+        }
     }
 
     func add(_ request: UNNotificationRequest) async throws {
         // Mirror UNUserNotificationCenter: adding with an existing identifier
         // replaces the pending request rather than stacking a duplicate.
-        addedRequests.removeAll { $0.identifier == request.identifier }
-        addedRequests.append(request)
+        lock.withLock {
+            _addedRequests.removeAll { $0.identifier == request.identifier }
+            _addedRequests.append(request)
+        }
     }
 
     func removePendingNotificationRequests(withIdentifiers identifiers: [String]) {
-        removedIdentifiers.append(contentsOf: identifiers)
-        addedRequests.removeAll { identifiers.contains($0.identifier) }
+        lock.withLock {
+            _removedIdentifiers.append(contentsOf: identifiers)
+            _addedRequests.removeAll { identifiers.contains($0.identifier) }
+        }
     }
 
     func pendingNotificationRequests() async -> [UNNotificationRequest] {
-        return addedRequests
+        lock.withLock { _addedRequests }
     }
 }
 
@@ -205,5 +225,108 @@ final class NotificationServiceTests: XCTestCase {
         let evening = mockCenter.addedRequests.first { $0.identifier == "evening_reminder" }
         XCTAssertNil(morning, "Disabled morning should not be scheduled")
         XCTAssertNil(evening, "Disabled evening should not be scheduled")
+    }
+
+    // MARK: - Concurrency stress (CLEAN-006)
+
+    private func makeBadge(_ name: String) -> EarnedBadge {
+        EarnedBadge(badgeName: name, badgeType: .journey, threshold: 1)
+    }
+
+    /// The chain used to be linked through unguarded mutable state: two callers
+    /// could read the same predecessor, and one assignment overwrote the other,
+    /// dropping that operation out of the chain entirely. With 200 concurrent
+    /// enqueues, some adds went missing and `waitForPendingOperations` returned
+    /// before they ran.
+    func testConcurrentEnqueuesNeverDropAnOperation() async {
+        let profile = UserProfile()
+        let count = 200
+        let service = self.service!
+        let badges = (0..<count).map { makeBadge("stress_\($0)") }
+
+        await withTaskGroup(of: Void.self) { group in
+            for badge in badges {
+                group.addTask { service.scheduleBadgeCelebration(badge, profile: profile) }
+            }
+        }
+        await service.waitForPendingOperations()
+
+        XCTAssertEqual(
+            mockCenter.addedRequests.count, count,
+            "Every concurrently enqueued operation must run and be awaited"
+        )
+        let identifiers = Set(mockCenter.addedRequests.map(\.identifier))
+        XCTAssertEqual(identifiers.count, count, "No operation may be lost or duplicated")
+    }
+
+    /// Overlapping authorization, scheduling, cancellation, and settings changes
+    /// — the four paths the app actually interleaves (permission callback, scene
+    /// foreground, completion, settings save).
+    func testOverlappingAuthorizeScheduleCancelAndSettingsChangesSettleDeterministically() async {
+        let service = self.service!
+        let profiles = (0..<40).map { index -> UserProfile in
+            let profile = UserProfile()
+            // Alternate the settings each iteration, as a user toggling would.
+            profile.morningNotificationsEnabled = index % 2 == 0
+            profile.eveningRemindersEnabled = true
+            profile.streakWarningsEnabled = true
+            return profile
+        }
+
+        await withTaskGroup(of: Void.self) { group in
+            for profile in profiles {
+                group.addTask { _ = await service.requestPermission() }
+                group.addTask { service.scheduleAllNotifications(profile: profile) }
+                group.addTask { service.scheduleStreakWarning(streak: 10, profile: profile) }
+                group.addTask { service.cancelTodayReminders() }
+            }
+        }
+        await service.waitForPendingOperations()
+
+        // The interleaving is arbitrary, but the run must terminate, drain fully,
+        // and leave the store self-consistent — never a torn or duplicated set.
+        let identifiers = mockCenter.addedRequests.map(\.identifier)
+        XCTAssertEqual(Set(identifiers).count, identifiers.count,
+                       "Pending requests must never contain duplicate identifiers")
+        XCTAssertTrue(mockCenter.requestAuthorizationCalled)
+    }
+
+    /// The ordering guarantee the chain exists for: a cancel issued after a
+    /// schedule must win, even though the schedule's `add` is async. If the chain
+    /// drops links, the schedule can land after the cancel and resurrect a
+    /// reminder the user already dismissed by completing the day.
+    func testCancelIssuedAfterScheduleIsNeverOvertaken() async {
+        let profile = UserProfile()
+        profile.morningNotificationsEnabled = true
+        profile.eveningRemindersEnabled = true
+
+        for _ in 0..<50 {
+            service.scheduleAllNotifications(profile: profile)
+            service.cancelTodayReminders()
+        }
+        await service.waitForPendingOperations()
+
+        let pending = Set(mockCenter.addedRequests.map(\.identifier))
+        XCTAssertFalse(pending.contains("evening_reminder"),
+                       "A cancel issued after a schedule must not be overtaken by the schedule's add")
+        XCTAssertFalse(pending.contains("streak_warning"))
+        XCTAssertTrue(pending.contains("morning_challenge"),
+                      "Cancelling today's reminders must leave the morning notification alone")
+    }
+
+    func testWaitForPendingOperationsDrainsWorkEnqueuedFromManyTasks() async {
+        let profile = UserProfile()
+        let service = self.service!
+        let badges = (0..<50).map { makeBadge("drain_\($0)") }
+
+        await withTaskGroup(of: Void.self) { group in
+            for badge in badges {
+                group.addTask { service.scheduleBadgeCelebration(badge, profile: profile) }
+            }
+        }
+        await service.waitForPendingOperations()
+
+        // No second drain, no polling: one await must be enough.
+        XCTAssertEqual(mockCenter.addedRequests.count, 50)
     }
 }
