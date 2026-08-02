@@ -9,12 +9,21 @@ protocol NotificationServiceProtocol {
     func scheduleBadgeCelebration(_ badge: EarnedBadge, profile: UserProfile)
 }
 
-protocol NotificationCenterProtocol {
+/// `Sendable` because implementations are reached from the serialized operation
+/// chain, which runs off the caller's context.
+protocol NotificationCenterProtocol: Sendable {
     func requestAuthorization(options: UNAuthorizationOptions) async throws -> Bool
     func add(_ request: UNNotificationRequest) async throws
     func removePendingNotificationRequests(withIdentifiers identifiers: [String])
     func pendingNotificationRequests() async -> [UNNotificationRequest]
 }
+
+/// `UNNotificationRequest` is immutable once constructed — its identifier,
+/// content, and trigger are read-only, and the content it vends is a copy. The
+/// UserNotifications module predates `Sendable` annotation, so the conformance
+/// is stated here rather than blanketing the whole module with
+/// `@preconcurrency`, which would also mask genuinely unsafe uses.
+extension UNNotificationRequest: @retroactive @unchecked Sendable {}
 
 extension UNUserNotificationCenter: NotificationCenterProtocol {
     func pendingNotificationRequests() async -> [UNNotificationRequest] {
@@ -26,14 +35,55 @@ extension UNUserNotificationCenter: NotificationCenterProtocol {
     }
 }
 
-final class NotificationService: NotificationServiceProtocol {
+/// Serial ordering for notification work.
+///
+/// The chain tail is guarded by a lock rather than left as bare mutable state.
+/// Without it, two callers — a permission callback and a scene refresh, say —
+/// could read the same predecessor, each build a successor, and have one
+/// assignment overwrite the other. The overwritten operation drops out of the
+/// chain entirely: a cancel could be lost so a cancelled reminder is
+/// resurrected, and `waitForPendingOperations` could return before that work ran.
+///
+/// A lock rather than an actor because the ordering has to be established
+/// *synchronously*, in call order, at the call site. Hopping into an actor to
+/// link the chain would put the linking itself on an unordered task queue and
+/// reintroduce exactly the race being fixed.
+///
+/// `@unchecked Sendable` is sound here: `tail` is the only mutable state and is
+/// never read or written outside `lock`.
+private final class OperationChain: @unchecked Sendable {
+    private let lock = NSLock()
+    private var tail: Task<Void, Never> = Task {}
+
+    func enqueue(_ operation: @escaping @Sendable () async -> Void) {
+        lock.withLock {
+            let previous = tail
+            tail = Task {
+                await previous.value
+                await operation()
+            }
+        }
+    }
+
+    /// Awaits everything enqueued up to this call. Work enqueued afterwards is
+    /// deliberately not awaited — that is what "pending so far" means. The tail
+    /// is read under the lock and awaited outside it, so draining never blocks
+    /// another caller from enqueueing.
+    func drain() async {
+        let current = lock.withLock { tail }
+        await current.value
+    }
+}
+
+final class NotificationService: NotificationServiceProtocol, Sendable {
     let center: NotificationCenterProtocol
 
     /// All schedule/cancel work runs through this serial chain so a cancel
     /// issued after a schedule can never be overtaken by the schedule's async
     /// add — e.g. completing today right after a settings change must leave the
-    /// evening reminder cancelled, not resurrected.
-    private var operationQueue: Task<Void, Never> = Task {}
+    /// evening reminder cancelled, not resurrected. `let`, so the service itself
+    /// holds no mutable state; the ordering invariant lives inside the chain.
+    private let operations = OperationChain()
 
     init(center: NotificationCenterProtocol = UNUserNotificationCenter.current()) {
         self.center = center
@@ -122,16 +172,13 @@ final class NotificationService: NotificationServiceProtocol {
     /// Awaits every operation enqueued so far. Exposed for tests, which need
     /// the async adds to have landed before asserting on the mock center.
     func waitForPendingOperations() async {
-        await operationQueue.value
+        await operations.drain()
     }
 
     // MARK: - Private
 
-    private func enqueue(_ operation: @escaping () async -> Void) {
-        operationQueue = Task { [previous = operationQueue] in
-            await previous.value
-            await operation()
-        }
+    private func enqueue(_ operation: @escaping @Sendable () async -> Void) {
+        operations.enqueue(operation)
     }
 
     private static func makeDailyRequest(identifier: String, title: String, body: String, time: Date) -> UNNotificationRequest {
