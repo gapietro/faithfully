@@ -227,23 +227,25 @@ final class AppEnvironmentTests: XCTestCase {
                        "A day rollover must not yank the user away from a month they were browsing")
     }
 
-    // MARK: - Year rotation in the live app path (#4)
+    // MARK: - Year rotation in the live app path (#4, CLEAN-001)
 
-    func testLiveServicePathAppliesYearRotationFromProfileStartDate() throws {
-        // A profile that started two years ago must see rotated pairings today.
-        let startDate = Date.from(year: 2024, month: 1, day: 1)
-        context.insert(UserProfile(startDate: startDate))
+    func testLiveServicePathIgnoresProfileStartDateWhenRotating() throws {
+        // A profile that enrolled two years ago must still see the pairing the
+        // global epoch dictates for today — not a tenure-shifted one.
+        context.insert(UserProfile(startDate: Date.from(year: 2024, month: 1, day: 1)))
         try context.save()
 
         let today = Date.from(year: 2026, month: 6, day: 15)
         let env = makeEnvironment(today: today)
         let services = try XCTUnwrap(env.services)
         let scheduler = try XCTUnwrap(ChallengeScheduler(challenges: challenges))
+        let epochOffset = 2026 - Constants.rotationEpochYear
 
         XCTAssertEqual(services.challengeService.challengeForDate(today).id,
-                       scheduler.challengeForDate(today, yearOffset: 2).id,
-                       "Live path must derive the year offset from the profile start date")
+                       scheduler.challengeForDate(today, yearOffset: epochOffset).id,
+                       "Live path must rotate from the global epoch, not the profile start date")
         XCTAssertNotEqual(services.challengeService.challengeForDate(today).id,
-                          scheduler.challengeForDate(today, yearOffset: 0).id)
+                          scheduler.challengeForDate(today, yearOffset: 2).id,
+                          "A two-year-old profile must not get a two-year tenure shift")
     }
 }

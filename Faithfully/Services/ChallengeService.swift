@@ -21,6 +21,8 @@ final class ChallengeService: ChallengeServiceProtocol {
     private let challenges: [DailyChallenge]
     private let scheduler: ChallengeScheduler
     private let badgeService: BadgeServiceProtocol
+    /// The day this user enrolled. Rotation no longer derives from it; it is kept
+    /// because enrollment is a domain boundary in its own right (CLEAN-002).
     private let userStartDate: Date
     private let dateProvider: () -> Date
 
@@ -54,10 +56,11 @@ final class ChallengeService: ChallengeServiceProtocol {
     }
 
     func challengeForDate(_ date: Date) -> DailyChallenge {
-        // Year rotation rule: the offset is the number of whole years between the
-        // user's start date and the target date (PRD §11.4, SPARC getYearOffset),
-        // so a returning user's Year 2 pairs dates with different challenges than Year 1.
-        let offset = ChallengeScheduler.yearOffset(from: userStartDate, to: date)
+        // Year rotation rule: the offset is measured from the global epoch, not
+        // from this user's start date. The rotation still varies year over year,
+        // but it varies for everyone at once, so a given civil date resolves to
+        // the same challenge for every user regardless of when they enrolled.
+        let offset = ChallengeScheduler.globalYearOffset(for: date)
         return scheduler.challengeForDate(date, yearOffset: offset)
     }
 

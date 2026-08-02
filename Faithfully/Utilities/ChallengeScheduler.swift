@@ -34,7 +34,11 @@ struct ChallengeScheduler {
         return weekday == 7 && day <= 7 // Saturday = 7 in Calendar
     }
 
-    static func yearOffset(from startDate: Date, to date: Date) -> Int {
-        Calendar.current.dateComponents([.year], from: startDate, to: date).year ?? 0
+    /// Rotation offset for a calendar date, measured from the global epoch rather
+    /// than from any individual user's enrollment. Deriving this per-user would
+    /// give two users different challenges on the same civil date and break the
+    /// shared-experience contract the product is built on.
+    static func globalYearOffset(for date: Date) -> Int {
+        Calendar.current.component(.year, from: date) - Constants.rotationEpochYear
     }
 }

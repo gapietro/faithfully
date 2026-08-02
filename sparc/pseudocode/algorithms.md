@@ -8,7 +8,8 @@ The central algorithm that determines which challenge appears on any given date 
 ```
 function getChallengeForDate(date, yearOffset):
     // All users see the same challenge on the same date
-    // Year offset rotates challenges so Year 2 users get different calendar-date pairings
+    // Year offset rotates challenges so a calendar date pairs with a different
+    // challenge each year — globally, for everyone at once (see getYearOffset)
 
     dayOfYear = date.dayOfYear()  // 1-365 (ignore leap day)
 
@@ -34,8 +35,12 @@ function getChallengeForDate(date, yearOffset):
 function isFirstSaturdayOfMonth(date):
     return date.weekday == .saturday AND date.day <= 7
 
-function getYearOffset(date, userStartDate):
-    return Calendar.current.dateComponents([.year], from: userStartDate, to: date).year ?? 0
+// CLEAN-001: this offset is measured from a fixed global epoch, never from the
+// user's own start date. Deriving it per-user made two users with different
+// enrollment dates see different challenges on the same civil date, which
+// contradicts the shared-experience contract asserted three lines above.
+function getYearOffset(date):
+    return date.year - ROTATION_EPOCH_YEAR   // ROTATION_EPOCH_YEAR = 2026, frozen
 ```
 
 ### 2. Streak Calculation
