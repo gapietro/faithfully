@@ -33,7 +33,7 @@ protocol ChallengeServiceProtocol {
 }
 
 final class ChallengeService: ChallengeServiceProtocol {
-    private let modelContext: ModelContext
+    private let persistence: PersistenceCoordinating
     private let challenges: [DailyChallenge]
     private let scheduler: ChallengeScheduler
     private let badgeService: BadgeServiceProtocol
@@ -46,8 +46,24 @@ final class ChallengeService: ChallengeServiceProtocol {
     /// (cancel today's reminders, celebrate new badges).
     var onCompletionRecorded: ((_ scheduledDate: Date, _ newBadges: [BadgeDefinition]) -> Void)?
 
-    init(
+    convenience init(
         modelContext: ModelContext,
+        challenges: [DailyChallenge],
+        badgeService: BadgeServiceProtocol,
+        enrollmentDate: Date = .now,
+        dateProvider: @escaping () -> Date = { .now }
+    ) throws {
+        try self.init(
+            persistence: PersistenceCoordinator(context: modelContext),
+            challenges: challenges,
+            badgeService: badgeService,
+            enrollmentDate: enrollmentDate,
+            dateProvider: dateProvider
+        )
+    }
+
+    init(
+        persistence: PersistenceCoordinating,
         challenges: [DailyChallenge],
         badgeService: BadgeServiceProtocol,
         enrollmentDate: Date = .now,
@@ -57,7 +73,7 @@ final class ChallengeService: ChallengeServiceProtocol {
         guard let scheduler = ChallengeScheduler(challenges: challenges) else {
             throw ChallengeServiceError.emptyChallengePool
         }
-        self.modelContext = modelContext
+        self.persistence = persistence
         self.challenges = challenges
         self.scheduler = scheduler
         self.badgeService = badgeService
@@ -118,10 +134,16 @@ final class ChallengeService: ChallengeServiceProtocol {
             journalEntry: finalJournal
         )
 
-        modelContext.insert(completion)
-        try modelContext.save()
+        // One transaction: the completion and the badges it earns commit together
+        // or not at all. Two separate saves meant a process death between them
+        // left a completion whose badge was never awarded — invisible to the user
+        // and only repaired by chance on some later completion.
+        var newBadges: [BadgeDefinition] = []
+        try persistence.transaction {
+            persistence.insert(completion)
+            newBadges = badgeService.evaluateAndStageAwards()
+        }
 
-        let newBadges = badgeService.evaluateAndAward()
         onCompletionRecorded?(scheduledDate, newBadges)
         return newBadges
     }
@@ -132,7 +154,7 @@ final class ChallengeService: ChallengeServiceProtocol {
         let descriptor = FetchDescriptor<CompletedChallenge>(
             predicate: #Predicate { $0.scheduledDate >= dayStart && $0.scheduledDate < dayEnd }
         )
-        let results = (try? modelContext.fetch(descriptor)) ?? []
+        let results = (try? persistence.fetch(descriptor)) ?? []
         return !results.isEmpty
     }
 
@@ -142,16 +164,16 @@ final class ChallengeService: ChallengeServiceProtocol {
         let descriptor = FetchDescriptor<CompletedChallenge>(
             predicate: #Predicate { $0.scheduledDate >= start && $0.scheduledDate <= end }
         )
-        return (try? modelContext.fetch(descriptor)) ?? []
+        return (try? persistence.fetch(descriptor)) ?? []
     }
 
     func fetchAllCompletions() -> [CompletedChallenge] {
-        (try? modelContext.fetch(FetchDescriptor<CompletedChallenge>())) ?? []
+        (try? persistence.fetch(FetchDescriptor<CompletedChallenge>())) ?? []
     }
 
     func calculateStreak() -> Int {
         let descriptor = FetchDescriptor<CompletedChallenge>()
-        let completions = (try? modelContext.fetch(descriptor)) ?? []
+        let completions = (try? persistence.fetch(descriptor)) ?? []
         let dates = completions.map(\.scheduledDate)
         return StreakCalculator.calculateStreak(completionDates: dates, today: dateProvider())
     }

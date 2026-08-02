@@ -27,7 +27,18 @@ struct ContentView: View {
         case .ready(let services):
             Group {
                 if hasCompletedOnboarding {
-                    MainTabView(services: services)
+                    VStack(spacing: 0) {
+                        // Above the tabs, not inside one: a store failure affects
+                        // every tab, and burying it in Settings would let a user
+                        // write a journal entry that is silently going nowhere.
+                        if let failure = appEnvironment.storeFailure {
+                            StoreUnavailableBanner(message: failure.message) {
+                                appEnvironment.onResetStore?()
+                            }
+                            .padding(.top, 8)
+                        }
+                        MainTabView(services: services)
+                    }
                 } else {
                     OnboardingView(
                         onComplete: {

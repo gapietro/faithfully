@@ -85,7 +85,7 @@ final class BadgeServiceTests: XCTestCase {
         }
         try context.save()
 
-        let newBadges = service.evaluateAndAward()
+        let newBadges = service.evaluateAndStageAwards()
         XCTAssertTrue(newBadges.contains(where: { $0.id == "journey_5k" }))
 
         // Verify persisted
@@ -110,7 +110,7 @@ final class BadgeServiceTests: XCTestCase {
         }
         try context.save()
 
-        let newBadges = service.evaluateAndAward()
+        let newBadges = service.evaluateAndStageAwards()
         XCTAssertFalse(newBadges.contains(where: { $0.id == "journey_5k" }),
                        "Should not re-award existing badge")
 
