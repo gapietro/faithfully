@@ -10,6 +10,22 @@ enum CalendarDayStatus: Equatable {
     /// not show them as a deficit and they can never be completed.
     case preEnrollment
     case today
+
+    /// Spoken by VoiceOver and asserted by the UI tests.
+    ///
+    /// Status is otherwise conveyed only by colour, which is both inaccessible
+    /// and untestable — a UI test can see that a day exists but not that it is
+    /// green. Exposing it as an accessibility value fixes both at once.
+    var accessibilityDescription: String {
+        switch self {
+        case .completed: return "Completed"
+        case .missed: return "Missed"
+        case .missedRecoverable: return "Missed, can still be completed"
+        case .future: return "Upcoming"
+        case .preEnrollment: return "Before you started"
+        case .today: return "Today, not yet completed"
+        }
+    }
 }
 
 struct CalendarDay: Identifiable, Equatable {

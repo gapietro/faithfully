@@ -8,6 +8,12 @@ struct FaithfullyApp: App {
 
     init() {
         let outcome = PersistenceStack.open()
+        #if DEBUG
+        // Before the environment is built, so the graph reads seeded state.
+        if let scenario = UITestSupport.requestedScenario {
+            UITestSupport.apply(scenario, in: Self.container(for: outcome).mainContext)
+        }
+        #endif
         _stack = State(initialValue: outcome)
         _appEnvironment = State(initialValue: AppEnvironment(
             modelContext: Self.container(for: outcome).mainContext,
