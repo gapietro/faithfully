@@ -7,9 +7,10 @@ enum Constants {
     /// Changing this value reshuffles the schedule for everyone — treat it as frozen.
     static let rotationEpochYear = 2026
 
-    static let totalChallenges = 365
-    static let gracePeriodDays = 3
+    /// Default reminder times for a new profile. `UserProfile` reads these, so
+    /// the value lives in one place rather than as a literal in an initialiser.
     static let defaultMorningHour = 7
     static let defaultEveningHour = 20
+
     static let maxJournalLength = 2000
 }
