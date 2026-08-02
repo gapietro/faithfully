@@ -57,6 +57,7 @@ struct CalendarScreenView: View {
                                     .clipShape(Circle())
                             }
                             .accessibilityIdentifier("calendarDay_\(Calendar.current.component(.day, from: day.date))")
+                            .accessibilityValue(day.status.accessibilityDescription)
                         }
                     }
                     .padding(.horizontal)
@@ -66,11 +67,14 @@ struct CalendarScreenView: View {
 
                     // Day detail
                     if let selected = vm.selectedDay {
+                        // No container identifier here: applying one to a parent
+                        // overwrites every descendant's identifier, so the title,
+                        // the pre-enrollment notice, and the Complete button all
+                        // became indistinguishable "dayDetail" elements.
                         DayDetailView(day: selected) {
                             vm.completeGracePeriod(selected)
                             vm.selectedDay = nil
                         }
-                        .accessibilityIdentifier("dayDetail")
                     }
               }
             }

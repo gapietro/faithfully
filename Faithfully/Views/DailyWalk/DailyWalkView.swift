@@ -55,6 +55,7 @@ struct DailyWalkView: View {
                         Text("Yesterday: \(vm.yesterdayChallenge.title)")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
+                            .accessibilityIdentifier("yesterdayChallengeTitle")
                     }
                     .accessibilityIdentifier("yesterdayChallenge")
                 }
