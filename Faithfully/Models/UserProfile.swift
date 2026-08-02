@@ -20,8 +20,12 @@ final class UserProfile {
         displayName: String = "",
         startDate: Date = .now,
         preferredTranslation: BibleTranslation = .web,
-        morningNotificationTime: Date = Calendar.current.date(from: DateComponents(hour: 7, minute: 0)) ?? .now,
-        eveningReminderTime: Date = Calendar.current.date(from: DateComponents(hour: 20, minute: 0)) ?? .now,
+        morningNotificationTime: Date = Calendar.current.date(
+            from: DateComponents(hour: Constants.defaultMorningHour, minute: 0)
+        ) ?? .now,
+        eveningReminderTime: Date = Calendar.current.date(
+            from: DateComponents(hour: Constants.defaultEveningHour, minute: 0)
+        ) ?? .now,
         morningNotificationsEnabled: Bool = true,
         eveningRemindersEnabled: Bool = true,
         streakWarningsEnabled: Bool = true,
