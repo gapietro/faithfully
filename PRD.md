@@ -377,7 +377,7 @@ ChallengeCategory (enum)
 
 ## 11. Additional Resolved Decisions
 
-4. **Challenge rotation:** Challenges shift/rotate yearly so returning users don't see the same challenge on the same calendar date. The scheduling algorithm offsets the challenge pool each year to keep content fresh for long-term users.
+4. **Challenge rotation:** Challenges shift/rotate each calendar year, so a returning user doesn't get the same challenge on the same calendar date two years running. The rotation is anchored to a fixed global epoch (2026), not to each user's enrollment date — it advances for everyone at once, which is what keeps §6.3's promise that all users see the same challenge on the same calendar date.
 5. **Grace period:** 3 days. Users can go back and complete up to 3 missed days. This balances forgiveness with accountability.
 6. **Giving frequency:** First Saturday of every month. Predictable so users can plan financially, and landing on a weekend gives them time to act.
 7. **Journal privacy:** Optionally shareable. Journal entries are private by default, but users can choose to share a specific entry as a text or image card (e.g., to Messages, social media, or a small group chat).
