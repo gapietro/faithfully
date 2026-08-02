@@ -183,6 +183,7 @@ final class DailyWalkViewModelTests: XCTestCase {
         func challengeForDate(_ date: Date) -> DailyChallenge { challenge }
         func isCompleted(on scheduledDate: Date) -> Bool { false }
         func fetchCompletions(for dateRange: ClosedRange<Date>) -> [CompletedChallenge] { [] }
+        func fetchAllCompletions() -> [CompletedChallenge] { [] }
         func calculateStreak() -> Int { 0 }
 
         func completeChallenge(

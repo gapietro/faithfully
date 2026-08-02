@@ -23,6 +23,12 @@ protocol ChallengeServiceProtocol {
     func completeChallenge(_ challenge: DailyChallenge, on scheduledDate: Date, journal: String?) throws -> [BadgeDefinition]
     func isCompleted(on scheduledDate: Date) -> Bool
     func fetchCompletions(for dateRange: ClosedRange<Date>) -> [CompletedChallenge]
+
+    /// Every completion ever recorded, with no date bounds. Totals and journal
+    /// search must not be clipped by a sentinel range — BadgeService already
+    /// counts without bounds, so any bounded caller disagrees with it silently.
+    func fetchAllCompletions() -> [CompletedChallenge]
+
     func calculateStreak() -> Int
 }
 
@@ -137,6 +143,10 @@ final class ChallengeService: ChallengeServiceProtocol {
             predicate: #Predicate { $0.scheduledDate >= start && $0.scheduledDate <= end }
         )
         return (try? modelContext.fetch(descriptor)) ?? []
+    }
+
+    func fetchAllCompletions() -> [CompletedChallenge] {
+        (try? modelContext.fetch(FetchDescriptor<CompletedChallenge>())) ?? []
     }
 
     func calculateStreak() -> Int {

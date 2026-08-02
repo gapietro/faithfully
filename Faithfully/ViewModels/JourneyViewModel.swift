@@ -71,10 +71,12 @@ final class JourneyViewModel {
         )
     }
 
+    /// Unbounded on purpose. This used to be a 2020…2030 sentinel window, which
+    /// meant a completion outside it vanished from totals, journal, and search
+    /// while BadgeService's unbounded fetch still counted it — the same app
+    /// reporting two different totals.
     private func allCompletions() -> [CompletedChallenge] {
-        let farPast = Date.from(year: 2020, month: 1, day: 1)
-        let farFuture = Date.from(year: 2030, month: 12, day: 31)
-        return challengeService.fetchCompletions(for: farPast...farFuture)
+        challengeService.fetchAllCompletions()
     }
 
     private func journalItems(from completions: [CompletedChallenge], matching query: String? = nil) -> [JournalDisplayItem] {
