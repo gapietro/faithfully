@@ -174,36 +174,92 @@ final class ChallengeServiceTests: XCTestCase {
         XCTAssertEqual(all.count, 2, "Both days should have their own completion record")
     }
 
-    // MARK: - Year rotation in the live service path (#4)
+    // MARK: - Year rotation in the live service path (#4, CLEAN-001)
 
-    func testChallengeForDateAppliesYearOffsetFromUserStartDate() throws {
-        let startDate = Date.from(year: 2025, month: 1, day: 1)
-        let service = try ChallengeService(
-            modelContext: context, challenges: challenges, badgeService: badgeService,
-            userStartDate: startDate
-        )
-        let target = Date.from(year: 2026, month: 6, day: 15) // one whole year after start
-        let scheduler = try XCTUnwrap(ChallengeScheduler(challenges: challenges))
+    /// The core shared-experience contract: enrollment date must not influence
+    /// which challenge a civil date resolves to. This is the test that fails if
+    /// anyone reintroduces tenure-relative rotation.
+    func testEnrollmentDateDoesNotAffectWhichChallengeADateResolvesTo() throws {
+        let enrollmentDates = [
+            Date.from(year: 2020, month: 3, day: 7),
+            Date.from(year: 2025, month: 12, day: 31),
+            Date.from(year: 2026, month: 1, day: 1),
+            Date.from(year: 2026, month: 6, day: 15),
+            Date.from(year: 2029, month: 11, day: 2)
+        ]
+        let services = try enrollmentDates.map { startDate in
+            try ChallengeService(
+                modelContext: context, challenges: challenges, badgeService: badgeService,
+                userStartDate: startDate
+            )
+        }
 
-        XCTAssertEqual(service.challengeForDate(target).id,
-                       scheduler.challengeForDate(target, yearOffset: 1).id,
-                       "Service path must pass the year offset derived from the user's start date")
-        XCTAssertNotEqual(service.challengeForDate(target).id,
-                          scheduler.challengeForDate(target, yearOffset: 0).id,
-                          "A second-year user must not see the first-year pairing")
+        // Sample across four calendar years, including both first Saturdays
+        // (giving) and ordinary days, and both leap and non-leap years.
+        let sampleDates = (0..<4).flatMap { yearOffset -> [Date] in
+            let year = 2026 + yearOffset
+            return [
+                Date.from(year: year, month: 1, day: 1),
+                Date.from(year: year, month: 2, day: 7),
+                Date.from(year: year, month: 6, day: 15),
+                Date.from(year: year, month: 12, day: 31)
+            ]
+        }
+
+        for date in sampleDates {
+            let ids = Set(services.map { $0.challengeForDate(date).id })
+            XCTAssertEqual(
+                ids.count, 1,
+                "Every user must receive the same challenge on \(date); got \(ids.sorted())"
+            )
+        }
     }
 
-    func testChallengeForDateUsesZeroOffsetWithinFirstYear() throws {
-        let startDate = Date.from(year: 2026, month: 1, day: 1)
+    func testChallengeForDateUsesTheGlobalEpochOffset() throws {
         let service = try ChallengeService(
             modelContext: context, challenges: challenges, badgeService: badgeService,
-            userStartDate: startDate
+            userStartDate: Date.from(year: 2025, month: 1, day: 1)
         )
-        let target = Date.from(year: 2026, month: 6, day: 15)
         let scheduler = try XCTUnwrap(ChallengeScheduler(challenges: challenges))
 
-        XCTAssertEqual(service.challengeForDate(target).id,
-                       scheduler.challengeForDate(target, yearOffset: 0).id)
+        for year in 2026...2030 {
+            let target = Date.from(year: year, month: 6, day: 15)
+            let expectedOffset = year - Constants.rotationEpochYear
+            XCTAssertEqual(
+                service.challengeForDate(target).id,
+                scheduler.challengeForDate(target, yearOffset: expectedOffset).id,
+                "\(year) must rotate by \(expectedOffset) from the global epoch"
+            )
+        }
+    }
+
+    func testAdjacentCalendarYearsRotateToDifferentChallenges() throws {
+        let service = try ChallengeService(
+            modelContext: context, challenges: challenges, badgeService: badgeService,
+            userStartDate: Date.from(year: 2026, month: 1, day: 1)
+        )
+
+        for year in 2026...2029 {
+            let thisYear = service.challengeForDate(Date.from(year: year, month: 6, day: 15))
+            let nextYear = service.challengeForDate(Date.from(year: year + 1, month: 6, day: 15))
+            XCTAssertNotEqual(
+                thisYear.id, nextYear.id,
+                "June 15 must rotate between \(year) and \(year + 1)"
+            )
+        }
+    }
+
+    func testRotationIsStableAcrossServiceInstances() throws {
+        let target = Date.from(year: 2027, month: 4, day: 9)
+        let first = try ChallengeService(
+            modelContext: context, challenges: challenges, badgeService: badgeService
+        ).challengeForDate(target)
+        let second = try ChallengeService(
+            modelContext: context, challenges: challenges, badgeService: badgeService
+        ).challengeForDate(target)
+
+        XCTAssertEqual(first.id, second.id,
+                       "A civil date must resolve deterministically, not per-session")
     }
 
     func testCalculateStreakDelegatesToStreakAlgorithm() throws {
