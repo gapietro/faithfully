@@ -80,14 +80,15 @@ final class CalendarViewModel {
         let todayStart = calendar.startOfDay(for: today)
         let enrollmentStart = calendar.startOfDay(for: challengeService.enrollmentDate)
 
-        // Completion truth is keyed by scheduled calendar day, not challenge ID —
-        // the scheduler reuses IDs within a year, so an ID lookup would mark
-        // unrelated days as done. Fetch past end-of-day so late-day timestamps match.
-        let completions = challengeService.fetchCompletions(for: startOfMonth...endOfMonth.addingDays(1))
-        let completedDays = Set(completions.map { calendar.startOfDay(for: $0.scheduledDate) })
+        // Completion truth is keyed by civil day, not challenge ID — the
+        // scheduler reuses IDs within a year, so an ID lookup would mark
+        // unrelated days as done. Keys are frozen at write time, so no
+        // end-of-day padding is needed and no row can drift out of the month.
+        let completions = challengeService.fetchCompletions(for: startOfMonth...endOfMonth)
+        let completedDays = Set(completions.map(\.dayKey))
         let journalByDay = Dictionary(
-            completions.compactMap { c in
-                c.journalEntry.map { (calendar.startOfDay(for: c.scheduledDate), $0) }
+            completions.compactMap { completion in
+                completion.journalEntry.map { (completion.dayKey, $0) }
             },
             uniquingKeysWith: { first, _ in first }
         )
@@ -95,8 +96,9 @@ final class CalendarViewModel {
         calendarDays = range.compactMap { dayNumber in
             guard let date = calendar.date(byAdding: .day, value: dayNumber - 1, to: startOfMonth) else { return nil }
             let dateStart = calendar.startOfDay(for: date)
+            let dayKey = CivilDay.key(for: date, calendar: calendar)
             let challenge = challengeService.challengeForDate(date)
-            let isCompleted = completedDays.contains(dateStart)
+            let isCompleted = completedDays.contains(dayKey)
 
             // Precedence: a completed today shows completed; an incomplete
             // today shows .today (distinguishable per PRD), not the grace
@@ -123,7 +125,7 @@ final class CalendarViewModel {
                 date: date,
                 challenge: challenge,
                 status: status,
-                journalEntry: journalByDay[dateStart]
+                journalEntry: journalByDay[dayKey]
             )
         }
     }
