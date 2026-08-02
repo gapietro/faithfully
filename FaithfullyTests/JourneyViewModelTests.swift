@@ -163,4 +163,75 @@ final class JourneyViewModelTests: XCTestCase {
         XCTAssertEqual(card.journalText, "Amazing day")
         XCTAssertEqual(card.scriptureReference, challenge.scriptureReference)
     }
+
+    // MARK: - No sentinel date horizon (CLEAN-009)
+
+    private func insertCompletion(on date: Date, journal: String?) throws {
+        let challenge = challengeService.challengeForDate(date)
+        context.insert(CompletedChallenge(
+            challengeId: challenge.id,
+            challengeCategory: challenge.category.rawValue,
+            completedDate: date,
+            scheduledDate: date.startOfDay,
+            journalEntry: journal
+        ))
+        try context.save()
+    }
+
+    func testCompletionsAfter2030AreCountedAndSearchable() throws {
+        // The old fetch was bounded at 2030-12-31, so this row vanished from
+        // Journey while BadgeService still counted it.
+        try insertCompletion(on: Date.from(year: 2031, month: 3, day: 4), journal: "Still here in 2031")
+
+        let vm = JourneyViewModel(challengeService: challengeService, badgeService: badgeService)
+        XCTAssertEqual(vm.totalCompleted, 1, "A post-2030 completion must count toward the total")
+        XCTAssertEqual(vm.journalEntries.count, 1, "and must remain visible in the journal")
+
+        vm.searchJournal("2031")
+        XCTAssertEqual(vm.journalEntries.count, 1, "and must remain discoverable by search")
+    }
+
+    func testCompletionsBefore2020AreCountedAndSearchable() throws {
+        // The lower bound was a sentinel too.
+        try insertCompletion(on: Date.from(year: 2019, month: 7, day: 9), journal: "Long ago")
+
+        let vm = JourneyViewModel(challengeService: challengeService, badgeService: badgeService)
+        XCTAssertEqual(vm.totalCompleted, 1)
+        XCTAssertEqual(vm.journalEntries.count, 1)
+
+        vm.searchJournal("Long ago")
+        XCTAssertEqual(vm.journalEntries.count, 1)
+    }
+
+    func testJourneyTotalAgreesWithBadgeServiceAcrossAnyDateRange() throws {
+        // The concrete inconsistency the finding describes: two components of the
+        // same app reporting different totals for the same store.
+        let dates = [
+            Date.from(year: 2019, month: 1, day: 1),
+            Date.from(year: 2026, month: 6, day: 15),
+            Date.from(year: 2031, month: 12, day: 31),
+            Date.from(year: 2045, month: 2, day: 2)
+        ]
+        for date in dates {
+            try insertCompletion(on: date, journal: "entry \(date)")
+        }
+
+        let vm = JourneyViewModel(challengeService: challengeService, badgeService: badgeService)
+        let badgeServiceTotal = badgeService.progress(for: .journey5K).current
+
+        XCTAssertEqual(vm.totalCompleted, dates.count)
+        XCTAssertEqual(vm.totalCompleted, badgeServiceTotal,
+                       "Journey and BadgeService must count the same completions")
+    }
+
+    func testJournalEntriesStayInReverseChronologicalOrderAcrossTheOldHorizon() throws {
+        try insertCompletion(on: Date.from(year: 2029, month: 5, day: 1), journal: "before the horizon")
+        try insertCompletion(on: Date.from(year: 2033, month: 5, day: 1), journal: "after the horizon")
+
+        let vm = JourneyViewModel(challengeService: challengeService, badgeService: badgeService)
+        XCTAssertEqual(vm.journalEntries.count, 2)
+        XCTAssertEqual(vm.journalEntries.first?.journalText, "after the horizon",
+                       "Ordering must span the old sentinel boundary")
+        XCTAssertEqual(vm.journalEntries.last?.journalText, "before the horizon")
+    }
 }
