@@ -5,9 +5,15 @@ enum ChallengeServiceError: Error {
     case gracePeriodExpired
     case alreadyCompleted
     case emptyChallengePool
+    case beforeEnrollment
 }
 
 protocol ChallengeServiceProtocol {
+    /// The first day this user is eligible to complete. Earlier days are not
+    /// missed days — they are not this user's days at all, and no completion,
+    /// streak, or badge credit may be earned for them.
+    var enrollmentDate: Date { get }
+
     func loadChallenges() -> [DailyChallenge]
     func challengeForDate(_ date: Date) -> DailyChallenge
     func completeChallenge(_ challenge: DailyChallenge, on scheduledDate: Date, journal: String?) throws -> [BadgeDefinition]
@@ -21,9 +27,7 @@ final class ChallengeService: ChallengeServiceProtocol {
     private let challenges: [DailyChallenge]
     private let scheduler: ChallengeScheduler
     private let badgeService: BadgeServiceProtocol
-    /// The day this user enrolled. Rotation no longer derives from it; it is kept
-    /// because enrollment is a domain boundary in its own right (CLEAN-002).
-    private let userStartDate: Date
+    let enrollmentDate: Date
     private let dateProvider: () -> Date
 
     /// Called after a completion is persisted, with the day that was completed
@@ -36,7 +40,7 @@ final class ChallengeService: ChallengeServiceProtocol {
         modelContext: ModelContext,
         challenges: [DailyChallenge],
         badgeService: BadgeServiceProtocol,
-        userStartDate: Date = .now,
+        enrollmentDate: Date = .now,
         dateProvider: @escaping () -> Date = { .now }
     ) throws {
         // Fail closed: never build a scheduler over an empty non-giving pool.
@@ -47,7 +51,7 @@ final class ChallengeService: ChallengeServiceProtocol {
         self.challenges = challenges
         self.scheduler = scheduler
         self.badgeService = badgeService
-        self.userStartDate = userStartDate
+        self.enrollmentDate = enrollmentDate
         self.dateProvider = dateProvider
     }
 
@@ -66,6 +70,13 @@ final class ChallengeService: ChallengeServiceProtocol {
 
     func completeChallenge(_ challenge: DailyChallenge, on scheduledDate: Date, journal: String?) throws -> [BadgeDefinition] {
         let today = dateProvider()
+
+        // Enrollment is checked before grace: a day from before the user joined
+        // is ineligible no matter how recent it is, so the grace window can never
+        // be used to backfill history that predates the account.
+        guard scheduledDate.startOfDay >= enrollmentDate.startOfDay else {
+            throw ChallengeServiceError.beforeEnrollment
+        }
 
         guard GracePeriod.canComplete(challengeDate: scheduledDate, today: today) else {
             throw ChallengeServiceError.gracePeriodExpired

@@ -16,6 +16,17 @@ final class AppEnvironmentTests: XCTestCase {
         mockNotificationCenter = MockNotificationCenter()
     }
 
+    /// Seeds an existing profile so the environment bootstraps against a user who
+    /// enrolled earlier, rather than one enrolling on the injected "today".
+    /// Without this, every past day in the grid is correctly pre-enrollment.
+    @discardableResult
+    private func seedProfile(enrolledOn: Date) throws -> UserProfile {
+        let profile = UserProfile(startDate: enrolledOn)
+        context.insert(profile)
+        try context.save()
+        return profile
+    }
+
     private func makeEnvironment(
         today: Date = .now,
         loader: (() throws -> [DailyChallenge])? = nil
@@ -74,6 +85,9 @@ final class AppEnvironmentTests: XCTestCase {
 
     func testGracePeriodCompletionOnCalendarRefreshesJourney() throws {
         let today = Date.from(year: 2026, month: 6, day: 15)
+        // Enrolled before the grace day, so this exercises grace recovery rather
+        // than accidentally exercising the enrollment boundary.
+        try seedProfile(enrolledOn: Date.from(year: 2026, month: 6, day: 1))
         let env = makeEnvironment(today: today)
         let services = try XCTUnwrap(env.services)
 
@@ -85,6 +99,63 @@ final class AppEnvironmentTests: XCTestCase {
         services.calendarViewModel.completeGracePeriod(graceDay, journal: nil)
 
         XCTAssertEqual(services.journeyViewModel.totalCompleted, 1)
+    }
+
+    // MARK: - Enrollment boundary in the live app path (CLEAN-002)
+
+    /// This replaces the behaviour the audit caught: a profile created "now"
+    /// could still complete a day that predated it, and Journey counted it.
+    func testGraceWindowCannotReachBackBeforeEnrollment() throws {
+        let today = Date.from(year: 2026, month: 6, day: 15)
+        try seedProfile(enrolledOn: Date.from(year: 2026, month: 6, day: 14))
+        let env = makeEnvironment(today: today)
+        let services = try XCTUnwrap(env.services)
+
+        // June 13 is inside the 3-day grace window but a day before enrollment.
+        let dayBeforeEnrollment = try XCTUnwrap(services.calendarViewModel.calendarDays.first {
+            Calendar.current.component(.day, from: $0.date) == 13
+        })
+        XCTAssertEqual(dayBeforeEnrollment.status, .preEnrollment,
+                       "A pre-enrollment day must not be offered as a recoverable miss")
+
+        services.calendarViewModel.completeGracePeriod(dayBeforeEnrollment, journal: nil)
+
+        XCTAssertEqual(services.journeyViewModel.totalCompleted, 0,
+                       "Completing a pre-enrollment day must earn no Journey credit")
+        XCTAssertEqual(try context.fetch(FetchDescriptor<CompletedChallenge>()).count, 0,
+                       "No completion record may be written for a pre-enrollment day")
+    }
+
+    func testNewUserSeesNoMissedDaysOnTheirFirstDay() throws {
+        // A user installing mid-month must not open the calendar to a wall of
+        // failures for days they were never here for.
+        let today = Date.from(year: 2026, month: 6, day: 15)
+        let env = makeEnvironment(today: today)
+        let services = try XCTUnwrap(env.services)
+
+        let days = services.calendarViewModel.calendarDays
+        XCTAssertFalse(days.contains { $0.status == .missed },
+                       "A first-day user must have no missed days")
+        XCTAssertFalse(days.contains { $0.status == .missedRecoverable },
+                       "A first-day user must have no recoverable misses")
+
+        let priorDays = days.filter { Calendar.current.component(.day, from: $0.date) < 15 }
+        XCTAssertEqual(priorDays.count, 14)
+        XCTAssertTrue(priorDays.allSatisfy { $0.status == .preEnrollment },
+                      "Every day before enrollment must be marked pre-enrollment")
+
+        let installDay = try XCTUnwrap(days.first { Calendar.current.component(.day, from: $0.date) == 15 })
+        XCTAssertEqual(installDay.status, .today,
+                       "The install day itself is completable, not pre-enrollment")
+    }
+
+    func testProfileEnrollsOnTheAppsCurrentDateNotTheWallClock() throws {
+        let today = Date.from(year: 2026, month: 6, day: 15)
+        _ = makeEnvironment(today: today)
+
+        let profile = try XCTUnwrap(try context.fetch(FetchDescriptor<UserProfile>()).first)
+        XCTAssertTrue(Calendar.current.isDate(profile.startDate, inSameDayAs: today),
+                      "Enrollment must come from the injected date provider, not Date.now")
     }
 
     // MARK: - Fail-closed loading (#5)
@@ -132,7 +203,13 @@ final class AppEnvironmentTests: XCTestCase {
 
     /// Builds an environment whose date provider reads a mutable box, so tests
     /// can cross midnight while the service graph stays in memory.
-    private func makeRolloverEnvironment(startingAt start: Date) throws -> (AppServices, (Date) -> Void) {
+    private func makeRolloverEnvironment(
+        startingAt start: Date,
+        enrolledOn: Date? = nil
+    ) throws -> (AppServices, (Date) -> Void) {
+        if let enrolledOn {
+            try seedProfile(enrolledOn: enrolledOn)
+        }
         var now = start
         let env = AppEnvironment(
             modelContext: context,
@@ -178,7 +255,12 @@ final class AppEnvironmentTests: XCTestCase {
 
     func testForegroundRefreshMovesCalendarTodayBoundaryAndGraceWindows() throws {
         let day15 = Date.from(year: 2026, month: 6, day: 15)
-        let (services, setNow) = try makeRolloverEnvironment(startingAt: day15)
+        // Enrolled at the start of the month so the grace-window assertions below
+        // test grace expiry, not the enrollment boundary.
+        let (services, setNow) = try makeRolloverEnvironment(
+            startingAt: day15,
+            enrolledOn: Date.from(year: 2026, month: 6, day: 1)
+        )
 
         func status(day: Int) -> CalendarDayStatus? {
             services.calendarViewModel.calendarDays.first {

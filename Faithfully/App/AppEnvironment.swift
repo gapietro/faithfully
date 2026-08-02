@@ -54,7 +54,7 @@ final class AppEnvironment {
                 modelContext: modelContext,
                 challenges: challenges,
                 badgeService: badgeService,
-                userStartDate: profile.startDate,
+                enrollmentDate: profile.startDate,
                 dateProvider: dateProvider
             )
             let services = AppServices(
@@ -82,7 +82,11 @@ final class AppEnvironment {
         if let existing = ((try? modelContext.fetch(descriptor)) ?? []).first {
             return existing
         }
-        let profile = UserProfile()
+        // Enroll on the app's notion of today, not the wall clock: the injected
+        // date provider is the single source of "now" for the whole graph, and
+        // an enrollment date drawn from elsewhere would put the boundary out of
+        // step with the calendar the user is actually looking at.
+        let profile = UserProfile(startDate: dateProvider())
         modelContext.insert(profile)
         try? modelContext.save()
         return profile

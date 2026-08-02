@@ -20,6 +20,15 @@ struct DayDetailView: View {
                         .italic()
                 }
 
+                // Say why there is no button rather than just omitting one, so a
+                // pre-enrollment day doesn't read as a bug or a missed chance.
+                if day.status == .preEnrollment {
+                    Text("This day is before you started Faithfully.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .accessibilityIdentifier("preEnrollmentNotice")
+                }
+
                 // Today is completable here too — before the .today status
                 // existed it rode the grace path, and losing that would regress
                 // completing today from the calendar.
