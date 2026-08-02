@@ -11,10 +11,17 @@ struct JourneyView: View {
                 VStack(spacing: 24) {
                         // Stats
                         HStack(spacing: 24) {
-                            StatView(title: "Completed", value: "\(vm.totalCompleted)")
-                            StatView(title: "Streak", value: "\(vm.currentStreak)")
+                            StatView(
+                                title: "Completed",
+                                value: "\(vm.totalCompleted)",
+                                valueIdentifier: "statTotalCompleted"
+                            )
+                            StatView(
+                                title: "Streak",
+                                value: "\(vm.currentStreak)",
+                                valueIdentifier: "statCurrentStreak"
+                            )
                         }
-                        .accessibilityIdentifier("statsSection")
 
                         // Journey progress
                         if let badge = vm.journeyBadge {
@@ -59,7 +66,14 @@ struct JourneyView: View {
                                             .accessibilityIdentifier("badgeProgress_\(badge.id)")
                                     }
                                 }
+                                .accessibilityElement(children: .combine)
                                 .accessibilityIdentifier("badge_\(badge.id)")
+                                .accessibilityLabel(badge.name)
+                                // Earned-ness is otherwise only a colour, which
+                                // neither VoiceOver nor a UI test can perceive.
+                                .accessibilityValue(badge.isEarned
+                                    ? "Earned"
+                                    : "Not earned, \(badge.current) of \(badge.threshold)")
                             }
                         }
                         .accessibilityIdentifier("badgeGrid")
@@ -114,12 +128,17 @@ struct JourneyView: View {
 struct StatView: View {
     let title: String
     let value: String
+    /// Identifies the number itself. A container identifier is unreliable here —
+    /// SwiftUI may or may not expose a combined stack as its own element — and
+    /// the number is what both VoiceOver and the tests actually want.
+    var valueIdentifier: String?
 
     var body: some View {
         VStack {
             Text(value)
                 .font(.title)
                 .fontWeight(.bold)
+                .accessibilityIdentifier(valueIdentifier ?? "")
             Text(title)
                 .font(.caption)
                 .foregroundStyle(.secondary)

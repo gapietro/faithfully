@@ -54,6 +54,7 @@ struct CompletionSheetView: View {
                         .foregroundStyle(isOverLimit ? .red : .secondary)
                         .accessibilityIdentifier("journalCharacterCount")
                         .accessibilityLabel(counterAccessibilityLabel)
+                        .accessibilityValue("\(characterCount) of \(Constants.maxJournalLength)")
                 }
 
                 Button(action: onComplete) {
