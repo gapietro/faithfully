@@ -12,6 +12,7 @@
 		072A4CDFFE4765696F70F94C /* ChallengeScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20711FA1DBD7AAD7EDA28C9B /* ChallengeScheduler.swift */; };
 		094C8A959177664555763CA3 /* CalendarDay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09FD5B1A4D33639B4E10E0B0 /* CalendarDay.swift */; };
 		09CDB7E9A8E4212113F3CFA8 /* TestHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F1135EB5B3E4AF57AC89F08 /* TestHelpers.swift */; };
+		0C2101BB3E78F20E00B6049F /* NotificationPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 239B6F5924744680F7536B7B /* NotificationPreferences.swift */; };
 		0DF5E87C80BE5E83FDD35479 /* StoreUnavailableBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B352BA777E797F7A1528C8F /* StoreUnavailableBanner.swift */; };
 		18FBF7D3CD1BA7EA3006602A /* CompletionResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7894C21A0197AC2A09834623 /* CompletionResult.swift */; };
 		1B1E4916CCE117C90FA6DA4E /* CivilDayMigrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F452A3B27E9355238289AD3 /* CivilDayMigrationTests.swift */; };
@@ -127,6 +128,7 @@
 		1C84840D14A258F54B26F511 /* IntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntegrationTests.swift; sourceTree = "<group>"; };
 		203ACCDF10A9C0DBC5AF367C /* BadgeDisplayItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeDisplayItem.swift; sourceTree = "<group>"; };
 		20711FA1DBD7AAD7EDA28C9B /* ChallengeScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeScheduler.swift; sourceTree = "<group>"; };
+		239B6F5924744680F7536B7B /* NotificationPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationPreferences.swift; sourceTree = "<group>"; };
 		2AC1EC2087DAC1FC12589659 /* challenges.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = challenges.json; sourceTree = "<group>"; };
 		2C9F110D015B63153650F8E0 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		30867F91CDB77976239AD79F /* Difficulty.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Difficulty.swift; sourceTree = "<group>"; };
@@ -272,6 +274,7 @@
 				09FD5B1A4D33639B4E10E0B0 /* CalendarDay.swift */,
 				7894C21A0197AC2A09834623 /* CompletionResult.swift */,
 				40112D2A32CEE6503E2E62D3 /* JournalDisplayItem.swift */,
+				239B6F5924744680F7536B7B /* NotificationPreferences.swift */,
 				9339C5BD24A2D97D1BF744C8 /* ShareCardData.swift */,
 			);
 			path = Results;
@@ -649,6 +652,7 @@
 				DD9A0B55F1FE9E9E7256E53E /* JournalDisplayItem.swift in Sources */,
 				D931C0180DAEAB9E5B553F98 /* JourneyView.swift in Sources */,
 				2C4C9F7221C7EC2ED57D1157 /* JourneyViewModel.swift in Sources */,
+				0C2101BB3E78F20E00B6049F /* NotificationPreferences.swift in Sources */,
 				6124F5ABC02556689F0B2880 /* NotificationService.swift in Sources */,
 				99E419A156CD38ED7E540C72 /* OnboardingView.swift in Sources */,
 				84EF247B835B6CE200C7BF8B /* PersistenceCoordinator.swift in Sources */,
@@ -693,7 +697,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.faithfully.FaithfullyTests;
 				SDKROOT = iphoneos;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 1;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Faithfully.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Faithfully";
 			};
@@ -711,7 +715,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.faithfully.FaithfullyUITests;
 				SDKROOT = iphoneos;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 1;
 				TEST_TARGET_NAME = Faithfully;
 			};
@@ -729,7 +733,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.faithfully.FaithfullyTests;
 				SDKROOT = iphoneos;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 1;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Faithfully.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Faithfully";
 			};
@@ -747,7 +751,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.faithfully.FaithfullyUITests;
 				SDKROOT = iphoneos;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 1;
 				TEST_TARGET_NAME = Faithfully;
 			};
@@ -773,7 +777,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.faithfully.app;
 				SDKROOT = iphoneos;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
@@ -854,7 +858,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.faithfully.app;
 				SDKROOT = iphoneos;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;

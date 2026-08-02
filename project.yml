@@ -31,7 +31,9 @@ targets:
         # declared UIDeviceFamily [1,2] while configuring only iPhone portrait,
         # which warns at archive time and ships an untested iPad experience.
         TARGETED_DEVICE_FAMILY: "1"
-        SWIFT_VERSION: "5.0"
+        # Swift 6 language mode: data-race safety is enforced by the compiler
+        # rather than reported as warnings nobody has to act on.
+        SWIFT_VERSION: "6.0"
         PRODUCT_BUNDLE_IDENTIFIER: com.faithfully.app
         MARKETING_VERSION: "1.0"
         CURRENT_PROJECT_VERSION: "1"
@@ -52,7 +54,7 @@ targets:
       - target: Faithfully
     settings:
       base:
-        SWIFT_VERSION: "5.0"
+        SWIFT_VERSION: "6.0"
         # Match the host app: an iPhone-only app must not carry universal test bundles.
         TARGETED_DEVICE_FAMILY: "1"
         GENERATE_INFOPLIST_FILE: YES
@@ -68,6 +70,6 @@ targets:
       - target: Faithfully
     settings:
       base:
-        SWIFT_VERSION: "5.0"
+        SWIFT_VERSION: "6.0"
         TARGETED_DEVICE_FAMILY: "1"
         GENERATE_INFOPLIST_FILE: YES
