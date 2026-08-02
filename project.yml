@@ -27,6 +27,10 @@ targets:
         INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: YES
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: "UIInterfaceOrientationPortrait"
+        # iPhone only for v1 (PRD). Left at Xcode's universal default, the archive
+        # declared UIDeviceFamily [1,2] while configuring only iPhone portrait,
+        # which warns at archive time and ships an untested iPad experience.
+        TARGETED_DEVICE_FAMILY: "1"
         SWIFT_VERSION: "5.0"
         PRODUCT_BUNDLE_IDENTIFIER: com.faithfully.app
         MARKETING_VERSION: "1.0"
@@ -49,6 +53,8 @@ targets:
     settings:
       base:
         SWIFT_VERSION: "5.0"
+        # Match the host app: an iPhone-only app must not carry universal test bundles.
+        TARGETED_DEVICE_FAMILY: "1"
         GENERATE_INFOPLIST_FILE: YES
         TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Faithfully.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Faithfully"
         BUNDLE_LOADER: "$(TEST_HOST)"
@@ -63,4 +69,5 @@ targets:
     settings:
       base:
         SWIFT_VERSION: "5.0"
+        TARGETED_DEVICE_FAMILY: "1"
         GENERATE_INFOPLIST_FILE: YES
