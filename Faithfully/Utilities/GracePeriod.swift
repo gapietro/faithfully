@@ -16,9 +16,4 @@ struct GracePeriod {
         // Cannot complete future challenges
         return daysDifference >= 0 && daysDifference <= maxGraceDays
     }
-
-    static func isGracePeriodCompletion(challengeDate: Date, completionDate: Date) -> Bool {
-        let calendar = Calendar.current
-        return calendar.startOfDay(for: challengeDate) != calendar.startOfDay(for: completionDate)
-    }
 }
