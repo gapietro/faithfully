@@ -139,13 +139,44 @@ final class JournalEditTests: XCTestCase {
             context.fetch(FetchDescriptor<CompletedChallenge>())
                 .first { $0.journalEntry != nil }
         )
+        let dayKeyBefore = target.dayKey
+        let completedDateBefore = target.completedDate
+        let scheduledDateBefore = target.scheduledDate
+        let challengeIdBefore = target.challengeId
+
         XCTAssertEqual(service.updateJournal(entryID: target.id, to: "edited"), .saved)
         XCTAssertEqual(service.updateJournal(entryID: target.id, to: nil), .saved)
 
+        // Layer 1: the row itself must be untouched apart from journalEntry.
+        // Streak/total/badges are all derived from dayKey, so an assertion
+        // on those alone would miss a bug that shifted, say, completedDate —
+        // which the model documents as used for journal ordering.
+        let targetAfter = try XCTUnwrap(
+            context.fetch(FetchDescriptor<CompletedChallenge>())
+                .first { $0.id == target.id }
+        )
+        XCTAssertEqual(targetAfter.dayKey, dayKeyBefore, "dayKey must not move")
+        XCTAssertEqual(targetAfter.completedDate.timeIntervalSince1970,
+                       completedDateBefore.timeIntervalSince1970, accuracy: 0.001,
+                       "completedDate must not move")
+        XCTAssertEqual(targetAfter.scheduledDate.timeIntervalSince1970,
+                       scheduledDateBefore.timeIntervalSince1970, accuracy: 0.001,
+                       "scheduledDate must not move")
+        XCTAssertEqual(targetAfter.challengeId, challengeIdBefore, "challengeId must not move")
+
+        // Layer 2: the consequences derived from those fields must also be
+        // unchanged.
         XCTAssertEqual(service.calculateStreak(), streakBefore, "Streak must not move")
         XCTAssertEqual(service.fetchAllCompletions().count, totalBefore, "Total must not move")
         XCTAssertEqual(Set(badgeService.earnedBadges().map(\.badgeName)), badgesBefore,
                        "Badges must not move")
         XCTAssertTrue(service.isCompleted(on: today), "The day must still be completed")
+    }
+
+    func testFailedFetchReportsCouldNotReadNotEntryNotFound() throws {
+        let id = try makeCompletion(journal: "untouched")
+        persistence.failFetch = true
+
+        XCTAssertEqual(service.updateJournal(entryID: id, to: "nope"), .failed(.couldNotRead))
     }
 }
