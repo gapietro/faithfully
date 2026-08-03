@@ -9,8 +9,17 @@ protocol NotificationServiceProtocol: Sendable {
     func requestPermission() async -> Bool
     func scheduleAllNotifications(preferences: NotificationPreferences)
     func cancelTodayReminders()
-    func scheduleStreakWarning(streak: Int, preferences: NotificationPreferences)
+    /// `now` is a requirement rather than a defaulted convenience so a test can
+    /// pin the clock: the warning is only armed when its hour is still ahead,
+    /// which the wall clock would otherwise decide for the suite every evening.
+    func scheduleStreakWarning(streak: Int, preferences: NotificationPreferences, now: Date)
     func scheduleBadgeCelebration(named badgeName: String, preferences: NotificationPreferences)
+}
+
+extension NotificationServiceProtocol {
+    func scheduleStreakWarning(streak: Int, preferences: NotificationPreferences) {
+        scheduleStreakWarning(streak: streak, preferences: preferences, now: .now)
+    }
 }
 
 /// `Sendable` because implementations are reached from the serialized operation
@@ -142,19 +151,31 @@ final class NotificationService: NotificationServiceProtocol, Sendable {
         }
     }
 
-    func scheduleStreakWarning(streak: Int, preferences: NotificationPreferences) {
+    /// The hour the streak warning fires, on the evening of a day that is still
+    /// incomplete.
+    static let streakWarningHour = 21
+
+    func scheduleStreakWarning(streak: Int, preferences: NotificationPreferences, now: Date) {
         guard preferences.streakWarningsEnabled, streak >= 7 else { return }
+
+        // Nothing to arm once the hour has passed. The trigger is a fixed date
+        // and does not repeat, so a request built at 22:00 for today at 21:00
+        // can never fire — it used to be enqueued anyway, and `add` failures are
+        // swallowed, so the app quietly held a notification that did not exist.
+        // Tomorrow is not a substitute: this warning is about *today's* streak,
+        // and the next foreground pass arms the new day's warning anyway.
+        let calendar = Calendar.current
+        var components = calendar.dateComponents([.year, .month, .day], from: now)
+        components.hour = Self.streakWarningHour
+        components.minute = 0
+        guard let fireDate = calendar.date(from: components), fireDate > now else { return }
 
         let content = UNMutableNotificationContent()
         content.title = "Protect Your Streak!"
         content.body = "Don't break your \(streak)-day streak!"
         content.sound = .default
 
-        var components = Calendar.current.dateComponents([.year, .month, .day], from: .now)
-        components.hour = 21
-        components.minute = 0
         let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
-
         let request = UNNotificationRequest(identifier: "streak_warning", content: content, trigger: trigger)
         enqueue { [center] in try? await center.add(request) }
     }
