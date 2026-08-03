@@ -38,7 +38,7 @@
 - `Faithfully/Models/Results/CalendarDay.swift` — add `completionID`
 - `Faithfully/ViewModels/CalendarViewModel.swift` — populate `completionID`, expose `updateJournal`
 - `Faithfully/ViewModels/JourneyViewModel.swift` — expose `updateJournal`, preserve active search
-- `Faithfully/Views/Journey/JourneyView.swift` — swipe-to-delete, tap-to-edit, confirmation
+- `Faithfully/Views/Journey/JourneyView.swift` — tap-to-edit, delete button, confirmation
 - `Faithfully/Views/Calendar/DayDetailView.swift` — Edit / Add reflection
 - `Faithfully/Views/Calendar/CalendarScreenView.swift` — present the edit sheet
 - `FaithfullyTests/DailyWalkViewModelTests.swift` — `StubChallengeService` conformance
@@ -1169,7 +1169,7 @@ list — a jarring result for an action that should be local."
 
 ---
 
-### Task 6: Journey UI — swipe to delete, tap to edit
+### Task 6: Journey UI — tap to edit, button to delete
 
 **Files:**
 - Create: `Faithfully/Views/Shared/JournalEditSheet.swift`
@@ -1898,7 +1898,7 @@ and CLAIMS.md gains the promise plus the test that holds it."
 
 ## Self-Review
 
-**Spec coverage.** Every section of the design maps to a task: delete-means-text-only (Tasks 2, 4, 5 — with the invariant test in Task 2), two entry points with Calendar canonical (Tasks 6, 7), confirmation on both the swipe and the clear-via-editor path (Task 6's dialog and `JournalEditSheet.wouldClearExistingText`), shared validation (Task 1), shared editor (Task 3), no time limit (nothing implements a limit), error handling that preserves the draft (Task 2's failure cases plus `JournalEditSheet.commit`), and the full testing list (Tasks 2, 4, 5, 8). The "consequences to record on landing" section is Task 9.
+**Spec coverage.** Every section of the design maps to a task: delete-means-text-only (Tasks 2, 4, 5 — with the invariant test in Task 2), two entry points with Calendar canonical (Tasks 6, 7), confirmation on both the delete-button and the clear-via-editor path (Task 6's dialog and `JournalEditSheet.wouldClearExistingText`), shared validation (Task 1), shared editor (Task 3), no time limit (nothing implements a limit), error handling that preserves the draft (Task 2's failure cases plus `JournalEditSheet.commit`), and the full testing list (Tasks 2, 4, 5, 8). The "consequences to record on landing" section is Task 9.
 
 **One addition the spec implied but did not name:** `CalendarDay.completionID`. Day detail cannot edit an entry it cannot address. Task 4 covers it, including the `Equatable` change without which SwiftUI would not re-render an edited day.
 

@@ -26,8 +26,15 @@ question — whether a badge already earned should be revoked when the user drop
 below its threshold — and is out of scope.
 
 **Two entry points, Calendar canonical.** Journey is where people browse their
-writing, so it gets swipe-to-delete and tap-to-edit. But Journey only lists
-completions that *have* text:
+writing, so a row is tap-to-edit with a visible delete button.
+
+Not swipe-to-delete: `.swipeActions` only works inside a `List`, and the
+timeline is a `ScrollView` of custom cards. Converting it would rewrite the
+layout and the tests that walk it, to land a gesture that is less discoverable
+and needs VoiceOver custom actions to be reachable at all. A 44pt button is
+plainer.
+
+But Journey only lists completions that *have* text:
 
 ```swift
 guard let challenge = challengeMap[completion.challengeId],
@@ -48,7 +55,7 @@ does not survive a background or a crash, which means the promise it makes is
 not always true.
 
 The confirmation is on the *destructive outcome*, not on one button. It appears
-for swipe-to-delete in Journey, and equally when someone clears the text in the
+for the delete button in Journey, and equally when someone clears the text in the
 editor and taps Save — that erases writing just as thoroughly, so it cannot be
 the one path that skips the guard. Saving an edit that still has text does not
 confirm.
