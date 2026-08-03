@@ -71,11 +71,16 @@ app. `PRIVACY_POLICY.md` must not claim the data never leaves the device.
 |---|---|
 | Delete the app | The whole container goes, including the store. Complete and immediate |
 | "Reset Saved Data" on the store-unavailable banner | Moves the unreadable store aside and starts fresh. **Moves, never deletes** — an unreadable file may still be recoverable by hand, and deleting it outright would discard the only copy of the journal |
-| Delete a single journal entry | **Not supported.** A completion cannot currently be undone or edited |
+| Edit or delete a single journal entry | Supported, from the Journey timeline or Calendar day detail. Deleting clears the reflection only — the day stays completed and the streak is unaffected |
+| Undo a completion | **Not supported.** A completed day cannot be un-completed |
 
-That last row is a real gap for a journal app. Someone who writes something they
-regret has no way to remove it short of deleting the app. Worth a product
-decision before public release.
+Deleting a reflection is guarded by a confirmation that states the day stays
+completed and the streak is unaffected — the streak is what people actually
+fear losing. Clearing the text in the editor and saving takes the same
+confirmation, because it destroys writing just as thoroughly.
+
+There is deliberately no version history. Recording that someone revised a
+confession works against the point of letting them revise it.
 
 ## Privacy manifest
 

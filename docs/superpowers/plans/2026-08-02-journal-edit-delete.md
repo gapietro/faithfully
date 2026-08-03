@@ -1838,13 +1838,13 @@ confession works against the point of letting them revise it.
 Replace:
 
 ```markdown
-| Per-entry journal deletion | 🟡 Not supported | A user cannot remove a single entry; needs a product decision before public release — [DATA_PROTECTION.md](DATA_PROTECTION.md) |
+| Per-entry journal deletion | 🟡 Not supported | A user cannot remove a single entry; needs a product decision before public release — [DATA_PROTECTION.md](../../ship/DATA_PROTECTION.md) |
 ```
 
 with:
 
 ```markdown
-| Journal edit and delete | 🟢 Ready | Edit, clear, or add a reflection from Journey or Calendar; the completion is never touched — [DATA_PROTECTION.md](DATA_PROTECTION.md) |
+| Journal edit and delete | 🟢 Ready | Edit, clear, or add a reflection from Journey or Calendar; the completion is never touched — [DATA_PROTECTION.md](../../ship/DATA_PROTECTION.md) |
 ```
 
 - [ ] **Step 3: Add the claim to docs/ship/CLAIMS.md**
