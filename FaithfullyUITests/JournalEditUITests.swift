@@ -100,14 +100,15 @@ final class JournalEditUITests: UITestCase {
                        "The deletion must survive a relaunch")
     }
 
-    func testAddingAReflectionFromTheCalendarToADayThatHadNone() throws {
-        try XCTSkipUnless(isInCurrentMonth(daysAgo: 4),
-                          "Target day is in the previous month")
+    func testAddingAReflectionFromTheCalendarToADayThatHadNone() {
         launch(.seeded)
         openTab("Calendar")
 
         // In the seeded scenario only the two most recent completions carry
-        // journal text, so four days ago is completed with none.
+        // journal text, so four days ago is completed with none. Navigate to
+        // whichever month that falls in — deterministic on every day of the
+        // year, rather than skipping at a month boundary.
+        navigateToMonth(containing: targetDate(daysAgo: 4))
         let day = dayButton(dayNumber(daysAgo: 4))
         XCTAssertTrue(day.waitForExistence(timeout: 10))
         day.tap()

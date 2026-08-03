@@ -6,6 +6,9 @@ struct JourneyView: View {
     @State private var searchText = ""
     @State private var editingEntry: JournalDisplayItem?
     @State private var pendingDeletion: JournalDisplayItem?
+    /// Set when a delete fails, so the user is told rather than left to
+    /// believe writing is gone when it is still on disk.
+    @State private var deleteFailureMessage: String?
 
     var body: some View {
         NavigationStack {
@@ -174,29 +177,37 @@ struct JourneyView: View {
                     onCancel: { editingEntry = nil }
                 )
             }
-            // `.alert` rather than `.confirmationDialog`: on this platform a
-            // two-action confirmationDialog collapses to a popover exposing
-            // only the destructive button, with "Cancel" reachable solely by
-            // tapping outside. For an irreversible delete of private writing,
-            // Cancel must be a visible, explicit control — an alert renders
-            // both buttons on every size class.
-            .alert(
-                "Delete this reflection?",
+            .reflectionDeleteAlert(
                 isPresented: Binding(
                     get: { pendingDeletion != nil },
                     set: { if !$0 { pendingDeletion = nil } }
-                )
-            ) {
-                Button("Delete", role: .destructive) {
+                ),
+                date: pendingDeletion?.date,
+                onDelete: {
                     if let entry = pendingDeletion {
-                        _ = vm.updateJournal(entryID: entry.id, to: nil)
+                        switch vm.updateJournal(entryID: entry.id, to: nil) {
+                        case .saved:
+                            break
+                        case .failed(let failure):
+                            // The alert already dismissed; tell the user the
+                            // writing they just asked to delete is still there.
+                            deleteFailureMessage = failure.message
+                        }
                     }
                     pendingDeletion = nil
-                }
-                Button("Cancel", role: .cancel) { pendingDeletion = nil }
+                },
+                onCancel: { pendingDeletion = nil }
+            )
+            .alert(
+                "Couldn't delete reflection",
+                isPresented: Binding(
+                    get: { deleteFailureMessage != nil },
+                    set: { if !$0 { deleteFailureMessage = nil } }
+                )
+            ) {
+                Button("OK", role: .cancel) { deleteFailureMessage = nil }
             } message: {
-                Text("Your reflection will be permanently deleted. The day stays completed — "
-                     + "your streak and badges aren't affected.")
+                Text(deleteFailureMessage ?? "")
             }
         }
     }

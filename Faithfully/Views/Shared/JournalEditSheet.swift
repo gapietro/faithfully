@@ -91,6 +91,9 @@ struct JournalEditSheet: View {
                 }
                 .disabled(isOverLimit)
                 .accessibilityIdentifier("saveJournalButton")
+                .accessibilityHint(isOverLimit
+                    ? "Unavailable until your reflection is within the character limit"
+                    : "")
 
                 Spacer()
             }
@@ -102,21 +105,8 @@ struct JournalEditSheet: View {
         // Explicit, not a material: contrast measured against a blurred backdrop
         // depends on whatever the user was looking at a moment ago.
         .presentationBackground(Color(.systemBackground))
-        // `.alert` rather than `.confirmationDialog`: on this platform a
-        // two-action confirmationDialog collapses to a popover exposing only
-        // the destructive button, with "Cancel" reachable solely by tapping
-        // outside. For an irreversible delete of private writing, Cancel must
-        // be a visible, explicit control — an alert renders both buttons on
-        // every size class.
-        .alert(
-            "Delete this reflection?",
-            isPresented: $confirmingClear
-        ) {
-            Button("Delete", role: .destructive) { commit(nil) }
-            Button("Cancel", role: .cancel) {}
-        } message: {
-            Text("Your reflection for \(formattedDate) will be permanently deleted. "
-                 + "The day stays completed — your streak and badges aren't affected.")
+        .reflectionDeleteAlert(isPresented: $confirmingClear, date: date) {
+            commit(nil)
         }
     }
 

@@ -104,11 +104,33 @@ class UITestCase: XCTestCase {
         Calendar.current.component(.day, from: Date().addingTimeInterval(Double(-daysAgo) * 86_400))
     }
 
-    /// True when the day sits in the month currently shown, so tests that walk
-    /// backwards from today skip rather than fail at a month boundary.
-    func isInCurrentMonth(daysAgo: Int) -> Bool {
+    /// The calendar date `daysAgo` days before now — the same clock the app
+    /// itself uses to seed scenarios and decide today.
+    func targetDate(daysAgo: Int) -> Date {
+        Date().addingTimeInterval(Double(-daysAgo) * 86_400)
+    }
+
+    /// Taps the calendar's month navigation until the displayed month contains
+    /// `date`. Lets a test reach a specific day deterministically on every day
+    /// of the year, rather than skipping whenever `daysAgo` lands in a
+    /// different month than "today".
+    func navigateToMonth(containing date: Date, file: StaticString = #filePath, line: UInt = #line) {
+        let delta = monthDelta(from: Date(), to: date)
+        guard delta != 0 else { return }
+        let button = app.buttons[delta < 0 ? "previousMonth" : "nextMonth"]
+        for _ in 0..<abs(delta) {
+            XCTAssertTrue(button.waitForExistence(timeout: 5),
+                          "Month navigation button must exist", file: file, line: line)
+            button.tap()
+        }
+    }
+
+    private func monthDelta(from: Date, to: Date) -> Int {
         let calendar = Calendar.current
-        let target = Date().addingTimeInterval(Double(-daysAgo) * 86_400)
-        return calendar.isDate(target, equalTo: Date(), toGranularity: .month)
+        let start = calendar.dateComponents([.year, .month], from: from)
+        let end = calendar.dateComponents([.year, .month], from: to)
+        guard let startYear = start.year, let startMonth = start.month,
+              let endYear = end.year, let endMonth = end.month else { return 0 }
+        return (endYear - startYear) * 12 + (endMonth - startMonth)
     }
 }
