@@ -1,0 +1,141 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Fast gates first, so an obvious failure reports in ~2 minutes instead of
+  # after a full simulator boot.
+  static:
+    name: Lint, project drift, content
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select pinned Xcode
+        run: sudo xcode-select -switch /Applications/Xcode_26.6.app
+
+      - name: Cache pinned tools
+        uses: actions/cache@v4
+        with:
+          path: .tools
+          key: tools-${{ runner.os }}-${{ hashFiles('scripts/versions.env') }}
+
+      - run: make bootstrap
+      - run: make verify-project
+      - run: make validate-content
+      - run: make lint
+
+  test:
+    name: Unit tests, coverage, analyzer, strict concurrency
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select pinned Xcode
+        run: sudo xcode-select -switch /Applications/Xcode_26.6.app
+
+      - name: Pin the simulator
+        run: |
+          xcrun simctl list devices available | grep "iPhone 17" \
+            || (echo "Pinned simulator 'iPhone 17' is unavailable on this image" >&2; exit 1)
+
+      - name: Cache pinned tools
+        uses: actions/cache@v4
+        with:
+          path: .tools
+          key: tools-${{ runner.os }}-${{ hashFiles('scripts/versions.env') }}
+
+      - run: make bootstrap
+      - run: make test
+      - run: make coverage
+      - run: make analyze
+      - run: make strict-concurrency
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: build/TestResults.xcresult
+          retention-days: 14
+
+  ui-test:
+    name: UI tests
+    runs-on: macos-15
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select pinned Xcode
+        run: sudo xcode-select -switch /Applications/Xcode_26.6.app
+
+      - name: Cache pinned tools
+        uses: actions/cache@v4
+        with:
+          path: .tools
+          key: tools-${{ runner.os }}-${{ hashFiles('scripts/versions.env') }}
+
+      - run: make bootstrap
+      - run: make ui-test
+
+      # A failed UI test is close to undiagnosable without the screenshots and
+      # the element hierarchy the bundle carries.
+      - name: Upload UI test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-test-results
+          path: |
+            ~/Library/Developer/Xcode/DerivedData/**/Logs/Test/*.xcresult
+          retention-days: 14
+
+  archive:
+    name: Release archive
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select pinned Xcode
+        run: sudo xcode-select -switch /Applications/Xcode_26.6.app
+
+      - name: Cache pinned tools
+        uses: actions/cache@v4
+        with:
+          path: .tools
+          key: tools-${{ runner.os }}-${{ hashFiles('scripts/versions.env') }}
+
+      - run: make bootstrap
+      # Also asserts the archive declares iPhone-only with no iPad orientations,
+      # so the CLEAN-010 regression cannot come back unnoticed.
+      - run: make archive
+
+  # Single job to require in branch protection, so adding a check above does not
+  # need the protection rule edited to match.
+  required:
+    name: All checks
+    runs-on: ubuntu-latest
+    needs: [static, test, ui-test, archive]
+    if: always()
+    steps:
+      - name: Fail if any job did not succeed
+        run: |
+          results='${{ join(needs.*.result, ' ') }}'
+          echo "Job results: $results"
+          for result in $results; do
+            if [[ "$result" != "success" ]]; then
+              echo "A required check did not succeed." >&2
+              exit 1
+            fi
+          done
+          echo "All required checks succeeded."
