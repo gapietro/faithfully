@@ -11,6 +11,7 @@
 		05DC9C00821E62885BD48800 /* ChallengeCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44480AD2FE11B11DFAA602AC /* ChallengeCardView.swift */; };
 		06120571F60986FF3DB7CB43 /* BadgeServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB91F756DEEBA088E6AA18F /* BadgeServiceTests.swift */; };
 		072A4CDFFE4765696F70F94C /* ChallengeScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20711FA1DBD7AAD7EDA28C9B /* ChallengeScheduler.swift */; };
+		07EB13D5BC713083BB75E00D /* JourneyJournalEditTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B8D7059F6F9C7EE43232068 /* JourneyJournalEditTests.swift */; };
 		094C8A959177664555763CA3 /* CalendarDay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09FD5B1A4D33639B4E10E0B0 /* CalendarDay.swift */; };
 		09CDB7E9A8E4212113F3CFA8 /* TestHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F1135EB5B3E4AF57AC89F08 /* TestHelpers.swift */; };
 		0C2101BB3E78F20E00B6049F /* NotificationPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 239B6F5924744680F7536B7B /* NotificationPreferences.swift */; };
@@ -176,6 +177,7 @@
 		67599777A0F22E0A83494345 /* Faithfully.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Faithfully.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6B169F0954F3DE4364D4AB33 /* UserProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfile.swift; sourceTree = "<group>"; };
 		6B31150D89C22F4555406336 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		6B8D7059F6F9C7EE43232068 /* JourneyJournalEditTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JourneyJournalEditTests.swift; sourceTree = "<group>"; };
 		6C1F861CFF2402A653925C0A /* ChallengeCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeCategory.swift; sourceTree = "<group>"; };
 		74A0A9835C089C4B31762558 /* UITestSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITestSupport.swift; sourceTree = "<group>"; };
 		74F6284E83B418C2BCBDCCEE /* BadgeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeService.swift; sourceTree = "<group>"; };
@@ -350,6 +352,7 @@
 				1C84840D14A258F54B26F511 /* IntegrationTests.swift */,
 				01E793BFDFEB2C887066D69D /* JournalEditTests.swift */,
 				D16DFAD3069E84D14E2B8EDA /* JournalTextTests.swift */,
+				6B8D7059F6F9C7EE43232068 /* JourneyJournalEditTests.swift */,
 				A2A318E32A093F40BE1C8A1A /* JourneyViewModelTests.swift */,
 				B8122C71833812BE9141D9FB /* NotificationServiceTests.swift */,
 				F4CA19120E23773AE82C69EB /* NotificationWiringTests.swift */,
@@ -631,6 +634,7 @@
 				1E6A0D7CDF33AB3F382CB7E5 /* IntegrationTests.swift in Sources */,
 				EA75882F167C74CD09D6EAA0 /* JournalEditTests.swift in Sources */,
 				15D05E020FCCA30FD83D6D1B /* JournalTextTests.swift in Sources */,
+				07EB13D5BC713083BB75E00D /* JourneyJournalEditTests.swift in Sources */,
 				58401CC0AD276E46FC47065E /* JourneyViewModelTests.swift in Sources */,
 				FCF5947547F47468E4A409BE /* NotificationServiceTests.swift in Sources */,
 				ECB1023E48F78F5C25A67310 /* NotificationWiringTests.swift in Sources */,

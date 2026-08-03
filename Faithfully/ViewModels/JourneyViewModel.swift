@@ -10,6 +10,10 @@ final class JourneyViewModel {
     var allBadges: [BadgeDisplayItem] = []
     var journalEntries: [JournalDisplayItem] = []
 
+    /// The query currently filtering the timeline, so a refresh after an edit
+    /// re-applies it instead of dropping the user back to the unfiltered list.
+    private(set) var activeSearchQuery: String = ""
+
     private let challengeService: ChallengeServiceProtocol
     private let badgeService: BadgeServiceProtocol
 
@@ -48,16 +52,32 @@ final class JourneyViewModel {
             )
         }
 
-        // Journal entries — reverse chronological
-        journalEntries = journalItems(from: completions)
+        // Journal entries — reverse chronological, honouring any active filter.
+        journalEntries = journalItems(
+            from: completions,
+            matching: activeSearchQuery.isEmpty ? nil : activeSearchQuery
+        )
     }
 
     func searchJournal(_ query: String) {
+        activeSearchQuery = query
         guard !query.isEmpty else {
             refresh()
             return
         }
         journalEntries = journalItems(from: allCompletions(), matching: query)
+    }
+
+    /// Edits or clears a reflection, then rebuilds the timeline.
+    ///
+    /// Returns the result rather than swallowing it: the caller owns the editor
+    /// and the user's text, and must keep both unless this says `.saved`.
+    @discardableResult
+    func updateJournal(entryID: UUID, to text: String?) -> JournalEditResult {
+        let result = challengeService.updateJournal(entryID: entryID, to: text)
+        guard result.isSaved else { return result }
+        refresh()
+        return result
     }
 
     func shareEntry(_ entry: JournalDisplayItem) -> ShareCardData {
