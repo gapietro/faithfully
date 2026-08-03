@@ -97,6 +97,7 @@
 		ECB1023E48F78F5C25A67310 /* NotificationWiringTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4CA19120E23773AE82C69EB /* NotificationWiringTests.swift */; };
 		ED54B0A200BB09430BA44193 /* BadgeProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE45B6A55566A5C6CD6F61D7 /* BadgeProgress.swift */; };
 		ED5D32C1E160AB70012BBF50 /* JourneyUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A27AF0C56105C1392BCAD569 /* JourneyUITests.swift */; };
+		EDE1D9728866152F5644658A /* JournalEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBCD3E7C9B169EB9A68B4BBA /* JournalEditorView.swift */; };
 		F03CDE515F35D941769F00D7 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = E4CB5E742EF34465EAEE5B88 /* PrivacyInfo.xcprivacy */; };
 		F2580215BC5ADC33AA2E8200 /* FaithfullyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8095D01BF1DAA3353F9844F /* FaithfullyApp.swift */; };
 		F4FA31D8154505F060B8C90F /* DailyWalkViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C30E30061C9CB312FE870547 /* DailyWalkViewModelTests.swift */; };
@@ -196,6 +197,7 @@
 		ADF03A865185C385DB1479F7 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		B102D549A1D69BC7485C0A77 /* EarnedBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EarnedBadge.swift; sourceTree = "<group>"; };
 		B8122C71833812BE9141D9FB /* NotificationServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationServiceTests.swift; sourceTree = "<group>"; };
+		BBCD3E7C9B169EB9A68B4BBA /* JournalEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalEditorView.swift; sourceTree = "<group>"; };
 		C11AB09887355905D1FFAAB5 /* BibleTranslation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BibleTranslation.swift; sourceTree = "<group>"; };
 		C30E30061C9CB312FE870547 /* DailyWalkViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyWalkViewModelTests.swift; sourceTree = "<group>"; };
 		C4633BCA761A773CACA56C30 /* OnboardingUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingUITests.swift; sourceTree = "<group>"; };
@@ -243,6 +245,7 @@
 				01F67D0C226BF6BCEF1EAC07 /* BadgeCelebrationView.swift */,
 				06C137F2CA7A309E888C55F4 /* BadgeGlyphView.swift */,
 				39F46BEE80A0313990208AAA /* ChallengeLoadErrorView.swift */,
+				BBCD3E7C9B169EB9A68B4BBA /* JournalEditorView.swift */,
 				3B352BA777E797F7A1528C8F /* StoreUnavailableBanner.swift */,
 			);
 			path = Shared;
@@ -691,6 +694,7 @@
 				8345F9B7A79910D1E10952E5 /* GracePeriod.swift in Sources */,
 				DD9A0B55F1FE9E9E7256E53E /* JournalDisplayItem.swift in Sources */,
 				85B76182499706481C6D059C /* JournalEditResult.swift in Sources */,
+				EDE1D9728866152F5644658A /* JournalEditorView.swift in Sources */,
 				E4A99B56ECFAB3D7867361FE /* JournalText.swift in Sources */,
 				D931C0180DAEAB9E5B553F98 /* JourneyView.swift in Sources */,
 				2C4C9F7221C7EC2ED57D1157 /* JourneyViewModel.swift in Sources */,
