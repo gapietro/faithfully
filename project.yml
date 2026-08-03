@@ -17,6 +17,9 @@ targets:
       - path: Faithfully/Resources/challenges.json
         type: file
         buildPhase: resources
+      - path: Faithfully/Resources/PrivacyInfo.xcprivacy
+        type: file
+        buildPhase: resources
       - path: Faithfully/Resources/Assets.xcassets
         buildPhase: resources
     settings:
@@ -48,6 +51,12 @@ targets:
         excludes:
           - "challenges.json"
       - path: FaithfullyTests/challenges.json
+        type: file
+        buildPhase: resources
+      # The manifest is asserted by DataProtectionTests, so the test bundle
+      # needs its own copy — the app bundle is not readable from a unit test
+      # host in every configuration.
+      - path: Faithfully/Resources/PrivacyInfo.xcprivacy
         type: file
         buildPhase: resources
     dependencies:

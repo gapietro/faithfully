@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	  Privacy manifest. Required at submission, and previously absent entirely.
+
+	  Faithfully has no account, no backend, no network calls, no analytics and
+	  no third-party SDKs. Nothing leaves the device, so every collection and
+	  tracking key below is deliberately empty rather than omitted — an empty
+	  declaration is a statement; a missing one is a gap.
+	-->
+
+	<!-- No tracking, and no domains to declare. -->
+	<key>NSPrivacyTracking</key>
+	<false/>
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+
+	<!--
+	  No data is collected. Journal entries, completions and preferences are
+	  written to a local SwiftData store and never transmitted; see
+	  docs/ship/PRIVACY_POLICY.md and docs/ship/DATA_PROTECTION.md.
+	-->
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array/>
+
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array>
+		<!--
+		  UserDefaults, reached through @AppStorage("hasCompletedOnboarding") in
+		  ContentView. It stores one boolean, for this app only, and is never
+		  read by or shared with anything else — which is exactly what reason
+		  CA92.1 covers.
+		-->
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>CA92.1</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>
