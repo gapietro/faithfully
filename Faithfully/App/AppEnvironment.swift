@@ -205,6 +205,21 @@ final class AppServices {
             self.dailyWalkViewModel.updateTranslation(self.profile.preferredTranslation)
             self.refreshNotifications()
         }
+
+        // A reflection edited or deleted in one tab must not linger, stale, in
+        // the other — the Calendar day detail is a value type snapshot, and a
+        // deleted reflection left showing there could be written back by
+        // pressing Save on text the user already asked to destroy. Each side
+        // only refreshes the *other*: `updateJournal` already refreshes its own
+        // view model before firing this, so looping back would be redundant,
+        // and each refresh method here never itself calls `updateJournal`, so
+        // there is no recursion.
+        journeyViewModel.onJournalChanged = { [weak self] in
+            self?.calendarViewModel.refreshJournal()
+        }
+        calendarViewModel.onJournalChanged = { [weak self] in
+            self?.journeyViewModel.refresh()
+        }
     }
 
     /// Keeps every tab consistent after a completion (from Daily Walk or a

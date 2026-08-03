@@ -14,8 +14,12 @@ struct JournalEditorView: View {
 
     /// Callers disable their own submit button with this, so the rule that
     /// blocks over-limit text lives with the editor that enforces it.
+    ///
+    /// Counts the trimmed length, matching `JournalText.validated` exactly —
+    /// otherwise a trailing newline could show red and block Save here for
+    /// text the service would accept without complaint.
     static func isOverLimit(_ text: String) -> Bool {
-        text.count > Constants.maxJournalLength
+        text.trimmingCharacters(in: .whitespacesAndNewlines).count > Constants.maxJournalLength
     }
 
     private var characterCount: Int { text.count }

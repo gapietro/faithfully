@@ -17,6 +17,11 @@ final class JourneyViewModel {
     private let challengeService: ChallengeServiceProtocol
     private let badgeService: BadgeServiceProtocol
 
+    /// Fired after a journal edit made *by this view model* is saved, so
+    /// `AppServices` can catch up the other tabs. Never invoked for an edit
+    /// this view model did not originate, and never for a failed one.
+    var onJournalChanged: (() -> Void)?
+
     init(challengeService: ChallengeServiceProtocol, badgeService: BadgeServiceProtocol) {
         self.challengeService = challengeService
         self.badgeService = badgeService
@@ -77,6 +82,11 @@ final class JourneyViewModel {
         let result = challengeService.updateJournal(entryID: entryID, to: text)
         guard result.isSaved else { return result }
         refresh()
+        // Only after a successful save, and only for an edit this view model
+        // made itself — `refresh()` is also the entry point for catching up on
+        // an edit made elsewhere (Calendar), so firing this from there too
+        // would recurse.
+        onJournalChanged?()
         return result
     }
 
