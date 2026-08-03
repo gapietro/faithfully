@@ -28,7 +28,7 @@ struct OnboardingView: View {
                     .accessibilityIdentifier("welcomeTitle")
                 Text("Your daily walk with Jesus.")
                     .font(.title3)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.supportingText)
                 Spacer()
                 Button("Next") { currentPage = 1 }
                     .buttonStyle(.borderedProminent)

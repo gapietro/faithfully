@@ -12,6 +12,12 @@ struct CalendarScreenView: View {
                     HStack {
                         Button(action: { vm.previousMonth() }) {
                             Image(systemName: "chevron.left")
+                                // A chevron glyph is ~13x17pt. The 44pt minimum
+                                // is the tappable area, not the ink: without an
+                                // explicit frame this button is a third of the
+                                // size a finger needs.
+                                .frame(width: 44, height: 44)
+                                .contentShape(Rectangle())
                         }
                         .accessibilityIdentifier("previousMonth")
 
@@ -25,6 +31,8 @@ struct CalendarScreenView: View {
 
                         Button(action: { vm.nextMonth() }) {
                             Image(systemName: "chevron.right")
+                                .frame(width: 44, height: 44)
+                                .contentShape(Rectangle())
                         }
                         .accessibilityIdentifier("nextMonth")
                     }
@@ -32,10 +40,14 @@ struct CalendarScreenView: View {
 
                     // Day of week headers
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7), spacing: 8) {
-                        ForEach(["S", "M", "T", "W", "T", "F", "S"], id: \.self) { day in
+                        ForEach(Array(["S", "M", "T", "W", "T", "F", "S"].enumerated()), id: \.offset) { _, day in
                             Text(day)
                                 .font(.caption)
-                                .foregroundStyle(.secondary)
+                                // .secondary fails contrast at caption size;
+                                // .primary with reduced opacity keeps the visual
+                                // hierarchy while staying legible.
+                                .foregroundStyle(Color.primary.opacity(0.75))
+                                .accessibilityHidden(true)
                         }
                     }
                     .padding(.horizontal)
@@ -95,27 +107,38 @@ struct CalendarScreenView: View {
         return calendar.component(.weekday, from: firstOfMonth) - 1
     }
 
+    // Colours are paired for contrast, not picked independently. Apple's
+    // accessibility audit failed every one of the original pairs: light-on-light
+    // for missed and future, and a 40%-opacity secondary for pre-enrollment that
+    // no sighted user could read either.
+    //
+    // Status is also carried by the accessibility value on each day, so nothing
+    // here is the *only* signal — but a state that cannot be seen is still a
+    // state that does not work.
     private func backgroundForStatus(_ status: CalendarDayStatus) -> Color {
         switch status {
-        case .completed: return .green
-        case .missed: return .gray.opacity(0.2)
-        case .missedRecoverable: return .orange.opacity(0.3)
+        // Explicit dark fills rather than system accent colours: systemGreen and
+        // systemOrange are tuned to be vivid, not to carry white text, and both
+        // failed the contrast audit.
+        case .completed: return Color(.sRGB, red: 0.08, green: 0.38, blue: 0.20, opacity: 1)
+        case .missed: return Color(.systemGray4)
+        case .missedRecoverable: return Color(.sRGB, red: 0.60, green: 0.31, blue: 0.02, opacity: 1)
         case .future: return .clear
-        case .preEnrollment: return .clear
-        case .today: return .blue.opacity(0.2)
+        case .preEnrollment: return Color(.systemGray6)
+        case .today: return Color(.systemBlue).opacity(0.18)
         }
     }
 
     private func foregroundForStatus(_ status: CalendarDayStatus) -> Color {
         switch status {
         case .completed: return .white
-        case .missed: return .gray
-        case .missedRecoverable: return .orange
-        case .future: return .secondary
-        // Dimmer than .future and .missed alike: these days are outside the
-        // user's journey entirely, so they must not read as either upcoming
-        // work or a failure.
-        case .preEnrollment: return .secondary.opacity(0.4)
+        case .missed: return Color(.label)
+        case .missedRecoverable: return .white
+        case .future: return Color(.label)
+        // Distinguished from .future by its fill rather than by faint text:
+        // dimming the text below the contrast floor made the state unreadable
+        // rather than merely de-emphasised.
+        case .preEnrollment: return Color(.label)
         case .today: return .primary
         }
     }

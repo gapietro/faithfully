@@ -31,7 +31,7 @@ struct ChallengeCardView: View {
                     .accessibilityIdentifier("scriptureText")
                 Text("— \(challenge.scriptureReference)")
                     .font(.scriptureReference)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.supportingText)
             }
 
             Divider()
@@ -44,7 +44,7 @@ struct ChallengeCardView: View {
             // Reflection prompt
             Text(challenge.reflectionPrompt)
                 .font(.callout)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.supportingText)
                 .italic()
         }
         .padding()

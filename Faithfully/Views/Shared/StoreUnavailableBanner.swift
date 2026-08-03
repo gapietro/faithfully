@@ -20,7 +20,7 @@ struct StoreUnavailableBanner: View {
                 .foregroundStyle(.orange)
             Text(message)
                 .font(.footnote)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.supportingText)
                 .fixedSize(horizontal: false, vertical: true)
             Button("Reset Saved Data…") { confirmingReset = true }
                 .font(.footnote.weight(.medium))

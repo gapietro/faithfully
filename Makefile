@@ -35,6 +35,7 @@ help:
 	@echo "make test             Unit and integration tests, with coverage"
 	@echo "make coverage         Enforce the Services/ViewModels coverage floor"
 	@echo "make ui-test          Simulator UI tests"
+	@echo "make accessibility    Apple's accessibility audit over every screen"
 	@echo "make analyze          Xcode static analyzer"
 	@echo "make strict-concurrency  Build under complete concurrency checking"
 	@echo "make archive          Release archive for a generic iOS device"
@@ -85,6 +86,12 @@ ui-test:
 		-destination '$(DESTINATION)' \
 		-only-testing:FaithfullyUITests test
 
+.PHONY: accessibility
+accessibility:
+	xcodebuild -project $(PROJECT) -scheme $(SCHEME) \
+		-destination '$(DESTINATION)' \
+		-only-testing:FaithfullyUITests/AccessibilityAuditTests test
+
 .PHONY: analyze
 analyze:
 	xcodebuild -project $(PROJECT) -scheme $(SCHEME) \
@@ -103,6 +110,6 @@ archive:
 	@./scripts/check_archive.sh $(ARCHIVE_PATH)
 
 .PHONY: ci
-ci: bootstrap verify-project validate-content lint test coverage ui-test analyze strict-concurrency archive
+ci: bootstrap verify-project validate-content lint test coverage ui-test accessibility analyze strict-concurrency archive
 	@echo
 	@echo "All checks passed."
