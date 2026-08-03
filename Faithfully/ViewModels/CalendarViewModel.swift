@@ -70,6 +70,26 @@ final class CalendarViewModel {
         }
     }
 
+    /// Edits or clears the reflection on a day, then rebuilds the grid.
+    ///
+    /// Returns the result rather than swallowing it: the caller owns the editor
+    /// and the user's text, and must keep both unless this says `.saved`.
+    @discardableResult
+    func updateJournal(entryID: UUID, to text: String?) -> JournalEditResult {
+        let result = challengeService.updateJournal(entryID: entryID, to: text)
+        guard result.isSaved else { return result }
+
+        loadMonth()
+        // Re-bind any open detail panel to the rebuilt day, so it shows the new
+        // text rather than the value it was constructed with.
+        if let selected = selectedDay {
+            selectedDay = calendarDays.first {
+                Calendar.current.isDate($0.date, inSameDayAs: selected.date)
+            }
+        }
+        return result
+    }
+
     func loadMonth() {
         let calendar = Calendar.current
         let components = calendar.dateComponents([.year, .month], from: currentMonth)
@@ -90,6 +110,12 @@ final class CalendarViewModel {
             completions.compactMap { completion in
                 completion.journalEntry.map { (completion.dayKey, $0) }
             },
+            uniquingKeysWith: { first, _ in first }
+        )
+        // Keyed for every completion, not only those with text: a day completed
+        // without a reflection still needs to be addressable so one can be added.
+        let completionIDByDay = Dictionary(
+            completions.map { ($0.dayKey, $0.id) },
             uniquingKeysWith: { first, _ in first }
         )
 
@@ -125,7 +151,8 @@ final class CalendarViewModel {
                 date: date,
                 challenge: challenge,
                 status: status,
-                journalEntry: journalByDay[dayKey]
+                journalEntry: journalByDay[dayKey],
+                completionID: completionIDByDay[dayKey]
             )
         }
     }
