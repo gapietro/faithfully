@@ -115,16 +115,13 @@ final class ChallengeService: ChallengeServiceProtocol {
             throw ChallengeServiceError.alreadyCompleted
         }
 
-        // Length is judged after trimming, so trailing whitespace never costs the
-        // user their reflection, and rejected rather than truncated.
-        let trimmedJournal = journal?.trimmingCharacters(in: .whitespacesAndNewlines)
-        if let trimmedJournal, trimmedJournal.count > Constants.maxJournalLength {
-            throw ChallengeServiceError.journalTooLong(
-                limit: Constants.maxJournalLength,
-                actual: trimmedJournal.count
-            )
+        // One rule, shared with the edit path — see JournalText.
+        let finalJournal: String?
+        do {
+            finalJournal = try JournalText.validated(journal)
+        } catch JournalValidationError.tooLong(let limit, let actual) {
+            throw ChallengeServiceError.journalTooLong(limit: limit, actual: actual)
         }
-        let finalJournal = trimmedJournal.flatMap { $0.isEmpty ? nil : $0 }
 
         let completion = CompletedChallenge(
             challengeId: challenge.id,
