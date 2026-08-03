@@ -44,6 +44,15 @@ Accepted risks:
 - Two narrow accessibility-audit exclusions, documented at the point of
   exclusion: issues the audit cannot attribute to an element, and elements
   resting under the translucent tab bar.
+- **GitHub-hosted macOS runs stopped being scheduled part-way through this
+  pass.** Jobs now fail in about two seconds with no runner assigned and no
+  steps executed — a resource block, not a code failure. The workflow itself is
+  proven: runs 30774253168, 30774801972 and 30775380483 completed every job
+  green. A private repository on the free plan gets 2,000 Actions minutes a
+  month and macOS bills at 10x, so roughly 200 macOS minutes; the UI job alone
+  is about 20 of them. Until this is resolved, `make ci` on a developer machine
+  is the real gate. Owner: maintainer — see the options in
+  `docs/ship/MERGE_CHECKLIST.md`.
 
 Cap status, stated precisely because the difference matters:
 
