@@ -29,6 +29,7 @@
 		2C4C9F7221C7EC2ED57D1157 /* JourneyViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E54C9DC71A022279AB940AED /* JourneyViewModel.swift */; };
 		2F312632AC14118C841E0C15 /* ChallengeLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54DE59ED320B7ECF201DD87B /* ChallengeLoader.swift */; };
 		2FE1C5B4185830A889A4A773 /* AppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80BCA35EB18A58680001DA07 /* AppEnvironment.swift */; };
+		31457C2B654F94C57DD90391 /* JournalEditSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC71522DFA33C8F07BCC2BB1 /* JournalEditSheet.swift */; };
 		360B310D937097319D020531 /* BadgeEvaluationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C790891C0DCDD4C7DB6C2D0F /* BadgeEvaluationTests.swift */; };
 		3C8DB7EF750C25D868EB1B88 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0011191C28B01F3B06B8D632 /* Theme.swift */; };
 		3CADF8A6AA8DF743E8207A49 /* UITestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EE5DCB0970EDF8826396502 /* UITestCase.swift */; };
@@ -202,6 +203,7 @@
 		B102D549A1D69BC7485C0A77 /* EarnedBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EarnedBadge.swift; sourceTree = "<group>"; };
 		B8122C71833812BE9141D9FB /* NotificationServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationServiceTests.swift; sourceTree = "<group>"; };
 		BBCD3E7C9B169EB9A68B4BBA /* JournalEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalEditorView.swift; sourceTree = "<group>"; };
+		BC71522DFA33C8F07BCC2BB1 /* JournalEditSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalEditSheet.swift; sourceTree = "<group>"; };
 		C11AB09887355905D1FFAAB5 /* BibleTranslation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BibleTranslation.swift; sourceTree = "<group>"; };
 		C30E30061C9CB312FE870547 /* DailyWalkViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyWalkViewModelTests.swift; sourceTree = "<group>"; };
 		C4633BCA761A773CACA56C30 /* OnboardingUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingUITests.swift; sourceTree = "<group>"; };
@@ -250,6 +252,7 @@
 				06C137F2CA7A309E888C55F4 /* BadgeGlyphView.swift */,
 				39F46BEE80A0313990208AAA /* ChallengeLoadErrorView.swift */,
 				BBCD3E7C9B169EB9A68B4BBA /* JournalEditorView.swift */,
+				BC71522DFA33C8F07BCC2BB1 /* JournalEditSheet.swift */,
 				3B352BA777E797F7A1528C8F /* StoreUnavailableBanner.swift */,
 			);
 			path = Shared;
@@ -702,6 +705,7 @@
 				8345F9B7A79910D1E10952E5 /* GracePeriod.swift in Sources */,
 				DD9A0B55F1FE9E9E7256E53E /* JournalDisplayItem.swift in Sources */,
 				85B76182499706481C6D059C /* JournalEditResult.swift in Sources */,
+				31457C2B654F94C57DD90391 /* JournalEditSheet.swift in Sources */,
 				EDE1D9728866152F5644658A /* JournalEditorView.swift in Sources */,
 				E4A99B56ECFAB3D7867361FE /* JournalText.swift in Sources */,
 				D931C0180DAEAB9E5B553F98 /* JourneyView.swift in Sources */,

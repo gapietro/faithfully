@@ -4,6 +4,8 @@ import SwiftData
 struct JourneyView: View {
     let vm: JourneyViewModel
     @State private var searchText = ""
+    @State private var editingEntry: JournalDisplayItem?
+    @State private var pendingDeletion: JournalDisplayItem?
 
     var body: some View {
         NavigationStack {
@@ -134,6 +136,25 @@ struct JourneyView: View {
                                 .background(Color(.secondarySystemBackground))
                                 .clipShape(RoundedRectangle(cornerRadius: 8))
                                 .accessibilityIdentifier("journalEntry_\(entry.id)")
+                                .contentShape(Rectangle())
+                                .onTapGesture { editingEntry = entry }
+                                .accessibilityHint("Double tap to edit this reflection")
+                                .accessibilityAction(named: "Edit") { editingEntry = entry }
+                                .accessibilityAction(named: "Delete") { pendingDeletion = entry }
+                                .overlay(alignment: .topTrailing) {
+                                    Button {
+                                        pendingDeletion = entry
+                                    } label: {
+                                        Image(systemName: "trash")
+                                            .font(.footnote)
+                                            .foregroundStyle(Color.supportingText)
+                                            // 44pt tappable area, not 13pt of ink.
+                                            .frame(width: 44, height: 44)
+                                            .contentShape(Rectangle())
+                                    }
+                                    .accessibilityIdentifier("deleteJournalEntry_\(entry.id)")
+                                    .accessibilityLabel("Delete reflection")
+                                }
                             }
                         }
                 }
@@ -144,6 +165,34 @@ struct JourneyView: View {
                 .padding(.bottom, 32)
             }
             .navigationTitle("My Journey")
+            .sheet(item: $editingEntry) { entry in
+                JournalEditSheet(
+                    title: "Edit reflection",
+                    date: entry.date,
+                    originalText: entry.journalText,
+                    onSave: { vm.updateJournal(entryID: entry.id, to: $0) },
+                    onCancel: { editingEntry = nil }
+                )
+            }
+            .confirmationDialog(
+                "Delete this reflection?",
+                isPresented: Binding(
+                    get: { pendingDeletion != nil },
+                    set: { if !$0 { pendingDeletion = nil } }
+                ),
+                titleVisibility: .visible
+            ) {
+                Button("Delete", role: .destructive) {
+                    if let entry = pendingDeletion {
+                        _ = vm.updateJournal(entryID: entry.id, to: nil)
+                    }
+                    pendingDeletion = nil
+                }
+                Button("Cancel", role: .cancel) { pendingDeletion = nil }
+            } message: {
+                Text("Your reflection will be permanently deleted. The day stays completed — "
+                     + "your streak and badges aren't affected.")
+            }
         }
     }
 }
