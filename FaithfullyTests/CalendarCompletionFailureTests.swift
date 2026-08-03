@@ -82,6 +82,35 @@ final class CalendarCompletionFailureTests: XCTestCase {
         XCTAssertEqual(vm.completeGracePeriod(expired), .failed(.gracePeriodExpired))
     }
 
+    /// GRADE-006: the duplicate-day guard was a lenient read — a failed fetch
+    /// yielded `[]`, which reads as "not completed", so the write went ahead.
+    /// Reads are lenient by policy and that policy is right, but this one is a
+    /// write guard: a second row for the same civil day would inflate totals,
+    /// category counts and therefore badges, and nothing would ever repair it.
+    func testACompletionIsRefusedWhenTheDuplicateCheckCannotBeRead() throws {
+        let today = Date.from(year: 2026, month: 6, day: 15)
+        let service = try ChallengeService(
+            persistence: persistence,
+            challenges: challenges,
+            badgeService: badgeService,
+            enrollmentDate: TestHelpers.longEnrolledDate,
+            dateProvider: { today }
+        )
+
+        persistence.failFetch = true
+
+        XCTAssertThrowsError(
+            try service.completeChallenge(service.challengeForDate(today), on: today, journal: nil),
+            "A guard that cannot be read must refuse, not guess"
+        ) { error in
+            XCTAssertEqual(error as? PersistenceError, .fetchFailed("injected"))
+        }
+
+        persistence.failFetch = false
+        XCTAssertEqual(try context.fetch(FetchDescriptor<CompletedChallenge>()).count, 0,
+                       "Nothing may be written on an unreadable guard")
+    }
+
     func testSuccessfulGraceCompletionStillReportsSuccessAndUpdatesTheGrid() throws {
         let today = Date.from(year: 2026, month: 6, day: 15)
         let (vm, service) = try makeViewModel(today: today)
