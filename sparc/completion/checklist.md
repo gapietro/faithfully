@@ -1,10 +1,27 @@
 # SPARC Phase 5: Completion
 ## Faithfully iOS App — Launch Readiness Checklist
 
-> **Status — last executed: 2026-07-20, Sprint E ship prep** (branch `sprint-e-ship-prep`, issue #13).
-> This pass checked boxes **only where evidence exists**; everything else stays open. Phase 5 is **not complete**.
-> Evidence and drafts: [docs/ship/TEST_RUN.md](../../docs/ship/TEST_RUN.md) · [docs/ship/CLOUDKIT_DECISION.md](../../docs/ship/CLOUDKIT_DECISION.md) · [docs/ship/PRIVACY_POLICY.md](../../docs/ship/PRIVACY_POLICY.md) · [docs/ship/APP_STORE_LISTING.md](../../docs/ship/APP_STORE_LISTING.md) · [docs/ship/TESTFLIGHT_RUNBOOK.md](../../docs/ship/TESTFLIGHT_RUNBOOK.md) · [docs/ship/SCREENSHOTS_AND_ICON.md](../../docs/ship/SCREENSHOTS_AND_ICON.md) · [ship readiness summary](../../docs/ship/README.md)
-> Top blockers for public release: **scripture accuracy** ([spot check](../../docs/content/SCRIPTURE_SPOT_CHECK.md)) and **translation licensing** ([decision](../../docs/content/TRANSLATION_LICENSING.md)).
+> **HISTORICAL — superseded 2026-08-02.**
+>
+> This checklist recorded a point-in-time pass on 2026-07-20 and has been
+> overtaken twice: by Sprint F (screenshots and icon, both now done) and by the
+> post-audit remediation (tracker #39), which added an executable gate.
+>
+> It is kept for the record. Do not read it as current status, and do not tick
+> boxes in it.
+>
+> Current sources of truth:
+>
+> | Question | Where |
+> |---|---|
+> | What passes right now | `make ci` — see [`docs/ship/MERGE_CHECKLIST.md`](../../docs/ship/MERGE_CHECKLIST.md) |
+> | Is it ready to ship | [`docs/ship/README.md`](../../docs/ship/README.md) |
+> | How is it built | [`docs/ARCHITECTURE.md`](../../docs/ARCHITECTURE.md) |
+> | Which promises are proven | [`docs/ship/CLAIMS.md`](../../docs/ship/CLAIMS.md) |
+>
+> The two blockers this document names as top priority — scripture accuracy and
+> translation licensing — were both cleared for v1 under the public-domain
+> strategy (WEB + KJV). It was never updated to say so.
 
 ### 1. Code Quality
 - [ ] All tests pass (unit, integration, UI) — *unit + integration: 176/176 green 2026-07-20 (TEST_RUN.md); UI test target not executed*
