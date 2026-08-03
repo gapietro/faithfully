@@ -8,6 +8,7 @@ import Foundation
 enum JournalEditFailure: Error, Equatable {
     case tooLong(limit: Int, actual: Int)
     case entryNotFound
+    case couldNotRead
     case couldNotSave
 
     var message: String {
@@ -18,6 +19,8 @@ enum JournalEditFailure: Error, Equatable {
                 + "\(limit)-character limit. Shorten it and try again — nothing has changed yet."
         case .entryNotFound:
             return "That day's record couldn't be found, so nothing was changed."
+        case .couldNotRead:
+            return "Your reflection couldn't be loaded, so nothing was changed. Please try again."
         case .couldNotSave:
             return "That change couldn't be saved. Your reflection is unchanged — please try again."
         }

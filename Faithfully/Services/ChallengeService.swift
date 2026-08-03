@@ -166,7 +166,13 @@ final class ChallengeService: ChallengeServiceProtocol {
         let descriptor = FetchDescriptor<CompletedChallenge>(
             predicate: #Predicate { $0.id == entryID }
         )
-        guard let entry = (try? persistence.fetch(descriptor))?.first else {
+        let existing: CompletedChallenge?
+        do {
+            existing = try persistence.fetch(descriptor).first
+        } catch {
+            return .failed(.couldNotRead)
+        }
+        guard let entry = existing else {
             return .failed(.entryNotFound)
         }
 
