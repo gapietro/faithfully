@@ -31,6 +31,10 @@ final class InjectablePersistence: PersistenceCoordinating {
         wrapped.insert(model)
     }
 
+    func delete<T: PersistentModel>(_ model: T) {
+        wrapped.delete(model)
+    }
+
     func save() throws {
         saveCount += 1
         if failEverySave || failNextSave {
