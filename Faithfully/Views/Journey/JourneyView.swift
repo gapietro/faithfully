@@ -4,6 +4,11 @@ import SwiftData
 struct JourneyView: View {
     let vm: JourneyViewModel
     @State private var searchText = ""
+    @State private var editingEntry: JournalDisplayItem?
+    @State private var pendingDeletion: JournalDisplayItem?
+    /// Set when a delete fails, so the user is told rather than left to
+    /// believe writing is gone when it is still on disk.
+    @State private var deleteFailureMessage: String?
 
     var body: some View {
         NavigationStack {
@@ -134,6 +139,25 @@ struct JourneyView: View {
                                 .background(Color(.secondarySystemBackground))
                                 .clipShape(RoundedRectangle(cornerRadius: 8))
                                 .accessibilityIdentifier("journalEntry_\(entry.id)")
+                                .contentShape(Rectangle())
+                                .onTapGesture { editingEntry = entry }
+                                .accessibilityHint("Double tap to edit this reflection")
+                                .accessibilityAction(named: "Edit") { editingEntry = entry }
+                                .accessibilityAction(named: "Delete") { pendingDeletion = entry }
+                                .overlay(alignment: .topTrailing) {
+                                    Button {
+                                        pendingDeletion = entry
+                                    } label: {
+                                        Image(systemName: "trash")
+                                            .font(.footnote)
+                                            .foregroundStyle(Color.supportingText)
+                                            // 44pt tappable area, not 13pt of ink.
+                                            .frame(width: 44, height: 44)
+                                            .contentShape(Rectangle())
+                                    }
+                                    .accessibilityIdentifier("deleteJournalEntry_\(entry.id)")
+                                    .accessibilityLabel("Delete reflection")
+                                }
                             }
                         }
                 }
@@ -144,6 +168,47 @@ struct JourneyView: View {
                 .padding(.bottom, 32)
             }
             .navigationTitle("My Journey")
+            .sheet(item: $editingEntry) { entry in
+                JournalEditSheet(
+                    title: "Edit reflection",
+                    date: entry.date,
+                    originalText: entry.journalText,
+                    onSave: { vm.updateJournal(entryID: entry.id, to: $0) },
+                    onCancel: { editingEntry = nil }
+                )
+            }
+            .reflectionDeleteAlert(
+                isPresented: Binding(
+                    get: { pendingDeletion != nil },
+                    set: { if !$0 { pendingDeletion = nil } }
+                ),
+                date: pendingDeletion?.date,
+                onDelete: {
+                    if let entry = pendingDeletion {
+                        switch vm.updateJournal(entryID: entry.id, to: nil) {
+                        case .saved:
+                            break
+                        case .failed(let failure):
+                            // The alert already dismissed; tell the user the
+                            // writing they just asked to delete is still there.
+                            deleteFailureMessage = failure.message
+                        }
+                    }
+                    pendingDeletion = nil
+                },
+                onCancel: { pendingDeletion = nil }
+            )
+            .alert(
+                "Couldn't delete reflection",
+                isPresented: Binding(
+                    get: { deleteFailureMessage != nil },
+                    set: { if !$0 { deleteFailureMessage = nil } }
+                )
+            ) {
+                Button("OK", role: .cancel) { deleteFailureMessage = nil }
+            } message: {
+                Text(deleteFailureMessage ?? "")
+            }
         }
     }
 }

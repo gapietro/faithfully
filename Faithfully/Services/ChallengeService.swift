@@ -21,6 +21,13 @@ protocol ChallengeServiceProtocol {
     func loadChallenges() -> [DailyChallenge]
     func challengeForDate(_ date: Date) -> DailyChallenge
     func completeChallenge(_ challenge: DailyChallenge, on scheduledDate: Date, journal: String?) throws -> [BadgeDefinition]
+
+    /// Replaces the reflection on an existing completion. `nil` clears it.
+    ///
+    /// Only `journalEntry` changes: the day, the challenge and the completion
+    /// timestamp are untouched, so streak, totals and badges cannot move.
+    func updateJournal(entryID: UUID, to text: String?) -> JournalEditResult
+
     func isCompleted(on scheduledDate: Date) -> Bool
     func fetchCompletions(for dateRange: ClosedRange<Date>) -> [CompletedChallenge]
 
@@ -115,16 +122,13 @@ final class ChallengeService: ChallengeServiceProtocol {
             throw ChallengeServiceError.alreadyCompleted
         }
 
-        // Length is judged after trimming, so trailing whitespace never costs the
-        // user their reflection, and rejected rather than truncated.
-        let trimmedJournal = journal?.trimmingCharacters(in: .whitespacesAndNewlines)
-        if let trimmedJournal, trimmedJournal.count > Constants.maxJournalLength {
-            throw ChallengeServiceError.journalTooLong(
-                limit: Constants.maxJournalLength,
-                actual: trimmedJournal.count
-            )
+        // One rule, shared with the edit path — see JournalText.
+        let finalJournal: String?
+        do {
+            finalJournal = try JournalText.validated(journal)
+        } catch JournalValidationError.tooLong(let limit, let actual) {
+            throw ChallengeServiceError.journalTooLong(limit: limit, actual: actual)
         }
-        let finalJournal = trimmedJournal.flatMap { $0.isEmpty ? nil : $0 }
 
         let completion = CompletedChallenge(
             challengeId: challenge.id,
@@ -147,6 +151,42 @@ final class ChallengeService: ChallengeServiceProtocol {
 
         onCompletionRecorded?(scheduledDate, newBadges)
         return newBadges
+    }
+
+    func updateJournal(entryID: UUID, to text: String?) -> JournalEditResult {
+        let validated: String?
+        do {
+            validated = try JournalText.validated(text)
+        } catch JournalValidationError.tooLong(let limit, let actual) {
+            return .failed(.tooLong(limit: limit, actual: actual))
+        } catch {
+            return .failed(.couldNotSave)
+        }
+
+        let descriptor = FetchDescriptor<CompletedChallenge>(
+            predicate: #Predicate { $0.id == entryID }
+        )
+        let existing: CompletedChallenge?
+        do {
+            existing = try persistence.fetch(descriptor).first
+        } catch {
+            return .failed(.couldNotRead)
+        }
+        guard let entry = existing else {
+            return .failed(.entryNotFound)
+        }
+
+        // Captured before mutating: `transaction` rolls the context back on
+        // failure, but restoring the in-memory object explicitly means the
+        // caller never sees a half-applied edit either way.
+        let previous = entry.journalEntry
+        do {
+            try persistence.transaction { entry.journalEntry = validated }
+            return .saved
+        } catch {
+            entry.journalEntry = previous
+            return .failed(.couldNotSave)
+        }
     }
 
     /// Matches on the frozen civil day, not on an instant range. The old

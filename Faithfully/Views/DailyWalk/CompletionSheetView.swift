@@ -7,19 +7,7 @@ struct CompletionSheetView: View {
     var errorMessage: String?
     let onComplete: () -> Void
 
-    private var characterCount: Int { journalText.count }
-    private var isOverLimit: Bool { characterCount > Constants.maxJournalLength }
-
-    /// Spoken as a sentence rather than "1998/2000", which VoiceOver reads as a
-    /// date. Announced only near the limit so it isn't noise on an empty editor.
-    private var counterAccessibilityLabel: String {
-        if isOverLimit {
-            let over = characterCount - Constants.maxJournalLength
-            return "\(over) character\(over == 1 ? "" : "s") over the limit"
-        }
-        let remaining = Constants.maxJournalLength - characterCount
-        return "\(remaining) character\(remaining == 1 ? "" : "s") remaining"
-    }
+    private var isOverLimit: Bool { JournalEditorView.isOverLimit(journalText) }
 
     var body: some View {
         NavigationStack {
@@ -33,43 +21,14 @@ struct CompletionSheetView: View {
                 Text("A short reflection, if you like")
                     .font(.subheadline)
                     // Full label colour: the sheet's background defeated every
-                    // reduced-opacity variant in the audit, and this line tells
-                    // the user the field is optional — not decoration.
+                    // reduced-opacity variant in the accessibility audit.
                     .foregroundStyle(Color(.label))
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: .infinity)
                     .minimumScaleFactor(0.8)
                     .fixedSize(horizontal: false, vertical: true)
 
-                TextEditor(text: $journalText)
-                    // A TextEditor has no implicit label, so VoiceOver announced
-                    // it as an unnamed text field — the audit's "Element has no
-                    // description".
-                    .accessibilityLabel("Your reflection")
-                    .accessibilityHint("Optional. Up to \(Constants.maxJournalLength) characters.")
-                    .frame(minHeight: 120)
-                    .padding(8)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(isOverLimit ? Color.red : Color.gray.opacity(0.3))
-                    )
-                    .accessibilityIdentifier("journalEditor")
-
-                HStack {
-                    if let errorMessage {
-                        Text(errorMessage)
-                            .font(.footnote)
-                            .foregroundStyle(.red)
-                            .accessibilityIdentifier("completionError")
-                    }
-                    Spacer()
-                    Text("\(characterCount)/\(Constants.maxJournalLength)")
-                        .font(.footnote.monospacedDigit())
-                        .foregroundStyle(isOverLimit ? .red : .secondary)
-                        .accessibilityIdentifier("journalCharacterCount")
-                        .accessibilityLabel(counterAccessibilityLabel)
-                        .accessibilityValue("\(characterCount) of \(Constants.maxJournalLength)")
-                }
+                JournalEditorView(text: $journalText, errorMessage: errorMessage)
 
                 Button(action: onComplete) {
                     Text("Complete Challenge")
@@ -85,7 +44,7 @@ struct CompletionSheetView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
                 // Blocked at the source: the user can never submit text that
-                // would be rejected or trimmed after the fact.
+                // would be rejected after the fact.
                 .disabled(isOverLimit)
                 .accessibilityIdentifier("completeButton")
                 .accessibilityHint(isOverLimit
@@ -100,10 +59,8 @@ struct CompletionSheetView: View {
         }
         .presentationDetents([.medium])
         // An explicit background rather than the default material. A material
-        // blends whatever is behind the sheet, so the contrast of text drawn on
-        // it depends on the screen underneath — this passed locally and failed
-        // in CI for exactly that reason. Text legibility should not be a
-        // function of what the user was looking at a moment ago.
+        // blends whatever is behind the sheet, so text contrast depended on the
+        // screen underneath — it passed locally and failed in CI for that reason.
         .presentationBackground(Color(.systemBackground))
     }
 }

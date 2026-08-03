@@ -11,6 +11,11 @@ final class CalendarViewModel {
     private let challengeService: ChallengeServiceProtocol
     private var today: Date
 
+    /// Fired after a journal edit made *by this view model* is saved, so
+    /// `AppServices` can catch up the other tabs. Never invoked for an edit
+    /// this view model did not originate, and never for a failed one.
+    var onJournalChanged: (() -> Void)?
+
     init(challengeService: ChallengeServiceProtocol, today: Date = .now) {
         self.challengeService = challengeService
         self.today = today
@@ -46,11 +51,7 @@ final class CalendarViewModel {
         // An open day detail must reflect the rebuilt truth: re-bind the
         // selection to the same date's new CalendarDay (status and grace
         // window may have changed), or drop it if the day left the grid.
-        if let selected = selectedDay {
-            selectedDay = calendarDays.first {
-                Calendar.current.isDate($0.date, inSameDayAs: selected.date)
-            }
-        }
+        rebindSelectedDay()
     }
 
     func selectDay(_ day: CalendarDay) {
@@ -67,6 +68,46 @@ final class CalendarViewModel {
             loadMonth()
         } catch {
             // Grace period expired or already completed
+        }
+    }
+
+    /// Edits or clears the reflection on a day, then rebuilds the grid.
+    ///
+    /// Returns the result rather than swallowing it: the caller owns the editor
+    /// and the user's text, and must keep both unless this says `.saved`.
+    @discardableResult
+    func updateJournal(entryID: UUID, to text: String?) -> JournalEditResult {
+        let result = challengeService.updateJournal(entryID: entryID, to: text)
+        guard result.isSaved else { return result }
+
+        loadMonth()
+        // Re-bind any open detail panel to the rebuilt day, so it shows the new
+        // text rather than the value it was constructed with.
+        rebindSelectedDay()
+        // Only after a successful save, and only for an edit this view model
+        // made itself — `refreshJournal()` is the entry point for catching up
+        // on an edit made elsewhere, so calling this callback from there too
+        // would recurse.
+        onJournalChanged?()
+        return result
+    }
+
+    /// Cross-tab catch-up: rebuilds the grid and any open day detail after a
+    /// journal edit made through Journey, the timeline this view model doesn't
+    /// own. Kept separate from `updateJournal` so this view model never
+    /// re-enters its own edit and never re-fires `onJournalChanged`.
+    func refreshJournal() {
+        loadMonth()
+        rebindSelectedDay()
+    }
+
+    /// Re-binds the open day detail, if any, to its rebuilt `CalendarDay` — a
+    /// value type, so the panel otherwise keeps showing whatever it was
+    /// constructed with even after the underlying data changes.
+    private func rebindSelectedDay() {
+        guard let selected = selectedDay else { return }
+        selectedDay = calendarDays.first {
+            Calendar.current.isDate($0.date, inSameDayAs: selected.date)
         }
     }
 
@@ -90,6 +131,12 @@ final class CalendarViewModel {
             completions.compactMap { completion in
                 completion.journalEntry.map { (completion.dayKey, $0) }
             },
+            uniquingKeysWith: { first, _ in first }
+        )
+        // Keyed for every completion, not only those with text: a day completed
+        // without a reflection still needs to be addressable so one can be added.
+        let completionIDByDay = Dictionary(
+            completions.map { ($0.dayKey, $0.id) },
             uniquingKeysWith: { first, _ in first }
         )
 
@@ -125,7 +172,8 @@ final class CalendarViewModel {
                 date: date,
                 challenge: challenge,
                 status: status,
-                journalEntry: journalByDay[dayKey]
+                journalEntry: journalByDay[dayKey],
+                completionID: completionIDByDay[dayKey]
             )
         }
     }
