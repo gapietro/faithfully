@@ -23,6 +23,8 @@ owner. Tracked as #52 through #56.
 | Which public promises are actually proven? | [CLAIMS.md](CLAIMS.md) |
 | How do I get a build onto a phone? | [TESTFLIGHT_RUNBOOK.md](TESTFLIGHT_RUNBOOK.md) |
 | Why is a date handled that way? | [TIMEZONE_POLICY.md](../architecture/TIMEZONE_POLICY.md) |
+| What happens to a user's data? | [DATA_PROTECTION.md](DATA_PROTECTION.md) |
+| Something broke in the field — now what? | [OPERATIONS.md](OPERATIONS.md) |
 
 ## Status
 
@@ -30,7 +32,7 @@ owner. Tracked as #52 through #56.
 |---|---|---|
 | Code & tests | 🟢 Ready | 246 unit + 36 UI tests, enforced by CI on every PR |
 | Audit findings | 🟢 Resolved | All 12 remediated with regression tests — [#39](https://github.com/gapietro/faithfully/issues/39) |
-| Quality gate | 🟢 Ready | Pinned tooling, `make ci`, GitHub Actions — [MERGE_CHECKLIST.md](MERGE_CHECKLIST.md) |
+| Quality gate | 🟢 Ready | Pinned tooling, `make ci`. Hosted CI is manual-only by decision — [MERGE_CHECKLIST.md](MERGE_CHECKLIST.md) |
 | Concurrency | 🟢 Ready | Swift 6 language mode, zero project-owned warnings |
 | Design pass 1 | 🟢 Ready | Sprint C brand assets, motion, badge names in place |
 | Content editorial | 🟢 Ready | Sprint D editorial pass done (em-dashes, giving challenges) |
@@ -42,10 +44,11 @@ owner. Tracked as #52 through #56.
 | Device family | 🟢 Ready | iPhone-only, asserted against the built archive in CI |
 | CloudKit | ⚪ Deferred (v1.x) | v1 is local SwiftData only, by decision — [CLOUDKIT_DECISION.md](CLOUDKIT_DECISION.md) |
 | Real badge art | 🟡 Outstanding | Recraft pack not commissioned; placeholder art ships internally fine |
-| Branch protection | 🟡 Blocked | Unavailable on this repo's plan: CI runs but cannot block a merge — [MERGE_CHECKLIST.md](MERGE_CHECKLIST.md) |
+| Merge enforcement | 🟡 By policy | Branch protection is unavailable on this plan and hosted runs are not being scheduled; `make ci` on a dev machine is the gate, by decision — [MERGE_CHECKLIST.md](MERGE_CHECKLIST.md) |
 | Signing / TestFlight / App Store validation | 🔴 Unverified | Archive is built unsigned; nothing has been uploaded — [#52](https://github.com/gapietro/faithfully/issues/52) |
-| Crash reporting & support ownership | 🔴 Not defined | No way to learn about a crash in the field — [#53](https://github.com/gapietro/faithfully/issues/53) |
-| Data protection & deletion | 🔴 Unverified | File-protection class not inspected on device — [#54](https://github.com/gapietro/faithfully/issues/54) |
+| Crash reporting & support ownership | 🟡 Drafted, 3 decisions open | Runbook written; needs a crash-reporting choice, a support address, and an owner — [OPERATIONS.md](OPERATIONS.md) · [#53](https://github.com/gapietro/faithfully/issues/53) |
+| Data protection | 🟡 Set, unverified on device | Store opens at `.complete`; privacy manifest shipped. On-device confirmation outstanding — [DATA_PROTECTION.md](DATA_PROTECTION.md) · [#54](https://github.com/gapietro/faithfully/issues/54) |
+| Per-entry journal deletion | 🟡 Not supported | A user cannot remove a single entry; needs a product decision before public release — [DATA_PROTECTION.md](DATA_PROTECTION.md) |
 | Device accessibility | 🔴 Unverified | No VoiceOver / Dynamic Type pass on hardware — [#55](https://github.com/gapietro/faithfully/issues/55) |
 | Device performance | 🔴 Unmeasured | No launch, scroll, memory, or energy budgets — [#56](https://github.com/gapietro/faithfully/issues/56) |
 

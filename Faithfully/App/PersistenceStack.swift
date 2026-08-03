@@ -23,13 +23,60 @@ enum PersistenceStack {
 
     static func open() -> Outcome {
         do {
-            return .ready(try ModelContainer(
+            let container = try ModelContainer(
                 for: Schema(models),
                 migrationPlan: FaithfullyMigrationPlan.self
-            ))
+            )
+            applyFileProtection()
+            return .ready(container)
         } catch {
             return degrade(after: error)
         }
+    }
+
+    /// Raises the store's data protection to `.complete`, so it is encrypted and
+    /// unreadable whenever the device is locked.
+    ///
+    /// iOS defaults app-container files to
+    /// `completeUntilFirstUserAuthentication`: readable from the first unlock
+    /// after boot until the device powers off. That is a reasonable default for
+    /// most data and the wrong one for this. A journal here holds someone's
+    /// private religious reflection — confession, doubt, who they are struggling
+    /// to forgive — which is the kind of content a lost phone should not give up.
+    ///
+    /// `.complete` is safe for this app specifically because it never runs
+    /// outside the foreground: there are no background modes, no background
+    /// fetch, and no app extensions. Notifications are handed to the system in
+    /// advance and fire without touching the store, so nothing needs to read it
+    /// while the device is locked. Adding any background work later means
+    /// revisiting this — see docs/ship/DATA_PROTECTION.md.
+    ///
+    /// Best-effort by design: the store is already open and usable at this
+    /// point, and failing to raise protection is not a reason to deny someone
+    /// their app. It is retried on every launch.
+    /// The protection class the store is opened with. Named rather than inlined
+    /// so a change to it is a visible, testable edit instead of a one-word diff
+    /// inside a method body.
+    static let storeProtection: FileProtectionType = .complete
+
+    @discardableResult
+    static func applyFileProtection() -> Bool {
+        guard let url = storeURL else { return false }
+        var appliedToAll = true
+        // The SQLite sidecars hold recently written pages, so protecting only
+        // the main file would leave the newest journal entry less protected than
+        // the rest.
+        for path in [url.path, url.path + "-shm", url.path + "-wal"]
+        where FileManager.default.fileExists(atPath: path) {
+            do {
+                try FileManager.default.setAttributes(
+                    [.protectionKey: storeProtection], ofItemAtPath: path
+                )
+            } catch {
+                appliedToAll = false
+            }
+        }
+        return appliedToAll
     }
 
     /// Moves the unreadable store aside and opens a fresh one. Destructive by

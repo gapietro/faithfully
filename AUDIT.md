@@ -30,8 +30,17 @@ Deferred — none of these can be closed from a development machine; all four ne
 hardware, an App Store Connect session, or a product decision. Owner: maintainer.
 
 - OPS-001 (#52) signed TestFlight / App Store validation on a physical device
-- OPS-002 (#53) crash reporting, support ownership, incident triage, rollback
-- OPS-003 (#54) on-device data protection, backup, deletion, privacy manifest
+- OPS-002 (#53) **partially addressed.** `docs/ship/OPERATIONS.md` now carries
+  the triage table, rollback procedure, release checklist, and a scripted
+  recovery drill. Three decisions remain open and are marked in the document:
+  crash-reporting approach, support address, and owner. The cap stands until
+  they are answered.
+- OPS-003 (#54) **partially addressed.** The store now opens at
+  `FileProtectionType.complete` rather than the OS default, a privacy manifest
+  ships declaring no tracking, no collection, and the UserDefaults required
+  reason, and `docs/ship/DATA_PROTECTION.md` records the policy. On-device
+  confirmation still outstanding; the simulator has no hardware key hierarchy
+  and does not report the attribute back.
 - OPS-005 (#56) performance budgets measured on representative hardware
 
 Accepted risks:
@@ -44,15 +53,16 @@ Accepted risks:
 - Two narrow accessibility-audit exclusions, documented at the point of
   exclusion: issues the audit cannot attribute to an element, and elements
   resting under the translucent tab bar.
-- **GitHub-hosted macOS runs stopped being scheduled part-way through this
-  pass.** Jobs now fail in about two seconds with no runner assigned and no
-  steps executed — a resource block, not a code failure. The workflow itself is
-  proven: runs 30774253168, 30774801972 and 30775380483 completed every job
-  green. A private repository on the free plan gets 2,000 Actions minutes a
-  month and macOS bills at 10x, so roughly 200 macOS minutes; the UI job alone
-  is about 20 of them. Until this is resolved, `make ci` on a developer machine
-  is the real gate. Owner: maintainer — see the options in
-  `docs/ship/MERGE_CHECKLIST.md`.
+- **Hosted CI is manual-only, and merge enforcement is policy — accepted by the
+  maintainer, 2026-08-02.** GitHub-hosted macOS runs stopped being scheduled
+  part-way through this pass (jobs fail in ~2s with no runner assigned). The
+  workflow is proven — runs 30774253168, 30774801972 and 30775380483 completed
+  every job green — and is kept intact on `workflow_dispatch`. It does not
+  trigger automatically because a check that always fails is worse than no
+  check: it teaches everyone to ignore red. Combined with branch protection
+  being unavailable on this plan, this means **nothing mechanically prevents a
+  merge past a failing gate**. `make ci` on a developer machine is the gate, by
+  decision. Revisit if the repository goes public or a runner is self-hosted.
 
 Cap status, stated precisely because the difference matters:
 
