@@ -19,7 +19,7 @@ struct SettingsView: View {
                         }
                     }
 
-                    Section("Bible Translation") {
+                    Section(header: sectionHeader("Bible Translation")) {
                         Picker("Translation", selection: Binding(
                             get: { vm.translation },
                             set: { vm.updateTranslation($0) }
@@ -31,7 +31,7 @@ struct SettingsView: View {
                         .accessibilityIdentifier("translationPicker")
                     }
 
-                    Section("Notifications") {
+                    Section(header: sectionHeader("Notifications")) {
                         Toggle("Morning Challenge", isOn: Binding(
                             get: { vm.morningEnabled },
                             set: { vm.toggleMorningNotifications($0) }
@@ -71,7 +71,7 @@ struct SettingsView: View {
                         .accessibilityIdentifier("badgeToggle")
                     }
 
-                    Section("Appearance") {
+                    Section(header: sectionHeader("Appearance")) {
                         Picker("Dark Mode", selection: Binding(
                             get: { vm.darkMode },
                             set: { vm.updateDarkMode($0) }
@@ -83,7 +83,7 @@ struct SettingsView: View {
                         .accessibilityIdentifier("darkModePicker")
                     }
 
-                    Section("About") {
+                    Section(header: sectionHeader("About")) {
                         HStack {
                             Text("Version")
                             Spacer()
@@ -109,5 +109,16 @@ struct SettingsView: View {
                 }
                 .navigationTitle("Settings")
         }
+    }
+
+    /// SwiftUI's default `List` section header sits borderline on contrast —
+    /// Apple's own audit reported "nearly passed" for every one of these, and it
+    /// tipped over on CI while passing locally. Setting the colour explicitly
+    /// makes the result the same everywhere.
+    private func sectionHeader(_ title: String) -> some View {
+        Text(title)
+            .font(.footnote.weight(.semibold))
+            .foregroundStyle(Color(.label))
+            .textCase(nil)
     }
 }
