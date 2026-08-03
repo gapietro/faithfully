@@ -99,5 +99,11 @@ struct CompletionSheetView: View {
             .navigationBarTitleDisplayMode(.inline)
         }
         .presentationDetents([.medium])
+        // An explicit background rather than the default material. A material
+        // blends whatever is behind the sheet, so the contrast of text drawn on
+        // it depends on the screen underneath — this passed locally and failed
+        // in CI for exactly that reason. Text legibility should not be a
+        // function of what the user was looking at a moment ago.
+        .presentationBackground(Color(.systemBackground))
     }
 }
