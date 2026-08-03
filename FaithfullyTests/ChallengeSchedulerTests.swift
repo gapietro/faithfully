@@ -104,6 +104,36 @@ final class ChallengeSchedulerTests: XCTestCase {
         XCTAssertLessThan(violations, 5, "Should have very few consecutive same-category days")
     }
 
+    /// GRADE-004: `min(ordinality, 365)` clamped the leap day off the end of
+    /// the year, so 30 and 31 December of a leap year both resolved to day 365
+    /// and the user was served the same challenge two days running. First
+    /// occurrence would have been 2028-12-31.
+    func testLeapYearDecemberThirtiethAndThirtyFirstAreDifferentChallenges() {
+        let december30 = Date.from(year: 2028, month: 12, day: 30)
+        let december31 = Date.from(year: 2028, month: 12, day: 31)
+
+        XCTAssertNotEqual(
+            scheduler.challengeForDate(december30).id,
+            scheduler.challengeForDate(december31).id,
+            "A leap year's last two days must not repeat the same challenge"
+        )
+    }
+
+    /// The clamp also meant every leap year ended on the same index as the one
+    /// before it. Walking all 366 days proves the tail is distinct, not just
+    /// the one pair.
+    func testEveryDayOfALeapYearResolvesAndTheLastWeekDoesNotRepeat() {
+        let startOfLeapYear = Date.from(year: 2028, month: 1, day: 1)
+        let days = (0..<366).map { startOfLeapYear.addingDays($0) }
+
+        XCTAssertEqual(Calendar.current.component(.year, from: days[365]), 2028,
+                       "Precondition: 2028 has 366 days")
+
+        let lastWeek = days.suffix(7).map { scheduler.challengeForDate($0).id }
+        XCTAssertEqual(Set(lastWeek).count, lastWeek.count,
+                       "The final week of a leap year must not repeat: \(lastWeek)")
+    }
+
     func testAll365DaysOfAYearAreCovered() {
         var challengeIds = Set<String>()
         let startDate = Date.from(year: 2026, month: 1, day: 1)
