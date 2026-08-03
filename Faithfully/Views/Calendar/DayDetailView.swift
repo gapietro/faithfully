@@ -16,7 +16,7 @@ struct DayDetailView: View {
                 if let journal = day.journalEntry {
                     Text("Journal: \(journal)")
                         .font(.callout)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.supportingText)
                         .italic()
                 }
 
@@ -25,7 +25,7 @@ struct DayDetailView: View {
                 if day.status == .preEnrollment {
                     Text("This day is before you started Faithfully.")
                         .font(.footnote)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.supportingText)
                         .accessibilityIdentifier("preEnrollmentNotice")
                 }
 

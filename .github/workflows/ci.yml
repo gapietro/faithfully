@@ -85,6 +85,7 @@ jobs:
 
       - run: make bootstrap
       - run: make ui-test
+      - run: make accessibility
 
       # A failed UI test is close to undiagnosable without the screenshots and
       # the element hierarchy the bundle carries.

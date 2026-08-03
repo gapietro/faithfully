@@ -54,12 +54,17 @@ struct DailyWalkView: View {
                     } label: {
                         Text("Yesterday: \(vm.yesterdayChallenge.title)")
                             .font(.subheadline)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Color(.label))
+                            .fixedSize(horizontal: false, vertical: true)
                             .accessibilityIdentifier("yesterdayChallengeTitle")
                     }
                     .accessibilityIdentifier("yesterdayChallenge")
                 }
                 .padding()
+                // Keeps the last row clear of the translucent tab bar.
+                // Resting underneath it, text is measured — and read —
+                // against the blur rather than the background.
+                .padding(.bottom, 32)
             }
             .navigationTitle("Daily Walk")
             .sheet(isPresented: $showJournalSheet) {
