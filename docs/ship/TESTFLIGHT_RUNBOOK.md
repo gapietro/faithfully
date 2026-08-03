@@ -30,11 +30,14 @@ External TestFlight goes through App Review. Do **not** start it until all of th
 
 1. ~~**Scripture licensing / accuracy**~~ — **Cleared for v1** under public-domain WEB + KJV (`docs/content/TRANSLATION_LICENSING.md`, PR #34).
 2. ~~**Privacy policy hosted URL**~~ — **Live:** https://gist.github.com/scoutapietro/96c48a68f12efe3950b5bc359db70974 (paste into App Store Connect Privacy Policy field).
-3. **Screenshots** — capture per `docs/ship/SCREENSHOTS_AND_ICON.md` (6.9" required; 6.5" recommended). *(issue #26)*
-4. **Real app icon** — current AppIcon is a placeholder navy/cross; replace with final 1024×1024 art. *(issue #26)*
-5. **Explicit the owner OK** before external TF / Submit for Review. *(issue #28)*
+3. ~~**Screenshots**~~ — **Done** (Sprint F2, PR #38): 6.9" set captured in `docs/ship/screenshots/6.9/`.
+4. ~~**Real app icon**~~ — **Done** (Sprint F, PR #36): Recraft v3 art shipped.
+5. **Signed build validated on a physical device** — the archive is built unsigned in CI; signing, upload, and App Store validation are still unverified. *(issue #52)*
+6. **Device accessibility and performance passes.** *(issues #55, #56)*
+7. **Crash reporting and support ownership defined** before anyone outside the team relies on the app. *(issue #53)*
+8. **Explicit the owner OK** before external TF / Submit for Review. *(issue #28)*
 
-Internal TestFlight (#27) does **not** require #3–5.
+Internal TestFlight (#27) does **not** require #5–8.
 
 ## Reference
 
