@@ -76,6 +76,31 @@ seconds on a runner image that did not have it. A minimum plus a logged choice
 fails when the toolchain is genuinely too old, and not when an image is
 updated.
 
+## Runner capacity
+
+GitHub-hosted macOS runs stopped being scheduled part-way through the
+remediation pass: jobs fail in about two seconds with no runner assigned and no
+steps executed. That is a resource block, not a code failure — the workflow ran
+every job green on earlier commits.
+
+A private repository on the free plan gets 2,000 Actions minutes a month, and
+macOS bills at **10x**, so about 200 macOS minutes. The UI job alone is roughly
+20 of them, so a handful of pull requests exhausts the month.
+
+Three ways out, in rough order of leverage:
+
+1. **Make the repository public.** Actions minutes become unlimited *and*
+   branch protection becomes available — this closes the enforcement gap above
+   at the same time. The repository contains no secrets; the audit's full-tree
+   and full-history scan was clean.
+2. **Self-host the runner.** There is already a Mac mini in the loop (see
+   `SESSION_HANDOFF.md`). A self-hosted macOS runner has no minute cost and
+   would be considerably faster than the hosted image.
+3. **Pay for minutes**, or raise the spending limit.
+
+Until one of these happens, `make ci` on a developer machine is the real gate,
+and the merge policy below is the only thing enforcing it.
+
 ## What CI still does not cover
 
 Honest list, so nobody mistakes a green tick for more than it is:
