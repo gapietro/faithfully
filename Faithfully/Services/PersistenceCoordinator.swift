@@ -33,6 +33,11 @@ protocol PersistenceCoordinating: AnyObject {
 
     func fetch<T: PersistentModel>(_ descriptor: FetchDescriptor<T>) throws -> [T]
     func insert<T: PersistentModel>(_ model: T)
+
+    /// Removes a model from the store. Like `insert`, it stages the change —
+    /// the caller's `transaction` decides whether it commits.
+    func delete<T: PersistentModel>(_ model: T)
+
     func save() throws
 
     /// Discards every unsaved change in the context. Called after a failed save
@@ -75,6 +80,10 @@ final class PersistenceCoordinator: PersistenceCoordinating {
 
     func insert<T: PersistentModel>(_ model: T) {
         context.insert(model)
+    }
+
+    func delete<T: PersistentModel>(_ model: T) {
+        context.delete(model)
     }
 
     func save() throws {
