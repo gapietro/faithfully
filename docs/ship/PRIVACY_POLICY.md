@@ -1,5 +1,11 @@
 # Faithfully Privacy Policy
 
+> **Backups:** journal entries are included in encrypted iCloud and local device
+> backups, like any app data. That is deliberate — without sync, a backup is the
+> only way a journal survives a lost phone — but it means the data is not
+> strictly confined to the device. See [DATA_PROTECTION.md](DATA_PROTECTION.md).
+
+
 > **Status: published (public URL live).**  
 > Canonical URL for App Store Connect and in-app link:  
 > **https://gist.github.com/scoutapietro/96c48a68f12efe3950b5bc359db70974**  

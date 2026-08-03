@@ -2,7 +2,17 @@
 
 Status: current. Introduced by CLEAN-007 (audit tracker #39, issue #49).
 
-## The gate
+## The gate is `make ci` on a developer machine
+
+This is a decision, not an oversight. GitHub-hosted macOS runs are not being
+scheduled on this plan, and a check that always fails is worse than no check —
+it teaches everyone to ignore red. The workflow is kept intact and correct, but
+runs on `workflow_dispatch` only; re-enabling the automatic triggers is a
+two-line change at the top of `.github/workflows/ci.yml`.
+
+**Nothing merges without a green `make ci` run on the branch, pasted or
+summarised in the pull request.** That is the whole rule, and with no mechanism
+enforcing it, it depends entirely on being followed.
 
 Every check lives in the `Makefile` and runs identically on a laptop and in CI:
 
@@ -27,12 +37,12 @@ make ci          # every gate below, in order
 The workflow is `.github/workflows/ci.yml`. It runs on every pull request and on
 every push to `main`.
 
-## Required checks
+## If hosted CI is turned back on
 
-Require the single **`All checks`** job in branch protection. It aggregates the
-others, so adding a check to the workflow does not require editing the
-protection rule to match — a rule that lists jobs individually silently stops
-covering anything added later.
+Re-enable the triggers in `.github/workflows/ci.yml`, then require the single
+**`All checks`** job in branch protection. It aggregates the others, so adding a
+check later does not require editing the protection rule to match — a rule that
+lists jobs individually silently stops covering anything added afterwards.
 
 Settings → Branches → Add rule for `main`:
 
@@ -40,16 +50,8 @@ Settings → Branches → Add rule for `main`:
 - Require status checks to pass → **All checks**
 - Require branches to be up to date before merging
 
-**If branch protection is unavailable** — the audit recorded GitHub returning
-403 for this repository's account tier — the workflow still runs on every pull
-request and its result is visible on the PR. Until protection can be enabled,
-the rule is enforced by hand:
-
-> Do not merge a pull request whose **All checks** job is not green. If a check
-> is failing for a reason unrelated to the change, say so in the PR and link the
-> evidence; do not merge past a red check silently.
-
-Re-check whether protection can be enabled whenever the plan changes:
+Branch protection needs GitHub Pro or a public repository; both APIs currently
+return 403. Re-check whenever the plan changes:
 
 ```sh
 gh api repos/:owner/:repo/branches/main/protection

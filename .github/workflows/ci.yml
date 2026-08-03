@@ -1,10 +1,23 @@
 name: CI
 
+# Manual only, by decision (2026-08-02).
+#
+# GitHub-hosted macOS runs are not being scheduled on this plan: jobs fail in
+# about two seconds with no runner assigned. The workflow is correct — it
+# completed every job green on runs 30774253168, 30774801972 and 30775380483 —
+# so it is kept intact and ready for the moment capacity exists.
+#
+# It does not trigger automatically because a check that always fails is worse
+# than no check: it teaches everyone to ignore red. The gate is `make ci` on a
+# developer machine; see docs/ship/MERGE_CHECKLIST.md.
+#
+# To turn automatic runs back on, restore the `pull_request` and `push` triggers
+# below. Nothing else needs to change.
 on:
-  pull_request:
-  push:
-    branches: [main]
   workflow_dispatch:
+  # pull_request:
+  # push:
+  #   branches: [main]
 
 concurrency:
   group: ci-${{ github.ref }}
