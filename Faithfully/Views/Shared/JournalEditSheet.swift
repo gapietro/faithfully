@@ -102,10 +102,15 @@ struct JournalEditSheet: View {
         // Explicit, not a material: contrast measured against a blurred backdrop
         // depends on whatever the user was looking at a moment ago.
         .presentationBackground(Color(.systemBackground))
-        .confirmationDialog(
+        // `.alert` rather than `.confirmationDialog`: on this platform a
+        // two-action confirmationDialog collapses to a popover exposing only
+        // the destructive button, with "Cancel" reachable solely by tapping
+        // outside. For an irreversible delete of private writing, Cancel must
+        // be a visible, explicit control — an alert renders both buttons on
+        // every size class.
+        .alert(
             "Delete this reflection?",
-            isPresented: $confirmingClear,
-            titleVisibility: .visible
+            isPresented: $confirmingClear
         ) {
             Button("Delete", role: .destructive) { commit(nil) }
             Button("Cancel", role: .cancel) {}
