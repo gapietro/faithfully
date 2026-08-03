@@ -38,9 +38,14 @@ struct JourneyView: View {
                                 ProgressView(value: badge.progress)
                                     .tint(.brandGold)
                                     .accessibilityIdentifier("journeyProgress")
+                                    // Decorative: a 4pt-tall bar can never meet
+                                    // the 44pt hit-area rule, and the same value
+                                    // is announced by the "n / threshold" text
+                                    // immediately below it.
+                                    .accessibilityHidden(true)
                                 Text("\(badge.current) / \(badge.definition.threshold)")
                                     .font(.caption)
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(Color.supportingText)
                             }
                         }
 
@@ -49,23 +54,37 @@ struct JourneyView: View {
                             .font(.headline)
                             .frame(maxWidth: .infinity, alignment: .leading)
 
-                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 80))], spacing: 16) {
+                        // 96pt rather than 80: at 80 the longest badge names
+                        // ("Prayer Beginner", "Unquenchable") clipped, and the
+                        // audit flagged them as unsupported at larger type sizes.
+                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 96))], spacing: 16) {
                             ForEach(vm.allBadges) { badge in
-                                VStack(spacing: 4) {
+                                VStack(spacing: 6) {
                                     BadgeGlyphView(
                                         type: badge.type,
                                         category: badge.category,
                                         isEarned: badge.isEarned
                                     )
                                     Text(badge.name)
-                                        .font(.caption2)
-                                        .lineLimit(2)
+                                        .font(.caption)
+                                        .foregroundStyle(Color.primary)
+                                        .lineLimit(3)
+                                        .minimumScaleFactor(0.75)
                                         .multilineTextAlignment(.center)
+                                        .fixedSize(horizontal: false, vertical: true)
                                     if !badge.isEarned {
                                         ProgressView(value: badge.progress)
                                             .accessibilityIdentifier("badgeProgress_\(badge.id)")
                                     }
                                 }
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 8)
+                                .padding(.horizontal, 4)
+                                // A definite background: without one the audit
+                                // measures the name against whatever happens to
+                                // be behind it, and so does a reader.
+                                .background(Color(.secondarySystemBackground))
+                                .clipShape(RoundedRectangle(cornerRadius: 10))
                                 .accessibilityElement(children: .combine)
                                 .accessibilityIdentifier("badge_\(badge.id)")
                                 .accessibilityLabel(badge.name)
@@ -108,7 +127,7 @@ struct JourneyView: View {
                                         .font(.body)
                                     Text(entry.date, style: .date)
                                         .font(.caption)
-                                        .foregroundStyle(.secondary)
+                                        .foregroundStyle(Color.supportingText)
                                 }
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .padding()
@@ -119,6 +138,10 @@ struct JourneyView: View {
                         }
                 }
                 .padding()
+                // Keeps the last row clear of the translucent tab bar.
+                // Resting underneath it, text is measured — and read —
+                // against the blur rather than the background.
+                .padding(.bottom, 32)
             }
             .navigationTitle("My Journey")
         }
@@ -141,7 +164,7 @@ struct StatView: View {
                 .accessibilityIdentifier(valueIdentifier ?? "")
             Text(title)
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.supportingText)
         }
     }
 }

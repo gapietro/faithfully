@@ -88,7 +88,7 @@ struct SettingsView: View {
                             Text("Version")
                             Spacer()
                             Text(AppInfo.current())
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Color.supportingText)
                         }
                         .accessibilityElement(children: .combine)
                         .accessibilityIdentifier("versionRow")
@@ -98,12 +98,12 @@ struct SettingsView: View {
 
                         Text("No account, no ads, no tracking. Everything you do in Faithfully stays on this device.")
                             .font(.footnote)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Color.supportingText)
                             .accessibilityIdentifier("privacyBlurb")
 
                         Text("Scripture quotations from the World English Bible (public domain) and the King James Version (public domain).")
                             .font(.footnote)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Color.supportingText)
                             .accessibilityIdentifier("scriptureAttribution")
                     }
                 }

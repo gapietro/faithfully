@@ -14,7 +14,7 @@ struct ChallengeLoadErrorView: View {
                 .fontWeight(.bold)
             Text(message)
                 .font(.body)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.supportingText)
                 .multilineTextAlignment(.center)
             Button("Try Again") { onRetry() }
                 .buttonStyle(.borderedProminent)
