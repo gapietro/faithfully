@@ -13,6 +13,15 @@ extension DarkModePreference {
 }
 
 struct ContentView: View {
+    /// Rebuilds the store after the user explicitly asks to reset an unreadable
+    /// one. A non-optional parameter on purpose: this used to be a mutable
+    /// callback on `AppEnvironment`, attached once from `.onAppear`. Resetting
+    /// replaces the environment, `.onAppear` never fires again for the same
+    /// view identity, and the recovery button went dead on the second attempt —
+    /// exactly when someone whose store is still unreadable needs it. Passed in
+    /// rather than stored, it cannot go missing.
+    let onResetStore: () -> Void
+
     @Environment(AppEnvironment.self) private var appEnvironment
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
 
@@ -32,9 +41,7 @@ struct ContentView: View {
                         // every tab, and burying it in Settings would let a user
                         // write a journal entry that is silently going nowhere.
                         if let failure = appEnvironment.storeFailure {
-                            StoreUnavailableBanner(message: failure.message) {
-                                appEnvironment.onResetStore?()
-                            }
+                            StoreUnavailableBanner(message: failure.message, onReset: onResetStore)
                             .padding(.top, 8)
                         }
                         MainTabView(services: services)
