@@ -1,4 +1,15 @@
 # SPARC Phase 4: Refinement
+
+> **HISTORICAL — SPARC design phase, Phase 4.**
+>
+> Kept as a record of how the app was originally specified. It is **not** a
+> description of the code as it stands, and several decisions here were later
+> reversed: the suite has grown well beyond this plan; see the Makefile for the checks that actually run.
+>
+> For what is true now, see [`docs/ARCHITECTURE.md`](../../docs/ARCHITECTURE.md). For release status,
+> see [`docs/ship/README.md`](../../docs/ship/README.md).
+
+
 ## Faithfully iOS App — Test-Driven Development Plan
 
 ### TDD Cycle: Red → Green → Refactor

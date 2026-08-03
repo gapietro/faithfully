@@ -1,5 +1,12 @@
 # Faithfully — SPARC Development Framework
 
+> **HISTORICAL — the SPARC design phase, kept as a record.**
+>
+> Every document in this tree predates the shipped code. The stack line
+> below still says CloudKit; v1 has none. For what is true now, read
+> [`docs/ARCHITECTURE.md`](../docs/ARCHITECTURE.md).
+
+
 ## Project Overview
 **App:** Faithfully (iOS)
 **Purpose:** Daily Christian action app that bridges hearing the Word and living it

@@ -1,4 +1,15 @@
 # SPARC Phase 2: Pseudocode
+
+> **HISTORICAL — SPARC design phase, Phase 2.**
+>
+> Kept as a record of how the app was originally specified. It is **not** a
+> description of the code as it stands, and several decisions here were later
+> reversed: the year offset is now measured from a fixed global epoch, not the user's start date (corrected inline below, CLEAN-001).
+>
+> For what is true now, see [`docs/ARCHITECTURE.md`](../../docs/ARCHITECTURE.md). For release status,
+> see [`docs/ship/README.md`](../../docs/ship/README.md).
+
+
 ## Faithfully iOS App — Core Algorithms & Logic
 
 ### 1. Challenge Scheduling Algorithm

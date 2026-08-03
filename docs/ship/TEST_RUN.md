@@ -1,5 +1,8 @@
 # Green Test Run Evidence — Sprint E
 
+> **SNAPSHOT — a single past local run.** Test counts here are stale by design. The live numbers come from `make ci`; see [`MERGE_CHECKLIST.md`](MERGE_CHECKLIST.md).
+
+
 Executed locally on the owner's development machine, **2026-07-20**, branch `sprint-e-ship-prep` (from `main` @ f6e1c78).
 
 ## Toolchain

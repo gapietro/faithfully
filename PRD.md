@@ -290,20 +290,20 @@ ChallengeCategory (enum)
 - Challenges are scheduled in advance (full year pre-loaded)
 - Schedule is deterministic: derived from date, no server required at launch
 - Category distribution across the year ensures variety (no two "Giving" days back-to-back, etc.)
-- A content JSON file ships with the app and can be updated via CloudKit
+- A content JSON file ships with the app *(v1: bundled only; the CloudKit update path is deferred to v1.x)*
 
 ### 6.4 Offline-First
 
 - The entire challenge library is bundled with the app
 - All completion data is stored locally via SwiftData
-- CloudKit sync is additive (for backup/restore and future multi-device)
+- CloudKit sync is additive (for backup/restore and future multi-device) *(deferred to v1.x; v1 has no sync and no cloud backup)*
 - The app works fully offline after initial install
 
 ### 6.5 No Account Required
 
 - No login, no email, no account creation at launch
 - User data lives on-device
-- CloudKit provides anonymous sync via Apple ID (automatic)
+- CloudKit provides anonymous sync via Apple ID (automatic) *(deferred to v1.x)*
 - Future: optional profile for community features
 
 ---
