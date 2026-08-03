@@ -102,6 +102,19 @@ enum PersistenceStack {
         ModelConfiguration(schema: Schema(models)).url
     }
 
+    #if DEBUG
+    /// The degraded outcome a UI test needs to reach the recovery banner,
+    /// without having to corrupt a real store to get there.
+    ///
+    /// The banner is otherwise only reachable by making `ModelContainer.init`
+    /// throw, so the one screen that guards the user's entire data store had no
+    /// UI coverage at all — which is how a confirmation with no visible Cancel
+    /// shipped on it. DEBUG-only, so no App Store build contains this path.
+    static func simulatedFailure() -> Outcome {
+        degrade(after: PersistenceError.storeUnavailable("simulated store failure (UI test)"))
+    }
+    #endif
+
     private static func degrade(after error: Error) -> Outcome {
         let failure = PersistenceError.storeUnavailable(String(describing: error))
         do {

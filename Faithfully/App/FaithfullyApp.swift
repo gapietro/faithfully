@@ -7,7 +7,7 @@ struct FaithfullyApp: App {
     @State private var appEnvironment: AppEnvironment
 
     init() {
-        let outcome = PersistenceStack.open()
+        let outcome = Self.initialOutcome()
         #if DEBUG
         // Before the environment is built, so the graph reads seeded state.
         if let scenario = UITestSupport.requestedScenario {
@@ -39,6 +39,16 @@ struct FaithfullyApp: App {
             modelContext: Self.container(for: outcome).mainContext,
             storeFailure: Self.failure(for: outcome)
         )
+    }
+
+    /// The stack the app launches on. A DEBUG launch argument can substitute the
+    /// degraded outcome, so UI tests can reach the store-unavailable banner
+    /// without a corrupt store on disk.
+    private static func initialOutcome() -> PersistenceStack.Outcome {
+        #if DEBUG
+        if UITestSupport.forcesStoreFailure { return PersistenceStack.simulatedFailure() }
+        #endif
+        return PersistenceStack.open()
     }
 
     private static func container(for outcome: PersistenceStack.Outcome) -> ModelContainer {
