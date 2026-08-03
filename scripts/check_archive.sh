@@ -15,8 +15,10 @@ if [[ ! -f "$PLIST" ]]; then
   exit 1
 fi
 
-FAMILY="$(/usr/libexec/PlistBuddy -c "Print :UIDeviceFamily" "$PLIST" | tr -d ' \n' | tr -s '{}' ' ')"
-if [[ "$FAMILY" != " 1 " ]]; then
+# plutil emits JSON, which is unambiguous. PlistBuddy's "Array { 1 }" needs
+# text munging that is easy to get subtly wrong in either direction.
+FAMILY="$(plutil -extract UIDeviceFamily json -o - "$PLIST")"
+if [[ "$FAMILY" != "[1]" ]]; then
   echo "ERROR: expected UIDeviceFamily [1] (iPhone only), got: $FAMILY" >&2
   exit 1
 fi
