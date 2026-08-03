@@ -5,6 +5,10 @@ struct CalendarScreenView: View {
     let vm: CalendarViewModel
 
     @State private var editingEntry: EditingEntry?
+    /// The message from the last failed completion attempt, cleared whenever the
+    /// user moves to another day so a stale failure never sits under a day it
+    /// did not happen to.
+    @State private var completionError: String?
 
     /// Identifies which day's reflection the sheet is editing.
     private struct EditingEntry: Identifiable {
@@ -69,7 +73,10 @@ struct CalendarScreenView: View {
                         }
 
                         ForEach(vm.calendarDays) { day in
-                            Button(action: { vm.selectDay(day) }) {
+                            Button(action: {
+                                completionError = nil
+                                vm.selectDay(day)
+                            }) {
                                 Text("\(Calendar.current.component(.day, from: day.date))")
                                     .font(.body)
                                     .frame(width: 36, height: 36)
@@ -94,9 +101,18 @@ struct CalendarScreenView: View {
                         // became indistinguishable "dayDetail" elements.
                         DayDetailView(
                             day: selected,
+                            completionError: completionError,
                             onComplete: {
-                                vm.completeGracePeriod(selected)
-                                vm.selectedDay = nil
+                                // Dismiss only on success. Closing either way is
+                                // what made a failed write look like a completed
+                                // day: the panel vanished and nothing was said.
+                                switch vm.completeGracePeriod(selected) {
+                                case .completed:
+                                    completionError = nil
+                                    vm.selectedDay = nil
+                                case .failed(let failure):
+                                    completionError = failure.message
+                                }
                             },
                             onEditJournal: { id in
                                 editingEntry = EditingEntry(
