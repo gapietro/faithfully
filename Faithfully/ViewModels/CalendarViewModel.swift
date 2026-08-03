@@ -58,16 +58,32 @@ final class CalendarViewModel {
         selectedDay = day
     }
 
-    func completeGracePeriod(_ day: CalendarDay, journal: String? = nil) {
-        guard let challenge = day.challenge else { return }
+    /// Completes a recoverable day, and reports the outcome.
+    ///
+    /// This used to catch every error into an empty block whose comment named
+    /// only the two guard-rail refusals — so a *persistence* failure closed the
+    /// panel with no message and no completion, and the user's streak silently
+    /// did not move. Daily Walk and the journal delete both report their
+    /// failures; this is the same contract, on the last path that lacked it.
+    @discardableResult
+    func completeGracePeriod(_ day: CalendarDay, journal: String? = nil) -> CompletionResult {
+        guard let challenge = day.challenge else { return .failed(.couldNotSave) }
         // Defence in depth: the detail view already hides Complete for these,
         // but a stale selection must not be able to reach the service.
-        guard day.status == .missedRecoverable || day.status == .today else { return }
+        guard day.status == .missedRecoverable || day.status == .today else {
+            return .failed(.gracePeriodExpired)
+        }
         do {
-            _ = try challengeService.completeChallenge(challenge, on: day.date, journal: journal)
+            let badges = try challengeService.completeChallenge(challenge, on: day.date, journal: journal)
             loadMonth()
+            rebindSelectedDay()
+            return .completed(newBadges: badges)
+        } catch let error as ChallengeServiceError {
+            return .failed(CompletionFailure(error))
         } catch {
-            // Grace period expired or already completed
+            // Anything else is a persistence failure. Nothing was written, so
+            // the day stays completable and the caller must say so.
+            return .failed(.couldNotSave)
         }
     }
 
