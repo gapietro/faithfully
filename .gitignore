@@ -70,3 +70,5 @@ iOSInjectionProject/
 *.pem
 *.p12
 *.mobileprovision
+.tools/
+build/
