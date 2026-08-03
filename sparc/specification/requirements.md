@@ -1,4 +1,15 @@
 # SPARC Phase 1: Specification
+
+> **HISTORICAL — SPARC design phase, Phase 1.**
+>
+> Kept as a record of how the app was originally specified. It is **not** a
+> description of the code as it stands, and several decisions here were later
+> reversed: CloudKit sync and the licensed ESV/NIV/NKJV translations were both dropped for v1.
+>
+> For what is true now, see [`docs/ARCHITECTURE.md`](../../docs/ARCHITECTURE.md). For release status,
+> see [`docs/ship/README.md`](../../docs/ship/README.md).
+
+
 ## Faithfully iOS App — Testable Requirements
 
 ### 1. Daily Challenge System

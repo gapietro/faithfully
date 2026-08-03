@@ -1,5 +1,11 @@
 # Scripture Spot-Check Log
 
+> **SUPERSEDED.** This audited the licensed ESV/NIV/NKJV bundle, which v1
+> does not ship. v1 uses public-domain WEB + KJV; the current check is
+> [`SCRIPTURE_SPOT_CHECK_PD.md`](SCRIPTURE_SPOT_CHECK_PD.md). Kept because it
+> records why the licensed route was abandoned.
+
+
 Sprint D accuracy audit of the scripture text bundled in `Faithfully/Resources/challenges.json`. Checked 2026-07-20.
 
 ## Method

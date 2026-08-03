@@ -1,5 +1,8 @@
 # Faithfully — session handoff
 
+> **SNAPSHOT — 2026-07-22.** Predates Sprint F (icon, screenshots) and the post-audit remediation (#39). Kept for the record; for current status read [`README.md`](README.md).
+
+
 **Written:** 2026-07-22  
 **Repo:** `gapietro/faithfully` (private)  
 **Clone:** `~/Projects/faithfully` on Mac mini  

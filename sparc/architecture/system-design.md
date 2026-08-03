@@ -1,4 +1,15 @@
 # SPARC Phase 3: Architecture
+
+> **HISTORICAL — SPARC design phase, Phase 3.**
+>
+> Kept as a record of how the app was originally specified. It is **not** a
+> description of the code as it stands, and several decisions here were later
+> reversed: there is no CloudKit sync and no `PersistenceService.syncToCloudKit()`; the shipped translations are public-domain WEB and KJV, not ESV/NIV/NKJV; persistence is `PersistenceCoordinator`, local only.
+>
+> For what is true now, see [`docs/ARCHITECTURE.md`](../../docs/ARCHITECTURE.md). For release status,
+> see [`docs/ship/README.md`](../../docs/ship/README.md).
+
+
 ## Faithfully iOS App — System Design
 
 ### 1. High-Level Architecture

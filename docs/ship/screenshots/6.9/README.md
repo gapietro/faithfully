@@ -11,4 +11,4 @@ Captured 2026-07-30 on **iPhone 17 Pro Max** simulator via `ScreenshotStoryboard
 | `05_onboarding.png` | Onboarding welcome |
 | `06_settings.png` | Settings |
 
-Re-capture: see parent [SCREENSHOTS_AND_ICON.md](../SCREENSHOTS_AND_ICON.md).
+Re-capture: see parent [SCREENSHOTS_AND_ICON.md](../../SCREENSHOTS_AND_ICON.md).
