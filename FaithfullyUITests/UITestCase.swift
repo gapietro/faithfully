@@ -30,6 +30,20 @@ class UITestCase: XCTestCase {
         return app
     }
 
+    /// Launches as if the on-disk store could not be opened, so the app is on
+    /// its in-memory stand-in and the store-unavailable banner is on screen.
+    @discardableResult
+    func launchWithUnavailableStore(_ scenario: Scenario = .fresh) -> XCUIApplication {
+        app = XCUIApplication()
+        app.launchArguments = [
+            "-hasCompletedOnboarding", "YES",
+            "-FaithfullyUITestScenario", scenario.rawValue,
+            "-FaithfullyUITestForceStoreFailure"
+        ]
+        app.launch()
+        return app
+    }
+
     /// Relaunches without reseeding, to prove something was persisted rather
     /// than merely held in memory.
     @discardableResult

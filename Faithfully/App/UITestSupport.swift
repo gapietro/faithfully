@@ -25,6 +25,16 @@ import SwiftData
 enum UITestSupport {
     static let scenarioArgument = "-FaithfullyUITestScenario"
 
+    /// Forces the app to launch on the in-memory stand-in, as if the on-disk
+    /// store could not be opened, so the store-unavailable banner and its reset
+    /// confirmation are reachable. Independent of `scenarioArgument`: a
+    /// scenario still seeds, it just seeds the in-memory container.
+    static let forceStoreFailureArgument = "-FaithfullyUITestForceStoreFailure"
+
+    static var forcesStoreFailure: Bool {
+        ProcessInfo.processInfo.arguments.contains(forceStoreFailureArgument)
+    }
+
     enum Scenario: String {
         /// Empty store, enrolled today. Every earlier day is pre-enrollment.
         case fresh
