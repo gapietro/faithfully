@@ -15,6 +15,7 @@
 		09CDB7E9A8E4212113F3CFA8 /* TestHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F1135EB5B3E4AF57AC89F08 /* TestHelpers.swift */; };
 		0C2101BB3E78F20E00B6049F /* NotificationPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 239B6F5924744680F7536B7B /* NotificationPreferences.swift */; };
 		0DF5E87C80BE5E83FDD35479 /* StoreUnavailableBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B352BA777E797F7A1528C8F /* StoreUnavailableBanner.swift */; };
+		15D05E020FCCA30FD83D6D1B /* JournalTextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D16DFAD3069E84D14E2B8EDA /* JournalTextTests.swift */; };
 		18FBF7D3CD1BA7EA3006602A /* CompletionResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7894C21A0197AC2A09834623 /* CompletionResult.swift */; };
 		1B1E4916CCE117C90FA6DA4E /* CivilDayMigrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F452A3B27E9355238289AD3 /* CivilDayMigrationTests.swift */; };
 		1E25440BCD78005D1A3E7D69 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADF03A865185C385DB1479F7 /* ContentView.swift */; };
@@ -87,6 +88,7 @@
 		DFFF29EE1F3819AB540AA363 /* Difficulty.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30867F91CDB77976239AD79F /* Difficulty.swift */; };
 		E07E47A6353DAA38FF4F6041 /* AppEnvironmentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8C50D05FD014055C68FB56E /* AppEnvironmentTests.swift */; };
 		E298172F40DA3D09859D6190 /* CivilDay.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF9DC3C17A84035CD02B2EB7 /* CivilDay.swift */; };
+		E4A99B56ECFAB3D7867361FE /* JournalText.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDC9F4C2247189D1D7704115 /* JournalText.swift */; };
 		E780F311F6F310D909EA46D0 /* DarkModePreference.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6455D33E9E372079FC16852E /* DarkModePreference.swift */; };
 		E84AA5DF4F5C6F2531E3E293 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C9F110D015B63153650F8E0 /* SettingsView.swift */; };
 		EA4E0BF19D9E4C329010B8A9 /* challenges.json in Resources */ = {isa = PBXBuildFile; fileRef = 2AC1EC2087DAC1FC12589659 /* challenges.json */; };
@@ -199,6 +201,7 @@
 		C790891C0DCDD4C7DB6C2D0F /* BadgeEvaluationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeEvaluationTests.swift; sourceTree = "<group>"; };
 		C7E54205F921B200229CB09A /* SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewModel.swift; sourceTree = "<group>"; };
 		CF9DC3C17A84035CD02B2EB7 /* CivilDay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CivilDay.swift; sourceTree = "<group>"; };
+		D16DFAD3069E84D14E2B8EDA /* JournalTextTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalTextTests.swift; sourceTree = "<group>"; };
 		D7E82070E2328FA2AAD0BDBD /* DateExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateExtensions.swift; sourceTree = "<group>"; };
 		DDB91F756DEEBA088E6AA18F /* BadgeServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeServiceTests.swift; sourceTree = "<group>"; };
 		DE45B6A55566A5C6CD6F61D7 /* BadgeProgress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeProgress.swift; sourceTree = "<group>"; };
@@ -212,6 +215,7 @@
 		F4CA19120E23773AE82C69EB /* NotificationWiringTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationWiringTests.swift; sourceTree = "<group>"; };
 		F8095D01BF1DAA3353F9844F /* FaithfullyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaithfullyApp.swift; sourceTree = "<group>"; };
 		FAF18DC773BF9B4454FCD472 /* DayDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayDetailView.swift; sourceTree = "<group>"; };
+		FDC9F4C2247189D1D7704115 /* JournalText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalText.swift; sourceTree = "<group>"; };
 		FFDC42639AF2F76056BA97E8 /* DailyWalkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyWalkView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -333,6 +337,7 @@
 				95A6EAF64C9F86F5A9B4196C /* DesignSystemTests.swift */,
 				367AA3DC56C1C6FB78899646 /* GracePeriodTests.swift */,
 				1C84840D14A258F54B26F511 /* IntegrationTests.swift */,
+				D16DFAD3069E84D14E2B8EDA /* JournalTextTests.swift */,
 				A2A318E32A093F40BE1C8A1A /* JourneyViewModelTests.swift */,
 				B8122C71833812BE9141D9FB /* NotificationServiceTests.swift */,
 				F4CA19120E23773AE82C69EB /* NotificationWiringTests.swift */,
@@ -375,6 +380,7 @@
 				F3D574F9F63666F724519FC6 /* Constants.swift */,
 				D7E82070E2328FA2AAD0BDBD /* DateExtensions.swift */,
 				30AB76D9D85A7B9F0E11A96D /* GracePeriod.swift */,
+				FDC9F4C2247189D1D7704115 /* JournalText.swift */,
 				941EED6208C9F0D677530C51 /* StreakCalculator.swift */,
 				0011191C28B01F3B06B8D632 /* Theme.swift */,
 			);
@@ -610,6 +616,7 @@
 				C74D9F63A6639139AE0BDE40 /* DesignSystemTests.swift in Sources */,
 				3EEF85F3C8562871FED7D891 /* GracePeriodTests.swift in Sources */,
 				1E6A0D7CDF33AB3F382CB7E5 /* IntegrationTests.swift in Sources */,
+				15D05E020FCCA30FD83D6D1B /* JournalTextTests.swift in Sources */,
 				58401CC0AD276E46FC47065E /* JourneyViewModelTests.swift in Sources */,
 				FCF5947547F47468E4A409BE /* NotificationServiceTests.swift in Sources */,
 				ECB1023E48F78F5C25A67310 /* NotificationWiringTests.swift in Sources */,
@@ -676,6 +683,7 @@
 				F2580215BC5ADC33AA2E8200 /* FaithfullyApp.swift in Sources */,
 				8345F9B7A79910D1E10952E5 /* GracePeriod.swift in Sources */,
 				DD9A0B55F1FE9E9E7256E53E /* JournalDisplayItem.swift in Sources */,
+				E4A99B56ECFAB3D7867361FE /* JournalText.swift in Sources */,
 				D931C0180DAEAB9E5B553F98 /* JourneyView.swift in Sources */,
 				2C4C9F7221C7EC2ED57D1157 /* JourneyViewModel.swift in Sources */,
 				0C2101BB3E78F20E00B6049F /* NotificationPreferences.swift in Sources */,
