@@ -4,6 +4,15 @@ import SwiftData
 struct CalendarScreenView: View {
     let vm: CalendarViewModel
 
+    @State private var editingEntry: EditingEntry?
+
+    /// Identifies which day's reflection the sheet is editing.
+    private struct EditingEntry: Identifiable {
+        let id: UUID
+        let date: Date
+        let text: String?
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -83,14 +92,31 @@ struct CalendarScreenView: View {
                         // overwrites every descendant's identifier, so the title,
                         // the pre-enrollment notice, and the Complete button all
                         // became indistinguishable "dayDetail" elements.
-                        DayDetailView(day: selected) {
-                            vm.completeGracePeriod(selected)
-                            vm.selectedDay = nil
-                        }
+                        DayDetailView(
+                            day: selected,
+                            onComplete: {
+                                vm.completeGracePeriod(selected)
+                                vm.selectedDay = nil
+                            },
+                            onEditJournal: { id in
+                                editingEntry = EditingEntry(
+                                    id: id, date: selected.date, text: selected.journalEntry
+                                )
+                            }
+                        )
                     }
               }
             }
             .navigationTitle("Calendar")
+            .sheet(item: $editingEntry) { entry in
+                JournalEditSheet(
+                    title: entry.text == nil ? "Add reflection" : "Edit reflection",
+                    date: entry.date,
+                    originalText: entry.text,
+                    onSave: { vm.updateJournal(entryID: entry.id, to: $0) },
+                    onCancel: { editingEntry = nil }
+                )
+            }
         }
     }
 
