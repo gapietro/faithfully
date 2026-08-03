@@ -185,6 +185,7 @@ final class DailyWalkViewModelTests: XCTestCase {
         func fetchCompletions(for dateRange: ClosedRange<Date>) -> [CompletedChallenge] { [] }
         func fetchAllCompletions() -> [CompletedChallenge] { [] }
         func calculateStreak() -> Int { 0 }
+        func updateJournal(entryID: UUID, to text: String?) -> JournalEditResult { .saved }
 
         func completeChallenge(
             _ challenge: DailyChallenge, on scheduledDate: Date, journal: String?

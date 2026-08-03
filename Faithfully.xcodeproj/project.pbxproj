@@ -56,6 +56,7 @@
 		8345F9B7A79910D1E10952E5 /* GracePeriod.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30AB76D9D85A7B9F0E11A96D /* GracePeriod.swift */; };
 		84562F915E82A35FDEC95124 /* ChallengeServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95C2EA6C438066372A013C12 /* ChallengeServiceTests.swift */; };
 		84EF247B835B6CE200C7BF8B /* PersistenceCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = C59527158BBCAA89515E53D2 /* PersistenceCoordinator.swift */; };
+		85B76182499706481C6D059C /* JournalEditResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4D1C45CC06F4E76AB383105 /* JournalEditResult.swift */; };
 		92701A1838BA3DAC4A21DD53 /* UserProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B169F0954F3DE4364D4AB33 /* UserProfile.swift */; };
 		96122060F492B61D4658AB52 /* CalendarUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A11E73D92A9210B503E7C64 /* CalendarUITests.swift */; };
 		977F4229DA02C9C77DB3A8DB /* DataProtectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 277B15BD2E931A0954823060 /* DataProtectionTests.swift */; };
@@ -92,6 +93,7 @@
 		E780F311F6F310D909EA46D0 /* DarkModePreference.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6455D33E9E372079FC16852E /* DarkModePreference.swift */; };
 		E84AA5DF4F5C6F2531E3E293 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C9F110D015B63153650F8E0 /* SettingsView.swift */; };
 		EA4E0BF19D9E4C329010B8A9 /* challenges.json in Resources */ = {isa = PBXBuildFile; fileRef = 2AC1EC2087DAC1FC12589659 /* challenges.json */; };
+		EA75882F167C74CD09D6EAA0 /* JournalEditTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01E793BFDFEB2C887066D69D /* JournalEditTests.swift */; };
 		ECB1023E48F78F5C25A67310 /* NotificationWiringTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4CA19120E23773AE82C69EB /* NotificationWiringTests.swift */; };
 		ED54B0A200BB09430BA44193 /* BadgeProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE45B6A55566A5C6CD6F61D7 /* BadgeProgress.swift */; };
 		ED5D32C1E160AB70012BBF50 /* JourneyUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A27AF0C56105C1392BCAD569 /* JourneyUITests.swift */; };
@@ -123,6 +125,7 @@
 /* Begin PBXFileReference section */
 		0011191C28B01F3B06B8D632 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		012A5C11A1D363F4A5CF83A8 /* StreakCalculationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreakCalculationTests.swift; sourceTree = "<group>"; };
+		01E793BFDFEB2C887066D69D /* JournalEditTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalEditTests.swift; sourceTree = "<group>"; };
 		01F67D0C226BF6BCEF1EAC07 /* BadgeCelebrationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeCelebrationView.swift; sourceTree = "<group>"; };
 		0388CD9AB62E6882F06E657C /* AccessibilityAuditTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityAuditTests.swift; sourceTree = "<group>"; };
 		0648FA1C864A0347BDCE9783 /* ChallengeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeService.swift; sourceTree = "<group>"; };
@@ -213,6 +216,7 @@
 		EA267EB7F91419AFE9915C21 /* JourneyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JourneyView.swift; sourceTree = "<group>"; };
 		F3D574F9F63666F724519FC6 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		F4CA19120E23773AE82C69EB /* NotificationWiringTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationWiringTests.swift; sourceTree = "<group>"; };
+		F4D1C45CC06F4E76AB383105 /* JournalEditResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalEditResult.swift; sourceTree = "<group>"; };
 		F8095D01BF1DAA3353F9844F /* FaithfullyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaithfullyApp.swift; sourceTree = "<group>"; };
 		FAF18DC773BF9B4454FCD472 /* DayDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayDetailView.swift; sourceTree = "<group>"; };
 		FDC9F4C2247189D1D7704115 /* JournalText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalText.swift; sourceTree = "<group>"; };
@@ -292,6 +296,7 @@
 				09FD5B1A4D33639B4E10E0B0 /* CalendarDay.swift */,
 				7894C21A0197AC2A09834623 /* CompletionResult.swift */,
 				40112D2A32CEE6503E2E62D3 /* JournalDisplayItem.swift */,
+				F4D1C45CC06F4E76AB383105 /* JournalEditResult.swift */,
 				239B6F5924744680F7536B7B /* NotificationPreferences.swift */,
 				9339C5BD24A2D97D1BF744C8 /* ShareCardData.swift */,
 			);
@@ -337,6 +342,7 @@
 				95A6EAF64C9F86F5A9B4196C /* DesignSystemTests.swift */,
 				367AA3DC56C1C6FB78899646 /* GracePeriodTests.swift */,
 				1C84840D14A258F54B26F511 /* IntegrationTests.swift */,
+				01E793BFDFEB2C887066D69D /* JournalEditTests.swift */,
 				D16DFAD3069E84D14E2B8EDA /* JournalTextTests.swift */,
 				A2A318E32A093F40BE1C8A1A /* JourneyViewModelTests.swift */,
 				B8122C71833812BE9141D9FB /* NotificationServiceTests.swift */,
@@ -616,6 +622,7 @@
 				C74D9F63A6639139AE0BDE40 /* DesignSystemTests.swift in Sources */,
 				3EEF85F3C8562871FED7D891 /* GracePeriodTests.swift in Sources */,
 				1E6A0D7CDF33AB3F382CB7E5 /* IntegrationTests.swift in Sources */,
+				EA75882F167C74CD09D6EAA0 /* JournalEditTests.swift in Sources */,
 				15D05E020FCCA30FD83D6D1B /* JournalTextTests.swift in Sources */,
 				58401CC0AD276E46FC47065E /* JourneyViewModelTests.swift in Sources */,
 				FCF5947547F47468E4A409BE /* NotificationServiceTests.swift in Sources */,
@@ -683,6 +690,7 @@
 				F2580215BC5ADC33AA2E8200 /* FaithfullyApp.swift in Sources */,
 				8345F9B7A79910D1E10952E5 /* GracePeriod.swift in Sources */,
 				DD9A0B55F1FE9E9E7256E53E /* JournalDisplayItem.swift in Sources */,
+				85B76182499706481C6D059C /* JournalEditResult.swift in Sources */,
 				E4A99B56ECFAB3D7867361FE /* JournalText.swift in Sources */,
 				D931C0180DAEAB9E5B553F98 /* JourneyView.swift in Sources */,
 				2C4C9F7221C7EC2ED57D1157 /* JourneyViewModel.swift in Sources */,

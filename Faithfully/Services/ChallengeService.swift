@@ -21,6 +21,13 @@ protocol ChallengeServiceProtocol {
     func loadChallenges() -> [DailyChallenge]
     func challengeForDate(_ date: Date) -> DailyChallenge
     func completeChallenge(_ challenge: DailyChallenge, on scheduledDate: Date, journal: String?) throws -> [BadgeDefinition]
+
+    /// Replaces the reflection on an existing completion. `nil` clears it.
+    ///
+    /// Only `journalEntry` changes: the day, the challenge and the completion
+    /// timestamp are untouched, so streak, totals and badges cannot move.
+    func updateJournal(entryID: UUID, to text: String?) -> JournalEditResult
+
     func isCompleted(on scheduledDate: Date) -> Bool
     func fetchCompletions(for dateRange: ClosedRange<Date>) -> [CompletedChallenge]
 
@@ -144,6 +151,36 @@ final class ChallengeService: ChallengeServiceProtocol {
 
         onCompletionRecorded?(scheduledDate, newBadges)
         return newBadges
+    }
+
+    func updateJournal(entryID: UUID, to text: String?) -> JournalEditResult {
+        let validated: String?
+        do {
+            validated = try JournalText.validated(text)
+        } catch JournalValidationError.tooLong(let limit, let actual) {
+            return .failed(.tooLong(limit: limit, actual: actual))
+        } catch {
+            return .failed(.couldNotSave)
+        }
+
+        let descriptor = FetchDescriptor<CompletedChallenge>(
+            predicate: #Predicate { $0.id == entryID }
+        )
+        guard let entry = (try? persistence.fetch(descriptor))?.first else {
+            return .failed(.entryNotFound)
+        }
+
+        // Captured before mutating: `transaction` rolls the context back on
+        // failure, but restoring the in-memory object explicitly means the
+        // caller never sees a half-applied edit either way.
+        let previous = entry.journalEntry
+        do {
+            try persistence.transaction { entry.journalEntry = validated }
+            return .saved
+        } catch {
+            entry.journalEntry = previous
+            return .failed(.couldNotSave)
+        }
     }
 
     /// Matches on the frozen civil day, not on an instant range. The old
