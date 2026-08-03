@@ -7,6 +7,15 @@ extension Color {
     static let brandGold = Color("Gold")
     static let brandCream = Color("Cream")
     static let brandForest = Color("Forest")
+
+    /// De-emphasised text that still meets the contrast floor.
+    ///
+    /// SwiftUI's `.secondary` is tuned for visual hierarchy, not for contrast:
+    /// Apple's own accessibility audit failed it at caption and subheadline
+    /// sizes throughout this app. Deriving from `.primary` keeps the hierarchy
+    /// while staying legible, and puts the trade-off in one place instead of a
+    /// dozen call sites.
+    static let supportingText = Color.primary.opacity(0.85)
 }
 
 // MARK: - Typography

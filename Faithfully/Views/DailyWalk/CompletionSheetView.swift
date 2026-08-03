@@ -27,12 +27,26 @@ struct CompletionSheetView: View {
                 Text("How did it go?")
                     .font(.title2)
                     .fontWeight(.bold)
+                    .multilineTextAlignment(.center)
+                    .minimumScaleFactor(0.7)
 
-                Text("Write a short reflection (optional)")
+                Text("A short reflection, if you like")
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    // Full label colour: the sheet's background defeated every
+                    // reduced-opacity variant in the audit, and this line tells
+                    // the user the field is optional — not decoration.
+                    .foregroundStyle(Color(.label))
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
+                    .minimumScaleFactor(0.8)
+                    .fixedSize(horizontal: false, vertical: true)
 
                 TextEditor(text: $journalText)
+                    // A TextEditor has no implicit label, so VoiceOver announced
+                    // it as an unnamed text field — the audit's "Element has no
+                    // description".
+                    .accessibilityLabel("Your reflection")
+                    .accessibilityHint("Optional. Up to \(Constants.maxJournalLength) characters.")
                     .frame(minHeight: 120)
                     .padding(8)
                     .overlay(
@@ -60,6 +74,10 @@ struct CompletionSheetView: View {
                 Button(action: onComplete) {
                     Text("Complete Challenge")
                         .font(.headline)
+                        // Clipped at large Dynamic Type sizes before this.
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.6)
+                        .multilineTextAlignment(.center)
                         .frame(maxWidth: .infinity)
                         .padding()
                         .background(isOverLimit ? Color.gray : Color.accentColor)

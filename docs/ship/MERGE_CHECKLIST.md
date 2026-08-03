@@ -19,6 +19,7 @@ make ci          # every gate below, in order
 | Unit and integration tests | `test` | logic regressions |
 | Coverage floor | `coverage` | Services/ViewModels line coverage falling below 90% |
 | UI tests | `ui-test` | product behaviour regressions in the real simulator |
+| Accessibility audit | `accessibility` | Apple's audit over every screen: contrast, hit targets, Dynamic Type, clipping, missing labels |
 | Static analysis | `analyze` | analyzer findings |
 | Strict concurrency | `strict-concurrency` | Swift 6 data-race diagnostics in project-owned code |
 | Release archive | `archive` | a broken release build, and a device-family/orientation regression |
@@ -81,8 +82,12 @@ Honest list, so nobody mistakes a green tick for more than it is:
 
 - **Signing, TestFlight upload, and App Store validation** — needs App Store
   Connect credentials. The archive is built unsigned. Tracked in #52.
-- **Physical-device behaviour**, including accessibility and performance on real
-  hardware. Tracked in #55 and #56.
+- **Physical-device behaviour** and performance on real hardware. Tracked in
+  #55 and #56.
+- **Whether the app makes sense read aloud.** The audit catches contrast, hit
+  targets, Dynamic Type, clipping, and missing labels. It cannot tell you
+  whether the announced order is sensible or the wording is comprehensible —
+  that still needs a person with VoiceOver switched on (#55).
 - **Crash reporting and incident response.** Tracked in #53.
 
 `make archive` proves the release build compiles and declares the right device
