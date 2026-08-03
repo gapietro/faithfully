@@ -22,6 +22,8 @@ the claim is not ready to publish.
 | Days before you joined are not counted against you | product behaviour (CLEAN-002) | `ChallengeServiceEnrollmentTests`; `AppEnvironmentTests.testNewUserSeesNoMissedDaysOnTheirFirstDay` |
 | Journal entries are private and stored on device | `PRIVACY_POLICY.md` | No network code; journal text is never logged. Store file protection is verified manually — see #54 |
 | A reflection you write is saved whole | product behaviour (CLEAN-003) | `ChallengeServiceJournalTests` (1,999 / 2,000 / 2,001 chars); `HomeScreenUITests.testJournalTextIsSavedAndVisibleInTheJournal` |
+| You can change or remove a reflection you wrote | product behaviour | `JournalEditTests`; `JournalEditUITests.testEditingAnEntryPersistsAcrossRelaunch`, `...testDeletingAnEntryRemovesItButKeepsTheDayCompleted` |
+| Removing a reflection does not affect your streak or badges | delete confirmation copy | `JournalEditTests.testEditingDoesNotMoveStreakTotalOrBadges` |
 | Your streak reflects consecutive days completed | PRD §7 | `StreakCalculationTests`; `CivilDayTests.testStreakSurvivesATimeZoneChange` and `testStreakBreaksOnAGenuinelyMissedDay` |
 | Badges are earned at the stated thresholds | PRD §8 | `BadgeEvaluationTests`, `BadgeServiceTests`; `JourneyUITests.testEarnedBadgesAreDistinguishableFromUnearnedOnes` |
 | Scripture is shown in your chosen translation | Settings UI | `SettingsUITests.testChangingTranslationChangesTheScriptureShownAndPersists` |

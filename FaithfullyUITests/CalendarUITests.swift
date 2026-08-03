@@ -45,11 +45,10 @@ final class CalendarUITests: UITestCase {
 
     // MARK: - Grace period (behavioural, not presence)
 
-    func testGraceDayOffersCompletionAndRecordsIt() throws {
-        try XCTSkipUnless(isInCurrentMonth(daysAgo: 1),
-                          "Yesterday is in the previous month; grace recovery is covered by unit tests")
+    func testGraceDayOffersCompletionAndRecordsIt() {
         launch(.graceAvailable)
         openTab("Calendar")
+        navigateToMonth(containing: targetDate(daysAgo: 1))
 
         let yesterday = dayButton(dayNumber(daysAgo: 1))
         assertValue(yesterday, equals: "Missed, can still be completed",
@@ -68,8 +67,7 @@ final class CalendarUITests: UITestCase {
                     "Recovering a grace day must mark it completed")
     }
 
-    func testGraceRecoveryPersistsAndRaisesTheTotal() throws {
-        try XCTSkipUnless(isInCurrentMonth(daysAgo: 1), "Yesterday is in the previous month")
+    func testGraceRecoveryPersistsAndRaisesTheTotal() {
         launch(.graceAvailable)
 
         openTab("Journey")
@@ -77,6 +75,7 @@ final class CalendarUITests: UITestCase {
         XCTAssertNotNil(before)
 
         openTab("Calendar")
+        navigateToMonth(containing: targetDate(daysAgo: 1))
         dayButton(dayNumber(daysAgo: 1)).tap()
         revealDayDetail()
         app.buttons["gracePeriodComplete"].tap()
@@ -92,10 +91,10 @@ final class CalendarUITests: UITestCase {
         XCTAssertEqual(afterRelaunch, after, "The recovery must survive a relaunch")
     }
 
-    func testDayOutsideTheGraceWindowOffersNoCompletion() throws {
-        try XCTSkipUnless(isInCurrentMonth(daysAgo: 10), "Target day is in the previous month")
+    func testDayOutsideTheGraceWindowOffersNoCompletion() {
         launch(.graceAvailable)
         openTab("Calendar")
+        navigateToMonth(containing: targetDate(daysAgo: 10))
 
         // Ten days ago is completed in this scenario; a completed day must not
         // offer completion either.
@@ -111,14 +110,15 @@ final class CalendarUITests: UITestCase {
 
     // MARK: - Enrollment boundary (CLEAN-002)
 
-    func testDaysBeforeEnrollmentAreMarkedAndNotCompletable() throws {
-        let todayNumber = dayNumber(daysAgo: 0)
-        try XCTSkipUnless(todayNumber > 1, "Installed on the 1st; there is no earlier day this month")
-
+    func testDaysBeforeEnrollmentAreMarkedAndNotCompletable() {
         launch(.fresh)
         openTab("Calendar")
 
-        let earlier = dayButton(1)
+        // Enrollment in the `.fresh` scenario is always "today", so yesterday
+        // is always before enrollment — true every day of the year, unlike
+        // "day 1 of the current month", which today itself can be.
+        navigateToMonth(containing: targetDate(daysAgo: 1))
+        let earlier = dayButton(dayNumber(daysAgo: 1))
         assertValue(earlier, equals: "Before you started",
                     "A day before enrollment must not read as a miss")
 

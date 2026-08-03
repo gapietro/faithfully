@@ -34,16 +34,29 @@ struct CalendarDay: Identifiable, Equatable {
     let challenge: DailyChallenge?
     let status: CalendarDayStatus
     let journalEntry: String?
+    /// The completion this day corresponds to, when there is one. Non-nil for
+    /// every completed day, including days completed without a reflection —
+    /// which is what makes adding one later possible.
+    let completionID: UUID?
 
-    init(date: Date, challenge: DailyChallenge? = nil, status: CalendarDayStatus, journalEntry: String? = nil) {
+    init(
+        date: Date,
+        challenge: DailyChallenge? = nil,
+        status: CalendarDayStatus,
+        journalEntry: String? = nil,
+        completionID: UUID? = nil
+    ) {
         self.id = date
         self.date = date
         self.challenge = challenge
         self.status = status
         self.journalEntry = journalEntry
+        self.completionID = completionID
     }
 
     static func == (lhs: CalendarDay, rhs: CalendarDay) -> Bool {
-        lhs.date == rhs.date && lhs.status == rhs.status
+        lhs.date == rhs.date
+            && lhs.status == rhs.status
+            && lhs.journalEntry == rhs.journalEntry
     }
 }

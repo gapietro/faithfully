@@ -48,7 +48,7 @@ owner. Tracked as #52 through #56.
 | Signing / TestFlight / App Store validation | 🔴 Unverified | Archive is built unsigned; nothing has been uploaded — [#52](https://github.com/gapietro/faithfully/issues/52) |
 | Crash reporting & support ownership | 🟡 Drafted, 3 decisions open | Runbook written; needs a crash-reporting choice, a support address, and an owner — [OPERATIONS.md](OPERATIONS.md) · [#53](https://github.com/gapietro/faithfully/issues/53) |
 | Data protection | 🟡 Set, unverified on device | Store opens at `.complete`; privacy manifest shipped. On-device confirmation outstanding — [DATA_PROTECTION.md](DATA_PROTECTION.md) · [#54](https://github.com/gapietro/faithfully/issues/54) |
-| Per-entry journal deletion | 🟡 Not supported | A user cannot remove a single entry; needs a product decision before public release — [DATA_PROTECTION.md](DATA_PROTECTION.md) |
+| Journal edit and delete | 🟢 Ready | Edit, clear, or add a reflection from Journey or Calendar; the completion is never touched — [DATA_PROTECTION.md](DATA_PROTECTION.md) |
 | Device accessibility | 🔴 Unverified | No VoiceOver / Dynamic Type pass on hardware — [#55](https://github.com/gapietro/faithfully/issues/55) |
 | Device performance | 🔴 Unmeasured | No launch, scroll, memory, or energy budgets — [#56](https://github.com/gapietro/faithfully/issues/56) |
 
