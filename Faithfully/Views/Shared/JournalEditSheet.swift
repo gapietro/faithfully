@@ -50,10 +50,31 @@ struct JournalEditSheet: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 20) {
+                // A plain body button rather than a `.cancellationAction`
+                // toolbar item: paired with the inline nav title, the audit
+                // found the two competing for space at the largest Dynamic
+                // Type sizes and clipped both. Out here each has the whole
+                // width to itself.
+                HStack {
+                    Button(action: onCancel) {
+                        Text("Cancel")
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.6)
+                    }
+                    .frame(minWidth: 44, minHeight: 44, alignment: .leading)
+                    .contentShape(Rectangle())
+                    .accessibilityIdentifier("cancelJournalEdit")
+
+                    Spacer()
+                }
+
                 Text(formattedDate)
                     .font(.subheadline)
                     .foregroundStyle(Color(.label))
                     .frame(maxWidth: .infinity)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
+                    .fixedSize(horizontal: false, vertical: true)
 
                 JournalEditorView(text: $text, errorMessage: errorMessage)
 
@@ -76,12 +97,6 @@ struct JournalEditSheet: View {
             .padding()
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel", action: onCancel)
-                        .accessibilityIdentifier("cancelJournalEdit")
-                }
-            }
         }
         .presentationDetents([.medium])
         // Explicit, not a material: contrast measured against a blurred backdrop

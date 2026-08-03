@@ -105,6 +105,7 @@
 		F2580215BC5ADC33AA2E8200 /* FaithfullyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8095D01BF1DAA3353F9844F /* FaithfullyApp.swift */; };
 		F4FA31D8154505F060B8C90F /* DailyWalkViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C30E30061C9CB312FE870547 /* DailyWalkViewModelTests.swift */; };
 		FAB2E99BA030969FA5E634CF /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = E4CB5E742EF34465EAEE5B88 /* PrivacyInfo.xcprivacy */; };
+		FC7FE1819BA27990775EA18F /* JournalEditUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDDED938E1A1DE881199ACB9 /* JournalEditUITests.swift */; };
 		FCF5947547F47468E4A409BE /* NotificationServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8122C71833812BE9141D9FB /* NotificationServiceTests.swift */; };
 		FDD3EAB80163A7EAB5D86B02 /* UITestSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74A0A9835C089C4B31762558 /* UITestSupport.swift */; };
 /* End PBXBuildFile section */
@@ -228,6 +229,7 @@
 		F8095D01BF1DAA3353F9844F /* FaithfullyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaithfullyApp.swift; sourceTree = "<group>"; };
 		FAF18DC773BF9B4454FCD472 /* DayDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayDetailView.swift; sourceTree = "<group>"; };
 		FDC9F4C2247189D1D7704115 /* JournalText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalText.swift; sourceTree = "<group>"; };
+		FDDED938E1A1DE881199ACB9 /* JournalEditUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalEditUITests.swift; sourceTree = "<group>"; };
 		FFDC42639AF2F76056BA97E8 /* DailyWalkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyWalkView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -289,6 +291,7 @@
 				0388CD9AB62E6882F06E657C /* AccessibilityAuditTests.swift */,
 				4A11E73D92A9210B503E7C64 /* CalendarUITests.swift */,
 				1979FDB28EF6789FCCFAFB61 /* HomeScreenUITests.swift */,
+				FDDED938E1A1DE881199ACB9 /* JournalEditUITests.swift */,
 				A27AF0C56105C1392BCAD569 /* JourneyUITests.swift */,
 				C4633BCA761A773CACA56C30 /* OnboardingUITests.swift */,
 				16FD0B741CC29F8297D1EF03 /* ScreenshotStoryboardTests.swift */,
@@ -655,6 +658,7 @@
 				A20255A1D1EF142C6BEF2DF1 /* AccessibilityAuditTests.swift in Sources */,
 				96122060F492B61D4658AB52 /* CalendarUITests.swift in Sources */,
 				D2351C05B6290F7FB8A58049 /* HomeScreenUITests.swift in Sources */,
+				FC7FE1819BA27990775EA18F /* JournalEditUITests.swift in Sources */,
 				ED5D32C1E160AB70012BBF50 /* JourneyUITests.swift in Sources */,
 				6DD47A1B457B8BDE6093EB97 /* OnboardingUITests.swift in Sources */,
 				47CF0BF53F9906DE8E2D7270 /* ScreenshotStoryboardTests.swift in Sources */,
