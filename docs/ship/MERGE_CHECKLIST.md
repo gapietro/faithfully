@@ -61,6 +61,20 @@ the same commit; `scripts/bootstrap.sh` refuses a download whose checksum does
 not match, so a bumped version with a stale checksum fails loudly rather than
 installing an unverified binary.
 
+## Toolchain selection
+
+`XCODE_PREFERRED_VERSION` is used when that bundle is present;
+`scripts/select_xcode.sh` otherwise falls back to the newest installed Xcode,
+provided it meets `XCODE_MIN_VERSION`, and logs which one it chose.
+`scripts/resolve_simulator.sh` does the same for the simulator.
+
+This is deliberate. Pinning only an exact bundle path looks stricter but is a
+bet that a specific app exists on the machine — the first version of this
+workflow hard-coded `/Applications/Xcode_26.6.app` and every job died in 20
+seconds on a runner image that did not have it. A minimum plus a logged choice
+fails when the toolchain is genuinely too old, and not when an image is
+updated.
+
 ## What CI still does not cover
 
 Honest list, so nobody mistakes a green tick for more than it is:

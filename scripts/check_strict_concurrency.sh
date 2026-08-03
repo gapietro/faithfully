@@ -17,7 +17,7 @@ trap 'rm -f "$LOG"' EXIT
 
 set +e
 xcodebuild -project "$REPO_ROOT/Faithfully.xcodeproj" -scheme Faithfully \
-  -destination "platform=iOS Simulator,name=$SIMULATOR_NAME" \
+  -destination "$("$REPO_ROOT/scripts/resolve_simulator.sh")" \
   SWIFT_STRICT_CONCURRENCY=complete build > "$LOG" 2>&1
 BUILD_STATUS=$?
 set -e
