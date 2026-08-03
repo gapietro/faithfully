@@ -113,4 +113,16 @@ final class AccessibilityAuditTests: UITestCase {
         XCTAssertTrue(dayButton(1).waitForExistence(timeout: 10))
         try audit(app)
     }
+
+    func testJournalEditSheetIsAccessible() throws {
+        launch(.seeded)
+        openTab("Journey")
+        let entry = app.staticTexts
+            .containing(NSPredicate(format: "label CONTAINS %@", "seeded-journal-marker-alpha"))
+            .firstMatch
+        XCTAssertTrue(entry.waitForExistence(timeout: 10))
+        entry.tap()
+        XCTAssertTrue(app.textViews["journalEditor"].waitForExistence(timeout: 5))
+        try audit(app)
+    }
 }
