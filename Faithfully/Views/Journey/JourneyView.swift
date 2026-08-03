@@ -174,13 +174,18 @@ struct JourneyView: View {
                     onCancel: { editingEntry = nil }
                 )
             }
-            .confirmationDialog(
+            // `.alert` rather than `.confirmationDialog`: on this platform a
+            // two-action confirmationDialog collapses to a popover exposing
+            // only the destructive button, with "Cancel" reachable solely by
+            // tapping outside. For an irreversible delete of private writing,
+            // Cancel must be a visible, explicit control — an alert renders
+            // both buttons on every size class.
+            .alert(
                 "Delete this reflection?",
                 isPresented: Binding(
                     get: { pendingDeletion != nil },
                     set: { if !$0 { pendingDeletion = nil } }
-                ),
-                titleVisibility: .visible
+                )
             ) {
                 Button("Delete", role: .destructive) {
                     if let entry = pendingDeletion {

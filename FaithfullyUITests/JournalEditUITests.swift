@@ -66,17 +66,9 @@ final class JournalEditUITests: UITestCase {
         app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'deleteJournalEntry_'"))
             .firstMatch.tap()
 
-        // On this OS the two-action confirmationDialog (Delete, Cancel) renders
-        // as a glass card anchored to the button, showing only the destructive
-        // action; there is no separate "Cancel" element. Dismissal is by
-        // tapping outside, which the system exposes to VoiceOver as a labelled
-        // "PopoverDismissRegion" element rather than a "Cancel" button — this is
-        // system-rendered, not something the view can opt out of (verified: a
-        // `.presentationCompactAdaptation(.sheet)` on the dialog made no
-        // difference).
-        XCTAssertTrue(app.buttons["Delete"].waitForExistence(timeout: 5),
+        XCTAssertTrue(app.buttons["Cancel"].waitForExistence(timeout: 5),
                       "Deleting must ask before destroying writing")
-        app.otherElements["PopoverDismissRegion"].tap()
+        app.buttons["Cancel"].tap()
 
         XCTAssertTrue(journalEntry(containing: alpha).waitForExistence(timeout: 5),
                       "Cancelling the dialog must keep the entry")
