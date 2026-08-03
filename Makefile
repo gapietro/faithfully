@@ -14,8 +14,9 @@ XCODEGEN := $(TOOLS)/xcodegen
 
 PROJECT := Faithfully.xcodeproj
 SCHEME := Faithfully
-SIMULATOR := iPhone 17
-DESTINATION := platform=iOS Simulator,name=$(SIMULATOR)
+# Resolved once per make invocation, preferring the pinned device and falling
+# back to any available iPhone. Override with `make DESTINATION='...'`.
+DESTINATION ?= $(shell ./scripts/resolve_simulator.sh)
 ARCHIVE_PATH := build/Faithfully.xcarchive
 RESULT_BUNDLE := build/TestResults.xcresult
 
