@@ -3,6 +3,9 @@ import SwiftUI
 struct DayDetailView: View {
     let day: CalendarDay
     let onComplete: () -> Void
+    /// Called with the day's completion id when the user wants to write or
+    /// change its reflection.
+    let onEditJournal: (UUID) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -18,6 +21,18 @@ struct DayDetailView: View {
                         .font(.callout)
                         .foregroundStyle(Color.supportingText)
                         .italic()
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                // Reachable for every completed day, including one with no
+                // reflection — this is the only route back to a day whose text
+                // was cleared from the Journey timeline.
+                if let completionID = day.completionID {
+                    Button(day.journalEntry == nil ? "Add reflection" : "Edit reflection") {
+                        onEditJournal(completionID)
+                    }
+                    .buttonStyle(.bordered)
+                    .accessibilityIdentifier("editJournalButton")
                 }
 
                 // Say why there is no button rather than just omitting one, so a
