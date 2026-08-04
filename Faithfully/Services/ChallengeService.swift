@@ -118,7 +118,14 @@ final class ChallengeService: ChallengeServiceProtocol {
         // Completion identity is the scheduled calendar day, not the challenge ID:
         // the scheduler reuses IDs within a year, so keying by ID would wrongly
         // block (or mark done) a later day that reuses the same challenge.
-        guard !isCompleted(on: scheduledDate) else {
+        //
+        // Read strictly, unlike `isCompleted`. Reads are lenient across this app
+        // because a failed read should degrade a progress bar rather than block
+        // someone — but this one is a *write guard*, and a fetch error collapsing
+        // to "not completed yet" is how a day gets recorded twice. A duplicate
+        // inflates totals, category counts and therefore badges, and nothing
+        // would ever repair it.
+        guard try completionCount(on: scheduledDate) == 0 else {
             throw ChallengeServiceError.alreadyCompleted
         }
 
@@ -194,12 +201,20 @@ final class ChallengeService: ChallengeServiceProtocol {
     /// current time zone on every read, so the same row could fall inside the
     /// window before a trip and outside it after.
     func isCompleted(on scheduledDate: Date) -> Bool {
+        // Lenient on purpose: this drives display and notification policy, where
+        // a read failure should not stop the app working. The write path uses
+        // `completionCount` and refuses when it cannot tell.
+        ((try? completionCount(on: scheduledDate)) ?? 0) > 0
+    }
+
+    /// How many completions exist for a civil day. Throws rather than reporting
+    /// zero when the store cannot be read.
+    private func completionCount(on scheduledDate: Date) throws -> Int {
         let key = CivilDay.key(for: scheduledDate)
         let descriptor = FetchDescriptor<CompletedChallenge>(
             predicate: #Predicate { $0.dayKey == key }
         )
-        let results = (try? persistence.fetch(descriptor)) ?? []
-        return !results.isEmpty
+        return try persistence.fetch(descriptor).count
     }
 
     func fetchCompletions(for dateRange: ClosedRange<Date>) -> [CompletedChallenge] {

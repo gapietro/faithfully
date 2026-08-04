@@ -22,10 +22,6 @@ final class AppEnvironment {
     /// in this state will persist, and they are told so.
     private(set) var storeFailure: PersistenceError?
 
-    /// Set by the app entry point. Rebuilds the store after the user explicitly
-    /// asks to reset an unreadable one.
-    var onResetStore: (() -> Void)?
-
     var services: AppServices? {
         if case .ready(let services) = state { return services }
         return nil

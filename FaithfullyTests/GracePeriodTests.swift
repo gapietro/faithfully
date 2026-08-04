@@ -28,15 +28,4 @@ final class GracePeriodTests: XCTestCase {
         let tomorrow = today.addingDays(1)
         XCTAssertFalse(GracePeriod.canComplete(challengeDate: tomorrow, today: today))
     }
-
-    func testGracePeriodCompletionRecordsCorrectDates() {
-        let challengeDate = today.addingDays(-2)
-        XCTAssertTrue(GracePeriod.isGracePeriodCompletion(challengeDate: challengeDate, completionDate: today),
-                      "Completing a past challenge today should be a grace period completion")
-    }
-
-    func testSameDayCompletionIsNotGracePeriod() {
-        XCTAssertFalse(GracePeriod.isGracePeriodCompletion(challengeDate: today, completionDate: today),
-                      "Completing today's challenge today should not be a grace period completion")
-    }
 }

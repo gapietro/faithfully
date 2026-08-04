@@ -55,6 +55,15 @@ final class NotificationServiceTests: XCTestCase {
     var mockCenter: MockNotificationCenter!
     var service: NotificationService!
 
+    /// A fixed clock before the 21:00 warning hour. These tests used to run
+    /// against the wall clock, which meant every one of them would have started
+    /// failing at 21:00 local time once the warning stopped arming a trigger
+    /// whose fire date had already passed.
+    /// `Date.from` anchors at noon, so these are offsets from midday rather
+    /// than from midnight: 09:00 and 22:00 on the same civil day.
+    static let beforeTheWarningHour = Date.from(year: 2026, month: 6, day: 15).addingTimeInterval(-3 * 3600)
+    static let afterTheWarningHour = Date.from(year: 2026, month: 6, day: 15).addingTimeInterval(10 * 3600)
+
     override func setUp() {
         mockCenter = MockNotificationCenter()
         service = NotificationService(center: mockCenter)
@@ -132,23 +141,59 @@ final class NotificationServiceTests: XCTestCase {
         let profile = UserProfile(streakWarningsEnabled: true)
 
         // Streak < 7: should NOT schedule
-        service.scheduleStreakWarning(streak: 5, preferences: NotificationPreferences(profile))
+        service.scheduleStreakWarning(streak: 5, preferences: NotificationPreferences(profile), now: Self.beforeTheWarningHour)
         await service.waitForPendingOperations()
 
         let noWarning = mockCenter.addedRequests.first { $0.identifier == "streak_warning" }
         XCTAssertNil(noWarning, "Streak < 7 should not schedule warning")
 
         // Streak >= 7: should schedule
-        service.scheduleStreakWarning(streak: 10, preferences: NotificationPreferences(profile))
+        service.scheduleStreakWarning(streak: 10, preferences: NotificationPreferences(profile), now: Self.beforeTheWarningHour)
         await service.waitForPendingOperations()
 
         let warning = mockCenter.addedRequests.first { $0.identifier == "streak_warning" }
         XCTAssertNotNil(warning, "Streak >= 7 should schedule warning")
     }
 
+    /// GRADE-007: the trigger is a fixed date that does not repeat, so one
+    /// built at 22:00 for today at 21:00 can never fire. It used to be enqueued
+    /// regardless, and `add` failures are swallowed, so the app quietly held a
+    /// notification that did not exist.
+    func testStreakWarningIsNotArmedOnceItsHourHasPassed() async {
+        let profile = UserProfile(streakWarningsEnabled: true)
+
+        service.scheduleStreakWarning(
+            streak: 10,
+            preferences: NotificationPreferences(profile),
+            now: Self.afterTheWarningHour
+        )
+        await service.waitForPendingOperations()
+
+        XCTAssertNil(mockCenter.addedRequests.first { $0.identifier == "streak_warning" },
+                     "A warning that could never fire must not be enqueued")
+    }
+
+    func testStreakWarningIsArmedForTodayWhenItsHourIsStillAhead() async {
+        let profile = UserProfile(streakWarningsEnabled: true)
+
+        service.scheduleStreakWarning(
+            streak: 10,
+            preferences: NotificationPreferences(profile),
+            now: Self.beforeTheWarningHour
+        )
+        await service.waitForPendingOperations()
+
+        let warning = mockCenter.addedRequests.first { $0.identifier == "streak_warning" }
+        let trigger = warning?.trigger as? UNCalendarNotificationTrigger
+        XCTAssertEqual(trigger?.dateComponents.hour, NotificationService.streakWarningHour)
+        XCTAssertEqual(trigger?.dateComponents.day,
+                       Calendar.current.component(.day, from: Self.beforeTheWarningHour),
+                       "The warning belongs to today's streak, not tomorrow's")
+    }
+
     func testStreakWarningNotScheduledWhenPreferenceDisabled() async {
         let profile = UserProfile(streakWarningsEnabled: false)
-        service.scheduleStreakWarning(streak: 10, preferences: NotificationPreferences(profile))
+        service.scheduleStreakWarning(streak: 10, preferences: NotificationPreferences(profile), now: Self.beforeTheWarningHour)
         await service.waitForPendingOperations()
 
         XCTAssertNil(mockCenter.addedRequests.first { $0.identifier == "streak_warning" },
@@ -200,7 +245,11 @@ final class NotificationServiceTests: XCTestCase {
     }
 
     func testScheduleAllRemovesStaleStreakWarning() async {
-        service.scheduleStreakWarning(streak: 10, preferences: NotificationPreferences(UserProfile(streakWarningsEnabled: true)))
+        service.scheduleStreakWarning(
+            streak: 10,
+            preferences: NotificationPreferences(UserProfile(streakWarningsEnabled: true)),
+            now: Self.beforeTheWarningHour
+        )
         await service.waitForPendingOperations()
         XCTAssertNotNil(mockCenter.addedRequests.first { $0.identifier == "streak_warning" })
 
@@ -280,7 +329,7 @@ final class NotificationServiceTests: XCTestCase {
             for preferences in settings {
                 group.addTask { _ = await service.requestPermission() }
                 group.addTask { service.scheduleAllNotifications(preferences: preferences) }
-                group.addTask { service.scheduleStreakWarning(streak: 10, preferences: preferences) }
+                group.addTask { service.scheduleStreakWarning(streak: 10, preferences: preferences, now: Self.beforeTheWarningHour) }
                 group.addTask { service.cancelTodayReminders() }
             }
         }

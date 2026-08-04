@@ -23,17 +23,18 @@ struct FaithfullyApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView(onResetStore: resetStore)
                 .environment(appEnvironment)
-                .onAppear { appEnvironment.onResetStore = resetStore }
         }
         .modelContainer(Self.container(for: stack))
     }
 
     /// Rebuilds the whole stack after the user chooses to reset an unreadable
-    /// store. Reached only from the recovery screen.
+    /// store. Reached only from the recovery screen, and re-entrant: a reset
+    /// that does not recover leaves the banner up, and the next attempt has to
+    /// work exactly as the first did.
     private func resetStore() {
-        let outcome = PersistenceStack.resetStore()
+        let outcome = Self.outcomeAfterReset()
         stack = outcome
         appEnvironment = AppEnvironment(
             modelContext: Self.container(for: outcome).mainContext,
@@ -49,6 +50,19 @@ struct FaithfullyApp: App {
         if UITestSupport.forcesStoreFailure { return PersistenceStack.simulatedFailure() }
         #endif
         return PersistenceStack.open()
+    }
+
+    /// The outcome of a user-requested reset.
+    ///
+    /// Under the UI-test hook the failure is sticky, which models the case the
+    /// recovery screen exists for and is the only way to exercise a *second*
+    /// attempt: the store stays unreadable, so the banner and its button must
+    /// still work. It also means a UI test never moves a real store file aside.
+    private static func outcomeAfterReset() -> PersistenceStack.Outcome {
+        #if DEBUG
+        if UITestSupport.forcesStoreFailure { return PersistenceStack.simulatedFailure() }
+        #endif
+        return PersistenceStack.resetStore()
     }
 
     private static func container(for outcome: PersistenceStack.Outcome) -> ModelContainer {
