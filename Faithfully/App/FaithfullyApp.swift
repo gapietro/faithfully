@@ -11,12 +11,14 @@ struct FaithfullyApp: App {
         #if DEBUG
         // Before the environment is built, so the graph reads seeded state.
         if let scenario = UITestSupport.requestedScenario {
-            UITestSupport.apply(scenario, in: Self.container(for: outcome).mainContext)
+            UITestSupport.apply(scenario, in: Self.container(for: outcome).mainContext,
+                                today: UITestSupport.today)
         }
         #endif
         _stack = State(initialValue: outcome)
         _appEnvironment = State(initialValue: AppEnvironment(
             modelContext: Self.container(for: outcome).mainContext,
+            dateProvider: Self.dateProvider(),
             storeFailure: Self.failure(for: outcome)
         ))
     }
@@ -38,6 +40,7 @@ struct FaithfullyApp: App {
         stack = outcome
         appEnvironment = AppEnvironment(
             modelContext: Self.container(for: outcome).mainContext,
+            dateProvider: Self.dateProvider(),
             storeFailure: Self.failure(for: outcome)
         )
     }
@@ -63,6 +66,16 @@ struct FaithfullyApp: App {
         if UITestSupport.forcesStoreFailure { return PersistenceStack.simulatedFailure() }
         #endif
         return PersistenceStack.resetStore()
+    }
+
+    /// The clock the service graph runs on. A DEBUG launch argument can pin it,
+    /// so a UI test that measures layout is not also asserting against today's
+    /// date. The App Store build has no path to anything but the wall clock.
+    private static func dateProvider() -> () -> Date {
+        #if DEBUG
+        if let provider = UITestSupport.dateProvider { return provider }
+        #endif
+        return { .now }
     }
 
     private static func container(for outcome: PersistenceStack.Outcome) -> ModelContainer {

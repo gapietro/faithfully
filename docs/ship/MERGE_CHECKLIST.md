@@ -2,17 +2,22 @@
 
 Status: current. Introduced by CLEAN-007 (audit tracker #39, issue #49).
 
-## The gate is `make ci` on a developer machine
+## The gate is `make ci`, and now also CI
 
-**In transit (2026-08-03).** The repository is now public, which makes Actions
-minutes unlimited and branch protection available — the two things that kept
-this gate local. The workflow stays on `workflow_dispatch` until one hosted run
-has gone green; see [Turning the triggers on](#turning-the-triggers-on). Until
-that lands, the rule below is the entire gate.
+**Triggers restored 2026-08-03 (#89).** The workflow runs on every pull request
+and every push to `main`. Making the repository public unblocked hosted capacity;
+what kept the triggers off after that was a red `ui-test` job, resolved in #89
+and #90 — both were gates whose result depended on the clock they ran at rather
+than on the change under test.
 
 **Nothing merges without a green `make ci` run on the branch, pasted or
-summarised in the pull request.** That is the whole rule, and with no mechanism
-enforcing it, it depends entirely on being followed.
+summarised in the pull request.** This rule stands even with CI running: a
+hosted run and a local run have caught different things, and #89 is the case in
+point — three tests that passed locally and failed on the runner.
+
+Whether CI can *block* a merge depends on branch protection being set; see
+[Turning the triggers on](#turning-the-triggers-on). Where it is not, the rule
+above is policy and depends entirely on being followed.
 
 Every check lives in the `Makefile` and runs identically on a laptop and in CI:
 
@@ -35,28 +40,33 @@ make ci          # every gate below, in order
 | Release archive | `archive` | a broken release build, and a device-family/orientation regression |
 
 The workflow is `.github/workflows/ci.yml`. It runs the same targets in the same
-order, but **on `workflow_dispatch` only** — see the decision above. Until the
-triggers are restored, a hosted run happens because someone asked for one.
+order, on `pull_request`, on pushes to `main`, and on `workflow_dispatch`.
 
 ## Turning the triggers on
 
-Two steps, in this order, and the order is the point.
+Kept as a record of the order used, because the order was the point — and
+because it is the procedure to repeat if the triggers ever come back off.
 
-**1. Prove a hosted run works.** The workflow stays on `workflow_dispatch` until
-one full run passes on the public repository. Restoring the triggers first would
-produce a check that always fails if capacity is still unavailable — which is
-worse than no check, because it teaches everyone to ignore red.
+**1. Prove a hosted run works first.** Restoring the triggers before that would
+produce a check that always fails if capacity is still unavailable, or if a test
+is environment-dependent — worse than no check, because it teaches everyone to
+ignore red.
 
 ```sh
 gh workflow run ci.yml --ref <branch>
 gh run watch
 ```
 
-**2. Then restore the triggers and require the check.** Uncomment
-`pull_request` and `push` at the top of `.github/workflows/ci.yml`, then require
-the single **`All checks`** job. It aggregates the others, so adding a check
-later does not require editing the protection rule to match — a rule that lists
-jobs individually silently stops covering anything added afterwards.
+Both failure modes actually happened. Capacity was the first (jobs dying in ~2s
+with no runner assigned, fixed by going public). A date-dependent test suite was
+the second: #89 for three UI tests, #90 for two unit tests that failed only
+after 21:00 local — and on a UTC runner, that is a gate red for three hours
+every day.
+
+**2. Then require the check.** Require the single **`All checks`** job. It
+aggregates the others, so adding a check later does not require editing the
+protection rule to match — a rule that lists jobs individually silently stops
+covering anything added afterwards.
 
 ```sh
 gh api -X PUT repos/:owner/:repo/branches/main/protection \

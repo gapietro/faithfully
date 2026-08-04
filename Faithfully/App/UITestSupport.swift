@@ -56,6 +56,42 @@ enum UITestSupport {
         return Scenario(rawValue: arguments[index + 1])
     }
 
+    /// Pins the app's notion of "now" to an ISO 8601 instant.
+    ///
+    /// ```
+    /// app.launchArguments += ["-FaithfullyUITestFixedDate", "2026-03-15T12:00:00Z"]
+    /// ```
+    ///
+    /// The daily challenge rotates, so its text length — and therefore the
+    /// vertical position of every control below it — changes from one day to the
+    /// next. A test that measures *where* something is rendered is otherwise
+    /// asserting against the calendar, and the same commit renders differently
+    /// tomorrow. That is what made the accessibility gate non-deterministic
+    /// (#89): it passed locally and failed on a runner that had already crossed
+    /// midnight UTC.
+    ///
+    /// Feeds both the seeded store and the live service graph, so scenario
+    /// offsets and the app's own "today" cannot disagree.
+    static let fixedDateArgument = "-FaithfullyUITestFixedDate"
+
+    static var fixedDate: Date? {
+        let arguments = ProcessInfo.processInfo.arguments
+        guard let index = arguments.firstIndex(of: fixedDateArgument),
+              index + 1 < arguments.count else { return nil }
+        return ISO8601DateFormatter().date(from: arguments[index + 1])
+    }
+
+    /// The date the app should run against: the pinned instant when a test asked
+    /// for one, the wall clock otherwise.
+    static var today: Date { fixedDate ?? .now }
+
+    /// A date provider for the service graph, so `AppEnvironment` reads the same
+    /// "now" the store was seeded against.
+    static var dateProvider: (() -> Date)? {
+        guard let fixedDate else { return nil }
+        return { fixedDate }
+    }
+
     /// Journal text the tests search for. Distinctive enough that a substring
     /// match cannot succeed by accident.
     static let searchableJournalText = "seeded-journal-marker-alpha"
