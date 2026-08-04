@@ -1,5 +1,59 @@
 # Senior-Grade Ledger
 
+## Remediation — 2026-08-03 (#89, #90): the gate stops depending on the clock
+
+Mode: fix
+Score: not re-scored — a remediation pass, not a grade pass.
+Fixed: #89 (three UI tests), #90 (two unit tests)
+Accepted risks: the accessibility-audit exclusions are now **three**, not two —
+see below. Merge enforcement is no longer policy-only.
+
+Both issues were one defect wearing two faces: **a quality gate whose result
+depended on the wall clock it happened to run at.** Neither was a user-facing
+regression. Both would have made CI red for environmental reasons, which is the
+one thing this workflow has been built to avoid.
+
+- **#89** — iOS 26 renders a scroll-edge dimming effect in a band reaching ~65pt
+  above the tab bar. The audit reports "Contrast failed" for anything
+  overlapping it regardless of rendered pixels; the exclusion covered only the
+  tab bar frame, a strict subset. Which element landed in the uncovered gap
+  depended on the day's challenge text, so the same commit rendered differently
+  either side of the UTC date rollover. Confirmed an artifact by measurement —
+  the flagged elements read 11.55:1 and 12.67–13.78:1 against a 4.5:1 threshold
+  — and causally, by suppressing the effect and watching the issue vanish at an
+  identical frame.
+- **#90** — `refreshNotifications()` reached the `scheduleStreakWarning`
+  overload defaulting to `.now` instead of the graph's injected `dateProvider()`.
+  The warning arms only while its hour (21) is ahead, so `make ci` was red every
+  evening after 21:00 — and would have been red 21:00–24:00 UTC daily on hosted
+  runners, with `make test` exiting 65 before coverage, ui-test, accessibility,
+  analyze, strict-concurrency and archive ever ran.
+
+Changes to standing accepted risks:
+
+- **Accessibility-audit exclusions: two → three.** The third covers *contrast
+  only* for elements resting in the scroll-edge band, and is read from the
+  system's own overlay element rather than a constant. Deliberately narrower
+  than the tab-bar exclusion beside it: the band distorts colour sampling, so
+  hit targets, clipping, labels and VoiceOver traps are still judged there. If
+  the system element is renamed the exclusion narrows rather than widens — the
+  audit gets noisier, never quieter — and a test asserts the band was found.
+- **Hosted CI is no longer manual-only.** The `pull_request` and `push` triggers
+  are restored. This removes the "no mandatory CI" cap's *first* half; whether
+  it is removed entirely depends on branch protection, recorded in
+  `docs/ship/MERGE_CHECKLIST.md`.
+
+New standing cost, stated because it is a real one: the audit now runs against a
+**pinned date**, so it sees one day's copy rather than a rotating sample. A
+contrast problem appearing only with unusually long text would not be caught.
+`testDailyWalkIsAccessibleAtLargerTextSize` offsets part of this by exercising a
+harder layout; a second pinned date with a long challenge would restore most of
+the rest.
+
+Left open deliberately: **GRADE-007** is adjacent to #90 but distinct — whether a
+streak warning scheduled past its hour should roll to tomorrow rather than be
+dropped is a product question, untouched here.
+
 ## Audit — 2026-08-03 @ 2d25802398736f7c7555098de0b961cbfc7acfc5
 
 Mode: grade
