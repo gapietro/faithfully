@@ -93,7 +93,7 @@ final class JourneyUITests: UITestCase {
 
         XCTAssertTrue(journalEntry(containing: "seeded-journal-marker-alpha")
             .waitForExistence(timeout: 5), "The matching entry must survive the filter")
-        XCTAssertFalse(journalEntry(containing: "seeded-journal-marker-beta").exists,
+        waitForAbsence(of: journalEntry(containing: "seeded-journal-marker-beta"),
                        "The non-matching entry must be filtered out")
     }
 
@@ -106,7 +106,8 @@ final class JourneyUITests: UITestCase {
         search.tap()
         search.typeText("alpha")
 
-        XCTAssertFalse(journalEntry(containing: "seeded-journal-marker-beta").exists)
+        waitForAbsence(of: journalEntry(containing: "seeded-journal-marker-beta"),
+                       "Precondition: the filter must have taken effect before it is cleared")
 
         // Delete the query.
         search.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 5))
