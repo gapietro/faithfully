@@ -2,6 +2,9 @@ import SwiftUI
 
 struct DayDetailView: View {
     let day: CalendarDay
+    /// Set when the last completion attempt failed. The panel stays open and
+    /// shows this, rather than dismissing as if the day had been recorded.
+    var completionError: String?
     let onComplete: () -> Void
     /// Called with the day's completion id when the user wants to write or
     /// change its reflection.
@@ -53,6 +56,14 @@ struct DayDetailView: View {
                     }
                     .buttonStyle(.borderedProminent)
                     .accessibilityIdentifier("gracePeriodComplete")
+                }
+
+                if let completionError {
+                    Text(completionError)
+                        .font(.footnote)
+                        .foregroundStyle(.red)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .accessibilityIdentifier("dayCompletionError")
                 }
             }
         }

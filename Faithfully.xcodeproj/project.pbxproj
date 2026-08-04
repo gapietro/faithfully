@@ -81,6 +81,7 @@
 		BB2AD676CEF4056D9A6D3CD8 /* BadgeDefinition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A3D400EB0FB3AFCA44B590B /* BadgeDefinition.swift */; };
 		BC914EE3E5A9B73B1E970046 /* CalendarJournalAddressingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9C508395137AC09EFFB592E /* CalendarJournalAddressingTests.swift */; };
 		C1CE0B1FE9AC8A9B7346C19A /* EarnedBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = B102D549A1D69BC7485C0A77 /* EarnedBadge.swift */; };
+		C2C72FE5632A6DE5FB43D1A0 /* CalendarCompletionFailureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 550FF0410BFB61690EA33D8D /* CalendarCompletionFailureTests.swift */; };
 		C3D559F2C8DA67F078058DEE /* DailyWalkViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AA434CB8B30887102A76D77 /* DailyWalkViewModel.swift */; };
 		C74D9F63A6639139AE0BDE40 /* DesignSystemTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95A6EAF64C9F86F5A9B4196C /* DesignSystemTests.swift */; };
 		C98AB36AA430514B29E6AAE9 /* BadgeDisplayItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 203ACCDF10A9C0DBC5AF367C /* BadgeDisplayItem.swift */; };
@@ -174,6 +175,7 @@
 		4F1135EB5B3E4AF57AC89F08 /* TestHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestHelpers.swift; sourceTree = "<group>"; };
 		5495D0675B3AFA7D31D624A9 /* PersistenceFailureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceFailureTests.swift; sourceTree = "<group>"; };
 		54DE59ED320B7ECF201DD87B /* ChallengeLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeLoader.swift; sourceTree = "<group>"; };
+		550FF0410BFB61690EA33D8D /* CalendarCompletionFailureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarCompletionFailureTests.swift; sourceTree = "<group>"; };
 		574E55F0F90B8C9A153546F7 /* StoreRecoveryUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreRecoveryUITests.swift; sourceTree = "<group>"; };
 		5CB7E0ABBA62147D16C8532F /* CalendarEnrollmentBoundaryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarEnrollmentBoundaryTests.swift; sourceTree = "<group>"; };
 		5EE5DCB0970EDF8826396502 /* UITestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITestCase.swift; sourceTree = "<group>"; };
@@ -350,6 +352,7 @@
 				3FFDBB292FD64BF875C8C219 /* AppInfoTests.swift */,
 				C790891C0DCDD4C7DB6C2D0F /* BadgeEvaluationTests.swift */,
 				DDB91F756DEEBA088E6AA18F /* BadgeServiceTests.swift */,
+				550FF0410BFB61690EA33D8D /* CalendarCompletionFailureTests.swift */,
 				5CB7E0ABBA62147D16C8532F /* CalendarEnrollmentBoundaryTests.swift */,
 				A9C508395137AC09EFFB592E /* CalendarJournalAddressingTests.swift */,
 				335717FF73C0F30EDC70CC2B /* CalendarViewModelTests.swift */,
@@ -635,6 +638,7 @@
 				9EDAB48DEEF4A7A0C05335B3 /* AppInfoTests.swift in Sources */,
 				360B310D937097319D020531 /* BadgeEvaluationTests.swift in Sources */,
 				06120571F60986FF3DB7CB43 /* BadgeServiceTests.swift in Sources */,
+				C2C72FE5632A6DE5FB43D1A0 /* CalendarCompletionFailureTests.swift in Sources */,
 				9CD1D03D29F229F9183750D0 /* CalendarEnrollmentBoundaryTests.swift in Sources */,
 				BC914EE3E5A9B73B1E970046 /* CalendarJournalAddressingTests.swift in Sources */,
 				B851569CDC6AACF2F1731BA8 /* CalendarViewModelTests.swift in Sources */,

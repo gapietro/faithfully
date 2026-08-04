@@ -34,8 +34,9 @@ make ci          # every gate below, in order
 | Strict concurrency | `strict-concurrency` | Swift 6 data-race diagnostics in project-owned code |
 | Release archive | `archive` | a broken release build, and a device-family/orientation regression |
 
-The workflow is `.github/workflows/ci.yml`. It runs on every pull request and on
-every push to `main`.
+The workflow is `.github/workflows/ci.yml`. It runs the same targets in the same
+order, but **on `workflow_dispatch` only** — see the decision above. Until the
+triggers are restored, a hosted run happens because someone asked for one.
 
 ## If hosted CI is turned back on
 

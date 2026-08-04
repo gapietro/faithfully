@@ -1,5 +1,58 @@
 # Senior-Grade Ledger
 
+## Audit — 2026-08-03 @ 2d25802398736f7c7555098de0b961cbfc7acfc5
+
+Mode: grade
+Score: 86/100 (B) — arithmetic 88 (B+), capped
+Caps applied: no mandatory CI (B). Race-prone async and integration coverage caps
+are **removed**; the production-observability cap (B+) still applies but is not
+binding.
+Fixed: none — grade mode is read-only. `AUDIT.md` is the only file changed.
+Deferred: GRADE-001 … GRADE-007 — new findings, owner: maintainer
+Accepted risks: unchanged from 2026-08-02 (manual-only hosted CI and
+policy-based merge enforcement; two documented accessibility-audit exclusions)
+
+Movement since the 2026-08-02 grade at `9ffe014`: **77 (C+) → 86 (B), +9.** Every
+one of CLEAN-001 … CLEAN-012 was re-verified against its original evidence and
+each fixed the root cause, not the symptom. Two of the three caps that applied
+then are gone.
+
+Verification at this commit (`make ci` → exit 0, "All checks passed"):
+
+```
+generated project drift    -> none
+content validation         -> 365 challenges valid across 2 copies, 5 batches
+swiftlint --strict         -> 0 violations in 100 files
+unit + integration tests   -> 284 passing
+Services/ViewModels covg.  -> 93.34% (939/1006 lines), floor 90%
+UI tests                   -> 53 passing
+accessibility audit        -> 0 issues
+static analyzer            -> succeeded
+strict concurrency         -> 0 project-owned warnings
+release archive            -> succeeded; UIDeviceFamily [1], no iPad orientations
+release binary             -> no UI-test hooks, no networking symbols present
+secrets (tree + history)   -> none
+```
+
+New findings, none of them release blockers:
+
+- GRADE-001 (P2) calendar grace completion swallows every failure and dismisses
+  the panel — the app's own Rule 4 ("a write either lands or is reported")
+- GRADE-002 (P2) the store-recovery button is inert on a second attempt:
+  `onResetStore` is attached once in `.onAppear` and never re-attached
+- GRADE-003 (P2) three "current" documents assert CI enforcement the repository
+  contradicts; test counts stale; closed #55 backs a claim marked unverified
+- GRADE-004 (P2) leap-year Dec 30 and Dec 31 resolve to the same challenge,
+  first on 2028-12-31
+- GRADE-005 (P3) `GracePeriod.isGracePeriodCompletion` is dead outside tests
+- GRADE-006 (P3) no uniqueness constraint on `dayKey`; the duplicate-day guard
+  fails open on a read error
+- GRADE-007 (P3) a streak warning scheduled after 21:00 silently never fires
+
+Baseline for the next audit: this commit. The binding constraint is no longer
+correctness — it is the absence of a mechanical merge gate, and after that the
+operations story (#52, #53).
+
 ## Remediation — 2026-08-02 @ main (post CLEAN-001..012, MAINT-001, OPS-004)
 
 Mode: fix

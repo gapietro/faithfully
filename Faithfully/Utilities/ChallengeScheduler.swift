@@ -21,7 +21,10 @@ struct ChallengeScheduler {
             return givingChallenges[abs(givingIndex) % givingChallenges.count]
         }
 
-        let dayOfYear = min(Calendar.current.ordinality(of: .day, in: .year, for: date) ?? 1, 365)
+        // Not clamped to 365. The clamp was guarding the array bound that the
+        // modulo below already guards, and it cost a day: in a leap year, 30 and
+        // 31 December both landed on 365 and served the same challenge twice.
+        let dayOfYear = Calendar.current.ordinality(of: .day, in: .year, for: date) ?? 1
         let index = (dayOfYear + (yearOffset * 47)) % nonGivingChallenges.count
         let safeIndex = ((index % nonGivingChallenges.count) + nonGivingChallenges.count) % nonGivingChallenges.count
         return nonGivingChallenges[safeIndex]
