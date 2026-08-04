@@ -49,7 +49,8 @@ owner. Tracked as #52 through #56.
 | Device family | 🟢 Ready | iPhone-only, asserted against the built archive in CI |
 | CloudKit | ⚪ Deferred (v1.x) | v1 is local SwiftData only, by decision — [CLOUDKIT_DECISION.md](CLOUDKIT_DECISION.md) |
 | Real badge art | 🟡 Outstanding | Recraft pack not commissioned; placeholder art ships internally fine |
-| Merge enforcement | 🟡 By policy | Branch protection is unavailable on this plan and hosted runs are not being scheduled; `make ci` on a dev machine is the gate, by decision — [MERGE_CHECKLIST.md](MERGE_CHECKLIST.md) |
+| Merge enforcement | 🟡 In transit | Repository made public 2026-08-03, which unlocks unlimited Actions minutes and branch protection. Triggers stay off until one hosted run goes green, then the **All checks** job becomes required — [MERGE_CHECKLIST.md](MERGE_CHECKLIST.md) |
+| Licence | 🟢 Split | Code MIT, content all rights reserved — [LICENSE](../../LICENSE) · [CONTENT-LICENSE.md](../../CONTENT-LICENSE.md) |
 | Signing / TestFlight / App Store validation | 🔴 Unverified | Archive is built unsigned; nothing has been uploaded — [#52](https://github.com/gapietro/faithfully/issues/52) |
 | Crash reporting & support ownership | 🟡 Drafted, 3 decisions open | Runbook written; needs a crash-reporting choice, a support address, and an owner — [OPERATIONS.md](OPERATIONS.md) · [#53](https://github.com/gapietro/faithfully/issues/53) |
 | Data protection | 🟡 Set, unverified on device | Store opens at `.complete`; privacy manifest shipped. On-device confirmation outstanding — [DATA_PROTECTION.md](DATA_PROTECTION.md) · [#54](https://github.com/gapietro/faithfully/issues/54) |
