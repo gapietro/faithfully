@@ -1,5 +1,89 @@
 # Senior-Grade Ledger
 
+## Remediation — 2026-08-04 (#97): the audit's timeout is the runner's, not the screen's
+
+Mode: fix
+Score: not re-scored — a remediation pass, not a grade pass.
+Fixed: #97 (`-56 Audit failed to complete in time`), #98 (the audit suite ran
+twice per CI run)
+Accepted risks: the accessibility gate now retries a failed test once — see
+below. #98 is fixed here rather than separately because #97's fix is incomplete
+without it: the retry lives on `make accessibility`, and the duplicate run
+inside `make ui-test` would have kept the flake reaching CI unprotected. #99
+(the first UI test in a job intermittently fails to launch) is a different
+mechanism and stays open.
+
+Third in the #89/#90 family: **a quality gate going red for reasons that have
+nothing to do with the code.** Not a user-facing regression.
+
+The issue proposed narrowing the audit's walk, or raising its timeout, and
+called a retry the last resort. Measurement closed the first two off and
+removed the premise of the third.
+
+- **Both preferred fixes are absent from the API.**
+  `performAccessibilityAudit` takes audit types and an issue handler and
+  nothing else — there is no timeout to raise — and it is declared on
+  `XCUIApplication` only, so an audit cannot be scoped to a subtree.
+- **Nothing is near a budget.** The audit's own duration was separated from
+  launch and navigation over six hosted `macos-26` runs. Medians run 2.0s
+  (onboarding) to 7.8s (calendar day detail). The 62.3s in the issue was mostly
+  cold-start: that test spent 43s reaching the audit and ~19s inside it.
+- **There is no fixed total-audit budget being crossed.** A 23.8s audit passed
+  on the completion sheet; the ~19s one failed. The error is an inner request
+  going unanswered while the simulator stalls, so the screen it lands on is
+  incidental.
+- **The screen in the issue title is not special.** Of two failures in six
+  sample runs, one was `-56` on the *fresh-install calendar* (median 5.6s) and
+  one was the simulator failing to launch the app at all. The heaviest screen
+  tipped first in the original report because it makes the most requests, not
+  because it sits near a limit.
+
+So the retry is not a symptom fix standing in for a real one — the real ones do
+not exist, and the thing being retried is not a property of the app.
+
+**The first attempt was wrong, and the ten runs that measured it are why this
+entry is not describing it.** Retrying *inside* the test — catching `-56` and
+calling `performAccessibilityAudit` again — was implemented, mutation-tested,
+and then measured on ten hosted runs. It made things worse. Of three real
+timeouts: one was absorbed, one timed out again after 133s, and one killed the
+test runner so `testCalendarDayDetailIsAccessible` reported neither pass nor
+fail and the suite restarted mid-run. Two of ten runs went red. The stall
+outlives the attempt, so re-asking the same wedged automation session is the
+wrong move — and re-entering a dying one is worse than letting the test fail.
+
+Changes to standing accepted risks:
+
+- **`make accessibility` now retries a failed test once, in a fresh process.**
+  `-retry-tests-on-failure -test-iterations 2
+  -test-repetition-relaunch-enabled YES`. The relaunch flag is the load-bearing
+  one: the retry gets a new process and a fresh app launch, which is the only
+  thing observed to escape a stalled session. Bounded to exactly one retry.
+
+  This does not soften the gate. A real accessibility finding is deterministic,
+  so it fails both iterations and still goes red — verified by mutation, by
+  injecting a deterministic `XCTFail` into `testOnboardingIsAccessible` and
+  watching it run twice, fail twice, and fail the build. The cost of a genuine
+  failure is that it takes twice as long to report.
+
+  The retry is at the build level rather than in the test because the failure
+  is a property of the session, not of the audit call. That also means it is
+  visible in the log as a test running twice, rather than as a line the test
+  prints about itself.
+
+- **No per-screen duration budget is asserted, deliberately.** The
+  environmental spread is 3–8x on every screen (completion sheet 2.9s median,
+  23.8s max; fresh-install calendar 5.6s / 16.1s; settings 6.6s / 11.9s). A
+  ceiling loose enough to survive that would not catch a regression, and a
+  tight one would be the same flake wearing a different error message. The
+  measured distribution is recorded in the Makefile beside the retry, so the
+  next person has the numbers without re-instrumenting.
+
+- **The audit suite runs once per `make ci`, not twice (#98).** `make ui-test`
+  now skips `AccessibilityAuditTests`, which `make accessibility` owns. Before
+  this, the same ten tests ran twice against the same pinned date — about four
+  minutes of every run, and a second, unprotected exposure to the flake above,
+  since only `make accessibility` carries the retry.
+
 ## Remediation — 2026-08-03 (#89, #90): the gate stops depending on the clock
 
 Mode: fix
