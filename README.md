@@ -27,3 +27,18 @@ make ci                  # every quality gate, same as CI
 ```
 
 `make help` lists the individual targets.
+
+## Licence
+
+Split, deliberately.
+
+- **Code is MIT** — [`LICENSE`](LICENSE). Take the civil-day model, the
+  persistence contract, the accessibility work, the `make ci` gate. They cost
+  this project nothing to share and are the parts worth borrowing.
+- **Content is all rights reserved** — [`CONTENT-LICENSE.md`](CONTENT-LICENSE.md).
+  The 365 challenges, the docs, the artwork. The scripture text itself is public
+  domain (WEB and KJV) and no rights are claimed over it; what is claimed is
+  which verse belongs to which day and the challenge written against it.
+
+The code is more useful to other people than it is valuable to keep closed. The
+content is the product.
