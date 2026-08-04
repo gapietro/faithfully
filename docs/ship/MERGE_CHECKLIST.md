@@ -4,11 +4,11 @@ Status: current. Introduced by CLEAN-007 (audit tracker #39, issue #49).
 
 ## The gate is `make ci` on a developer machine
 
-This is a decision, not an oversight. GitHub-hosted macOS runs are not being
-scheduled on this plan, and a check that always fails is worse than no check —
-it teaches everyone to ignore red. The workflow is kept intact and correct, but
-runs on `workflow_dispatch` only; re-enabling the automatic triggers is a
-two-line change at the top of `.github/workflows/ci.yml`.
+**In transit (2026-08-03).** The repository is now public, which makes Actions
+minutes unlimited and branch protection available — the two things that kept
+this gate local. The workflow stays on `workflow_dispatch` until one hosted run
+has gone green; see [Turning the triggers on](#turning-the-triggers-on). Until
+that lands, the rule below is the entire gate.
 
 **Nothing merges without a green `make ci` run on the branch, pasted or
 summarised in the pull request.** That is the whole rule, and with no mechanism
@@ -38,24 +38,45 @@ The workflow is `.github/workflows/ci.yml`. It runs the same targets in the same
 order, but **on `workflow_dispatch` only** — see the decision above. Until the
 triggers are restored, a hosted run happens because someone asked for one.
 
-## If hosted CI is turned back on
+## Turning the triggers on
 
-Re-enable the triggers in `.github/workflows/ci.yml`, then require the single
-**`All checks`** job in branch protection. It aggregates the others, so adding a
-check later does not require editing the protection rule to match — a rule that
-lists jobs individually silently stops covering anything added afterwards.
+Two steps, in this order, and the order is the point.
 
-Settings → Branches → Add rule for `main`:
+**1. Prove a hosted run works.** The workflow stays on `workflow_dispatch` until
+one full run passes on the public repository. Restoring the triggers first would
+produce a check that always fails if capacity is still unavailable — which is
+worse than no check, because it teaches everyone to ignore red.
+
+```sh
+gh workflow run ci.yml --ref <branch>
+gh run watch
+```
+
+**2. Then restore the triggers and require the check.** Uncomment
+`pull_request` and `push` at the top of `.github/workflows/ci.yml`, then require
+the single **`All checks`** job. It aggregates the others, so adding a check
+later does not require editing the protection rule to match — a rule that lists
+jobs individually silently stops covering anything added afterwards.
+
+```sh
+gh api -X PUT repos/:owner/:repo/branches/main/protection \
+  -F required_status_checks[strict]=true \
+  -F required_status_checks[contexts][]="All checks" \
+  -F enforce_admins=false \
+  -F required_pull_request_reviews=null \
+  -F restrictions=null
+```
+
+Or Settings → Branches → Add rule for `main`:
 
 - Require a pull request before merging
 - Require status checks to pass → **All checks**
 - Require branches to be up to date before merging
 
-Branch protection needs GitHub Pro or a public repository; both APIs currently
-return 403. Re-check whenever the plan changes:
+Verify it actually took, rather than assuming the call succeeded:
 
 ```sh
-gh api repos/:owner/:repo/branches/main/protection
+gh api repos/:owner/:repo/branches/main/protection --jq '.required_status_checks.contexts'
 ```
 
 ## Changing a pinned tool
@@ -81,28 +102,23 @@ updated.
 
 ## Runner capacity
 
-GitHub-hosted macOS runs stopped being scheduled part-way through the
-remediation pass: jobs fail in about two seconds with no runner assigned and no
-steps executed. That is a resource block, not a code failure — the workflow ran
-every job green on earlier commits.
+**Resolved by making the repository public (2026-08-03).** Actions minutes are
+unlimited on public repositories and branch protection becomes available, which
+closes both halves of this at once — the capacity block *and* the enforcement
+gap. The decision is recorded in [`../../CONTENT-LICENSE.md`](../../CONTENT-LICENSE.md):
+the code is MIT, the challenge content is not, so publishing the repository does
+not hand anyone a finished competing app.
 
-A private repository on the free plan gets 2,000 Actions minutes a month, and
-macOS bills at **10x**, so about 200 macOS minutes. The UI job alone is roughly
-20 of them, so a handful of pull requests exhausts the month.
+For the record, the problem it solved: a private repository on the free plan
+gets 2,000 Actions minutes a month and macOS bills at **10x**, so about 200
+macOS minutes — the UI job alone is roughly 20 of them. Part-way through the
+remediation pass, hosted macOS runs stopped being scheduled entirely: jobs
+failed in about two seconds with no runner assigned and no steps executed. That
+was a resource block, not a code failure.
 
-Three ways out, in rough order of leverage:
-
-1. **Make the repository public.** Actions minutes become unlimited *and*
-   branch protection becomes available — this closes the enforcement gap above
-   at the same time. The repository contains no secrets; the audit's full-tree
-   and full-history scan was clean.
-2. **Self-host the runner.** There is already a Mac mini in the loop (see
-   `SESSION_HANDOFF.md`). A self-hosted macOS runner has no minute cost and
-   would be considerably faster than the hosted image.
-3. **Pay for minutes**, or raise the spending limit.
-
-Until one of these happens, `make ci` on a developer machine is the real gate,
-and the merge policy below is the only thing enforcing it.
+A self-hosted runner was the alternative and was rejected: a workflow run
+executes repository code as the host user, which is unacceptable on a public
+repository, and CI would only exist while that machine was awake.
 
 ## What CI still does not cover
 
