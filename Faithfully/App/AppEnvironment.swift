@@ -272,7 +272,15 @@ final class AppServices {
         } else {
             notificationService.scheduleStreakWarning(
                 streak: challengeService.calculateStreak(),
-                preferences: preferences
+                preferences: preferences,
+                // The graph's clock, not the wall clock (#90). Everything else
+                // here reads `dateProvider()`; this one call reached the
+                // convenience overload defaulting to `.now`, so the warning
+                // decided for itself what time it was. Identical in the shipped
+                // app, where the provider *is* `.now` — but it made the suite's
+                // result depend on the hour it ran at, because the warning is
+                // only armed while its hour is still ahead.
+                now: dateProvider()
             )
         }
     }
