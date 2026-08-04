@@ -9,9 +9,10 @@ senior-grade pass — 86/100 (B), up from 77 (C+). Tracker
 ## Bottom line
 
 **Internal TestFlight: ready.** Everything verifiable without a device or an App
-Store Connect session is verified by `make ci`. Running it before a merge is
-policy, not mechanism — hosted CI is manual-only and branch protection is
-unavailable on this plan, so nothing blocks a merge past a failing gate. See
+Store Connect session is verified by `make ci`, which runs on every pull request
+and every push to `main`. Branch protection requires it to pass, so a failing
+gate blocks a merge — mechanism, not policy. One gap: `enforce_admins` is false,
+so a repository admin can still merge past a failing check. See
 [MERGE_CHECKLIST.md](MERGE_CHECKLIST.md).
 
 **Public release: not yet.** Four things remain, none of them code — a signed
@@ -37,7 +38,7 @@ owner. Tracked as #52 through #56.
 |---|---|---|
 | Code & tests | 🟢 Ready | Unit, UI, and accessibility suites all green in `make ci`; `make ci` is the live count, so none is quoted here |
 | Audit findings | 🟡 Second pass open | All 12 from the first pass remediated with regression tests and re-verified. The 2026-08-03 pass raised seven more, none a release blocker — [#39](https://github.com/gapietro/faithfully/issues/39) |
-| Quality gate | 🟢 Ready | Pinned tooling, `make ci`. Hosted CI is manual-only by decision — [MERGE_CHECKLIST.md](MERGE_CHECKLIST.md) |
+| Quality gate | 🟢 Ready | Pinned tooling, `make ci`. Runs on every PR and push to `main`; branch protection requires it, except for admins — [MERGE_CHECKLIST.md](MERGE_CHECKLIST.md) |
 | Concurrency | 🟢 Ready | Swift 6 language mode, zero project-owned warnings |
 | Design pass 1 | 🟢 Ready | Sprint C brand assets, motion, badge names in place |
 | Content editorial | 🟢 Ready | Sprint D editorial pass done (em-dashes, giving challenges) |

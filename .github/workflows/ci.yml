@@ -10,8 +10,13 @@ name: CI
 # reasons teaches everyone to ignore red, so the triggers stayed off until the
 # cause was found rather than retried.
 #
-# See docs/ship/MERGE_CHECKLIST.md: CI cannot *block* a merge on this plan, so
-# the checklist is still policy rather than mechanism.
+# See docs/ship/MERGE_CHECKLIST.md. Branch protection on `main` requires the
+# aggregate `All checks` job below, with branches up to date and force pushes
+# refused, so a red gate *blocks* a merge: this is mechanism, not policy.
+#
+# One gap, stated so nobody plans around a constraint that is stricter than it
+# reads: `enforce_admins` is false, so a repository admin can still merge past a
+# failing check.
 on:
   workflow_dispatch:
   pull_request:
