@@ -92,6 +92,13 @@ final class AppEnvironment {
             // every query. Idempotent and a no-op once done.
             _ = try? FaithfullyMigrationPlan.backfillDayKeys(in: persistence.context)
 
+            // Collapse any day that somehow holds two completions, keeping
+            // every reflection written against it. Unreachable through the app
+            // since the completion guard started failing closed, so this is a
+            // repair for a store from an earlier build — idempotent, and a
+            // no-op on a healthy one.
+            _ = try? CompletionReconciler.mergeDuplicateDays(in: persistence)
+
             // Best-effort on purpose, and the only remaining `try?` on a write:
             // this is a repair the user never asked for, so a failure must leave
             // the badge set exactly as it was and let the next launch retry,

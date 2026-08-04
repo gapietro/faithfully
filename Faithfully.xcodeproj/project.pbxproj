@@ -49,6 +49,7 @@
 		5FDB62C1F90B9D3C71E2A10A /* BadgeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74F6284E83B418C2BCBDCCEE /* BadgeService.swift */; };
 		6124F5ABC02556689F0B2880 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A000725D1040D99A3941006 /* NotificationService.swift */; };
 		6630C91E272B2E316260065A /* BadgeGlyphView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06C137F2CA7A309E888C55F4 /* BadgeGlyphView.swift */; };
+		676A36819C36B13F90E83199 /* CompletionReconciler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D752D7AC00847F0FE9939C1C /* CompletionReconciler.swift */; };
 		6A4A18067A422923379A7CBC /* CivilDayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62C89345015AB5CD920581F1 /* CivilDayTests.swift */; };
 		6DD47A1B457B8BDE6093EB97 /* OnboardingUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4633BCA761A773CACA56C30 /* OnboardingUITests.swift */; };
 		70852E2E7553C27061534558 /* CalendarScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C63D9A0C5A395FD4223613F2 /* CalendarScreenView.swift */; };
@@ -58,6 +59,7 @@
 		7D8CBC96E261218BC4224D90 /* AppEnvironmentJournalSyncTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC495F0C5A275895D5A08FE5 /* AppEnvironmentJournalSyncTests.swift */; };
 		7D9F89C437E48AC1623AA223 /* SettingsViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B34247D486F16BF764DFD3 /* SettingsViewModelTests.swift */; };
 		7F61244E1B7B31BEB68C39B4 /* StreakCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 941EED6208C9F0D677530C51 /* StreakCalculator.swift */; };
+		7F7757827B47BD0968C41F9F /* DuplicateDayReconcilerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A674489AC5D1915DD8679480 /* DuplicateDayReconcilerTests.swift */; };
 		81D9B47557B5179BD16FBAAE /* JournalEditorViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C35741C2A9413F4A567D5459 /* JournalEditorViewTests.swift */; };
 		8345F9B7A79910D1E10952E5 /* GracePeriod.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30AB76D9D85A7B9F0E11A96D /* GracePeriod.swift */; };
 		84562F915E82A35FDEC95124 /* ChallengeServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95C2EA6C438066372A013C12 /* ChallengeServiceTests.swift */; };
@@ -205,6 +207,7 @@
 		A0075A584AA1781999757B85 /* FaithfullyUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = FaithfullyUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A27AF0C56105C1392BCAD569 /* JourneyUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JourneyUITests.swift; sourceTree = "<group>"; };
 		A2A318E32A093F40BE1C8A1A /* JourneyViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JourneyViewModelTests.swift; sourceTree = "<group>"; };
+		A674489AC5D1915DD8679480 /* DuplicateDayReconcilerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuplicateDayReconcilerTests.swift; sourceTree = "<group>"; };
 		A9C508395137AC09EFFB592E /* CalendarJournalAddressingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarJournalAddressingTests.swift; sourceTree = "<group>"; };
 		ADDBB06120517520730446F6 /* CalendarViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarViewModel.swift; sourceTree = "<group>"; };
 		ADF03A865185C385DB1479F7 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -223,6 +226,7 @@
 		C7E54205F921B200229CB09A /* SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewModel.swift; sourceTree = "<group>"; };
 		CF9DC3C17A84035CD02B2EB7 /* CivilDay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CivilDay.swift; sourceTree = "<group>"; };
 		D16DFAD3069E84D14E2B8EDA /* JournalTextTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalTextTests.swift; sourceTree = "<group>"; };
+		D752D7AC00847F0FE9939C1C /* CompletionReconciler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletionReconciler.swift; sourceTree = "<group>"; };
 		D7E82070E2328FA2AAD0BDBD /* DateExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateExtensions.swift; sourceTree = "<group>"; };
 		DDB91F756DEEBA088E6AA18F /* BadgeServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeServiceTests.swift; sourceTree = "<group>"; };
 		DE45B6A55566A5C6CD6F61D7 /* BadgeProgress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeProgress.swift; sourceTree = "<group>"; };
@@ -368,6 +372,7 @@
 				277B15BD2E931A0954823060 /* DataProtectionTests.swift */,
 				7847C279C6EF8A4FFB24A8EA /* DateExtensionsTests.swift */,
 				95A6EAF64C9F86F5A9B4196C /* DesignSystemTests.swift */,
+				A674489AC5D1915DD8679480 /* DuplicateDayReconcilerTests.swift */,
 				367AA3DC56C1C6FB78899646 /* GracePeriodTests.swift */,
 				1C84840D14A258F54B26F511 /* IntegrationTests.swift */,
 				C35741C2A9413F4A567D5459 /* JournalEditorViewTests.swift */,
@@ -437,6 +442,7 @@
 			children = (
 				74F6284E83B418C2BCBDCCEE /* BadgeService.swift */,
 				0648FA1C864A0347BDCE9783 /* ChallengeService.swift */,
+				D752D7AC00847F0FE9939C1C /* CompletionReconciler.swift */,
 				4A000725D1040D99A3941006 /* NotificationService.swift */,
 				C59527158BBCAA89515E53D2 /* PersistenceCoordinator.swift */,
 			);
@@ -653,6 +659,7 @@
 				977F4229DA02C9C77DB3A8DB /* DataProtectionTests.swift in Sources */,
 				57857BB8620BE4F59D2F1393 /* DateExtensionsTests.swift in Sources */,
 				C74D9F63A6639139AE0BDE40 /* DesignSystemTests.swift in Sources */,
+				7F7757827B47BD0968C41F9F /* DuplicateDayReconcilerTests.swift in Sources */,
 				3EEF85F3C8562871FED7D891 /* GracePeriodTests.swift in Sources */,
 				1E6A0D7CDF33AB3F382CB7E5 /* IntegrationTests.swift in Sources */,
 				EA75882F167C74CD09D6EAA0 /* JournalEditTests.swift in Sources */,
@@ -712,6 +719,7 @@
 				405E36F1F235143788943FE8 /* ChallengeService.swift in Sources */,
 				E298172F40DA3D09859D6190 /* CivilDay.swift in Sources */,
 				DF5C400285217320264227BE /* CompletedChallenge.swift in Sources */,
+				676A36819C36B13F90E83199 /* CompletionReconciler.swift in Sources */,
 				18FBF7D3CD1BA7EA3006602A /* CompletionResult.swift in Sources */,
 				CC1106BE105A6B1870B335D0 /* CompletionSheetView.swift in Sources */,
 				22A0E9784BFCF03896974965 /* Constants.swift in Sources */,

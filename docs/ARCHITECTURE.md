@@ -65,10 +65,19 @@ results. `transaction` rolls back on failure. A completion and the badges it
 earns commit together — separately, a crash between them left a completion whose
 badge was never awarded.
 
-No `try?` remains on a user mutation. The single exception is launch badge
-reconciliation, which is best-effort by design and says so at the call site.
+No `try?` remains on a user mutation. The exceptions are the launch
+reconciliations — badge awards, the `dayKey` backfill, and duplicate-day repair
+— which are best-effort by design and say so at the call site. They run in that
+order, and the order is load-bearing: unmigrated rows all carry `dayKey == 0`,
+so repairing duplicates before the backfill would read a whole history as one
+repeated day.
 
-`PersistenceFailureTests`
+Read failures stay lenient where they drive display, and strict where they guard
+a write: `isCompleted` degrades to "not completed" for the calendar and
+notification policy, while the completion path refuses outright when it cannot
+tell, because a guess there records a day twice.
+
+`PersistenceFailureTests`, `DuplicateDayReconcilerTests`
 
 ### 5. The journal is never silently altered
 
