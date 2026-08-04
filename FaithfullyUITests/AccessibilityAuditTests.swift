@@ -12,6 +12,11 @@ import XCTest
 /// (#55). It replaces the part of that pass a machine can do reliably, so the
 /// human time goes to the part it cannot: whether the app makes *sense* when
 /// read aloud.
+///
+/// The audit machinery itself times out under simulator stall — `-56`, "Audit
+/// failed to complete in time" — on roughly a third of hosted suite runs. That
+/// is handled by `make accessibility`, which retries a failed test in a fresh
+/// process; see the Makefile for why it is there and not here (#97).
 final class AccessibilityAuditTests: UITestCase {
 
     /// Pinned so the audit renders the same screen on every run.
