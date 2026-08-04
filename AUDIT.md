@@ -38,10 +38,18 @@ Changes to standing accepted risks:
   hit targets, clipping, labels and VoiceOver traps are still judged there. If
   the system element is renamed the exclusion narrows rather than widens — the
   audit gets noisier, never quieter — and a test asserts the band was found.
-- **Hosted CI is no longer manual-only.** The `pull_request` and `push` triggers
-  are restored. This removes the "no mandatory CI" cap's *first* half; whether
-  it is removed entirely depends on branch protection, recorded in
-  `docs/ship/MERGE_CHECKLIST.md`.
+- **Hosted CI is no longer manual-only, and merge enforcement is no longer
+  policy alone.** The `pull_request` and `push` triggers are restored, and
+  branch protection on `main` now requires the aggregate `All checks` job with
+  branches up to date and force pushes refused — verified by reading the
+  protection API back, not by the call returning 200.
+
+  This removes the **"no mandatory CI" cap**, with one qualification that keeps
+  the removal honest: `enforce_admins` is false, so a repository admin can still
+  merge past a failing check, and on a solo-maintained repository that is most
+  merges. The gate is mechanism for everyone else and for an admin's
+  mistakes-by-default; it is not absolute. `docs/ship/MERGE_CHECKLIST.md` carries
+  the detail and the trade-off in setting `enforce_admins=true`.
 
 New standing cost, stated because it is a real one: the audit now runs against a
 **pinned date**, so it sees one day's copy rather than a rotating sample. A

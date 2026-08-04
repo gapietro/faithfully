@@ -15,9 +15,19 @@ summarised in the pull request.** This rule stands even with CI running: a
 hosted run and a local run have caught different things, and #89 is the case in
 point — three tests that passed locally and failed on the runner.
 
-Whether CI can *block* a merge depends on branch protection being set; see
-[Turning the triggers on](#turning-the-triggers-on). Where it is not, the rule
-above is policy and depends entirely on being followed.
+**Branch protection is set (2026-08-03).** `main` requires the aggregate
+**`All checks`** job, requires branches to be up to date before merging, and
+refuses force pushes. A red gate now *blocks* a merge rather than merely
+embarrassing one, which is the first time that has been true in this
+repository.
+
+With one exception, stated because the difference matters: `enforce_admins` is
+**false**, so a repository admin can still merge past a failing check. On a
+solo-maintained repository that is most merges. The mechanism is real for
+anyone else and for the admin's own mistakes-by-default, but it is not
+absolute — treat the rule above as still load-bearing. Setting
+`enforce_admins=true` would close the gap, at the cost of no manual override
+when CI itself is broken.
 
 Every check lives in the `Makefile` and runs identically on a laptop and in CI:
 
@@ -63,10 +73,10 @@ the second: #89 for three UI tests, #90 for two unit tests that failed only
 after 21:00 local — and on a UTC runner, that is a gate red for three hours
 every day.
 
-**2. Then require the check.** Require the single **`All checks`** job. It
-aggregates the others, so adding a check later does not require editing the
-protection rule to match — a rule that lists jobs individually silently stops
-covering anything added afterwards.
+**2. Then require the check.** Done 2026-08-03. Requires the single
+**`All checks`** job, which aggregates the others — so adding a check later does
+not require editing the protection rule to match. A rule that lists jobs
+individually silently stops covering anything added afterwards.
 
 ```sh
 gh api -X PUT repos/:owner/:repo/branches/main/protection \
