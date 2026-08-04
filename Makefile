@@ -80,17 +80,51 @@ test:
 coverage:
 	@./scripts/check_coverage.sh $(RESULT_BUNDLE) $(COVERAGE_MIN)
 
+# The audit class is skipped here because `accessibility` below owns it. Without
+# the skip it ran twice per `make ci` — the same ten tests, same pinned date,
+# same scenarios — costing about four minutes and doubling the exposure to the
+# flake handled below (#98).
 .PHONY: ui-test
 ui-test:
 	xcodebuild -project $(PROJECT) -scheme $(SCHEME) \
 		-destination '$(DESTINATION)' \
-		-only-testing:FaithfullyUITests test
+		-only-testing:FaithfullyUITests \
+		-skip-testing:FaithfullyUITests/AccessibilityAuditTests test
 
+# Retries a failed audit test once, in a fresh process.
+#
+# The audit machinery reports `-56 "Audit failed to complete in time"` when the
+# simulator stalls mid-audit. Measured over sixteen hosted `macos-26` suite
+# runs, that happens on roughly a third of them, and it is not a statement
+# about any screen: the audit's own duration (separated from launch and
+# navigation) runs 2.0s median on onboarding to 7.8s on the calendar day
+# detail, a 23.8s audit passed while a ~19s one failed, and the screen it lands
+# on varies. It is an inner request going unanswered, so the screen that makes
+# the most requests tends to be hit first (#97).
+#
+# Neither of the obvious fixes exists. `performAccessibilityAudit` takes audit
+# types and an issue handler and nothing else — there is no timeout to raise —
+# and it is declared on `XCUIApplication` only, so the audit cannot be scoped to
+# a subtree to walk less.
+#
+# Retrying *inside* the test was tried first and made things worse: of three
+# real timeouts across ten runs, one was absorbed, one timed out again after
+# 133s, and one killed the test runner so the test reported neither pass nor
+# fail. The stall outlives the attempt, so re-asking the same wedged automation
+# session is the wrong move. `-test-repetition-relaunch-enabled YES` is the part
+# that matters here: the retry gets a new process and a fresh app launch, which
+# is the only thing that escapes a stalled session.
+#
+# This does not soften the gate. A real accessibility finding is deterministic,
+# so it fails both iterations and still goes red — it just takes twice as long
+# to say so. `-test-iterations 2` bounds it to exactly one retry.
 .PHONY: accessibility
 accessibility:
 	xcodebuild -project $(PROJECT) -scheme $(SCHEME) \
 		-destination '$(DESTINATION)' \
-		-only-testing:FaithfullyUITests/AccessibilityAuditTests test
+		-only-testing:FaithfullyUITests/AccessibilityAuditTests \
+		-retry-tests-on-failure -test-iterations 2 \
+		-test-repetition-relaunch-enabled YES test
 
 .PHONY: analyze
 analyze:
