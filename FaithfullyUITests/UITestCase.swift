@@ -15,6 +15,18 @@ class UITestCase: XCTestCase {
 
     var app: XCUIApplication!
 
+    /// Pins the app's clock for every `launch` in this test case.
+    ///
+    /// Left nil, the app runs on the wall clock — which is what the calendar and
+    /// grace-window tests want, since they assert against real dates. A subclass
+    /// that measures *layout* sets this, because the daily challenge rotates and
+    /// its text length moves everything below it (#89).
+    var fixedDate: Date?
+
+    /// Extra launch arguments a subclass wants on every launch, such as a
+    /// Dynamic Type override.
+    var extraLaunchArguments: [String] = []
+
     override func setUp() {
         continueAfterFailure = false
     }
@@ -25,9 +37,37 @@ class UITestCase: XCTestCase {
         app.launchArguments = [
             "-hasCompletedOnboarding", onboardingComplete ? "YES" : "NO",
             "-FaithfullyUITestScenario", scenario.rawValue
-        ]
+        ] + fixedDateArguments + extraLaunchArguments
         app.launch()
         return app
+    }
+
+    private var fixedDateArguments: [String] {
+        guard let fixedDate else { return [] }
+        let formatter = ISO8601DateFormatter()
+        return ["-FaithfullyUITestFixedDate", formatter.string(from: fixedDate)]
+    }
+
+    /// Waits for an element to *go away*, which `exists` cannot do.
+    ///
+    /// `exists` samples once, immediately. Used straight after an action that
+    /// takes effect asynchronously — typing into a search field, say — it reads
+    /// the state before the change lands and passes on timing rather than on
+    /// behaviour. That is what made `testClearingTheSearchRestoresEveryEntry`
+    /// flake on a slower runner (#89).
+    func waitForAbsence(
+        of element: XCUIElement,
+        timeout: TimeInterval = 5,
+        _ message: String = "",
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        let gone = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "exists == false"), object: element)
+        let result = XCTWaiter().wait(for: [gone], timeout: timeout)
+        XCTAssertEqual(result, .completed,
+                       "\(message) (element was still present after \(timeout)s)",
+                       file: file, line: line)
     }
 
     /// Launches as if the on-disk store could not be opened, so the app is on
@@ -39,7 +79,7 @@ class UITestCase: XCTestCase {
             "-hasCompletedOnboarding", "YES",
             "-FaithfullyUITestScenario", scenario.rawValue,
             "-FaithfullyUITestForceStoreFailure"
-        ]
+        ] + fixedDateArguments + extraLaunchArguments
         app.launch()
         return app
     }
@@ -50,7 +90,11 @@ class UITestCase: XCTestCase {
     func relaunchPreservingState() -> XCUIApplication {
         app.terminate()
         app = XCUIApplication()
+        // Carries the pinned clock and any launch overrides across the relaunch:
+        // a test that fixed the date is asserting about a specific day, and the
+        // second launch has to land on the same one.
         app.launchArguments = ["-hasCompletedOnboarding", "YES"]
+            + fixedDateArguments + extraLaunchArguments
         app.launch()
         return app
     }
