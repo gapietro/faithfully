@@ -30,13 +30,13 @@ jobs:
     runs-on: macos-26
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Select Xcode
         run: echo "DEVELOPER_DIR=$(./scripts/select_xcode.sh)" >> "$GITHUB_ENV"
 
       - name: Cache pinned tools
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: .tools
           key: tools-${{ runner.os }}-${{ hashFiles('scripts/versions.env') }}
@@ -51,7 +51,7 @@ jobs:
     runs-on: macos-26
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Select Xcode
         run: echo "DEVELOPER_DIR=$(./scripts/select_xcode.sh)" >> "$GITHUB_ENV"
@@ -60,7 +60,7 @@ jobs:
         run: ./scripts/resolve_simulator.sh
 
       - name: Cache pinned tools
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: .tools
           key: tools-${{ runner.os }}-${{ hashFiles('scripts/versions.env') }}
@@ -73,7 +73,7 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-results
           path: build/TestResults.xcresult
@@ -84,13 +84,13 @@ jobs:
     runs-on: macos-26
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Select Xcode
         run: echo "DEVELOPER_DIR=$(./scripts/select_xcode.sh)" >> "$GITHUB_ENV"
 
       - name: Cache pinned tools
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: .tools
           key: tools-${{ runner.os }}-${{ hashFiles('scripts/versions.env') }}
@@ -103,7 +103,7 @@ jobs:
       # the element hierarchy the bundle carries.
       - name: Upload UI test results
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ui-test-results
           path: |
@@ -115,13 +115,13 @@ jobs:
     runs-on: macos-26
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Select Xcode
         run: echo "DEVELOPER_DIR=$(./scripts/select_xcode.sh)" >> "$GITHUB_ENV"
 
       - name: Cache pinned tools
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: .tools
           key: tools-${{ runner.os }}-${{ hashFiles('scripts/versions.env') }}
