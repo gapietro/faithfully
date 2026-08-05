@@ -21,8 +21,10 @@ final class ChallengeService: ChallengeServiceProtocol {
     private let challenges: [DailyChallenge]
     private let scheduler: ChallengeScheduler
     private let badgeService: BadgeServiceProtocol
+    /// Enrollment boundary only — never feeds the schedule pairing (CLEAN-001).
     private let userStartDate: Date
     private let dateProvider: () -> Date
+    private let calendar: Calendar
 
     /// Called after a completion is persisted, with the day that was completed
     /// and any badges the completion earned. The composition root uses this to
@@ -35,10 +37,11 @@ final class ChallengeService: ChallengeServiceProtocol {
         challenges: [DailyChallenge],
         badgeService: BadgeServiceProtocol,
         userStartDate: Date = .now,
-        dateProvider: @escaping () -> Date = { .now }
+        dateProvider: @escaping () -> Date = { .now },
+        calendar: Calendar = .current
     ) throws {
         // Fail closed: never build a scheduler over an empty non-giving pool.
-        guard let scheduler = ChallengeScheduler(challenges: challenges) else {
+        guard let scheduler = ChallengeScheduler(challenges: challenges, calendar: calendar) else {
             throw ChallengeServiceError.emptyChallengePool
         }
         self.modelContext = modelContext
@@ -47,6 +50,7 @@ final class ChallengeService: ChallengeServiceProtocol {
         self.badgeService = badgeService
         self.userStartDate = userStartDate
         self.dateProvider = dateProvider
+        self.calendar = calendar
     }
 
     func loadChallenges() -> [DailyChallenge] {
@@ -54,10 +58,10 @@ final class ChallengeService: ChallengeServiceProtocol {
     }
 
     func challengeForDate(_ date: Date) -> DailyChallenge {
-        // Year rotation rule: the offset is the number of whole years between the
-        // user's start date and the target date (PRD §11.4, SPARC getYearOffset),
-        // so a returning user's Year 2 pairs dates with different challenges than Year 1.
-        let offset = ChallengeScheduler.yearOffset(from: userStartDate, to: date)
+        // Global rotation rule (CLEAN-001): the offset counts calendar years from
+        // the fixed schedule epoch, so everyone sees the same challenge on the
+        // same civil date, and the pairing rotates deterministically each year.
+        let offset = ChallengeScheduler.globalYearOffset(for: date, calendar: calendar)
         return scheduler.challengeForDate(date, yearOffset: offset)
     }
 

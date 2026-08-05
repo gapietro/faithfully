@@ -73,6 +73,25 @@ final class ChallengeSchedulerTests: XCTestCase {
                          "Non-first-Saturday should not return giving category")
     }
 
+    // MARK: - Global rotation (CLEAN-001)
+
+    func testGlobalYearOffsetIsZeroInEpochYear() {
+        XCTAssertEqual(ChallengeScheduler.globalYearOffset(for: Date.from(year: 2025, month: 6, day: 15)), 0)
+    }
+
+    func testGlobalYearOffsetCountsCalendarYearsFromEpoch() {
+        XCTAssertEqual(ChallengeScheduler.globalYearOffset(for: Date.from(year: 2026, month: 1, day: 1)), 1)
+        XCTAssertEqual(ChallengeScheduler.globalYearOffset(for: Date.from(year: 2027, month: 12, day: 31)), 2)
+        XCTAssertEqual(ChallengeScheduler.globalYearOffset(for: Date.from(year: 2024, month: 6, day: 15)), -1)
+    }
+
+    func testGlobalYearOffsetChangesAtCalendarYearBoundaryNotEnrollmentAnniversary() {
+        let dec31 = Date.from(year: 2026, month: 12, day: 31)
+        let jan1 = Date.from(year: 2027, month: 1, day: 1)
+        XCTAssertEqual(ChallengeScheduler.globalYearOffset(for: dec31), 1)
+        XCTAssertEqual(ChallengeScheduler.globalYearOffset(for: jan1), 2)
+    }
+
     func testYear1AndYear2ReturnDifferentChallengesForSameCalendarDate() {
         let date = Date.from(year: 2026, month: 6, day: 15)
         let year1Challenge = scheduler.challengeForDate(date, yearOffset: 0)

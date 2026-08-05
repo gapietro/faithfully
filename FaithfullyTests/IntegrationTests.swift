@@ -153,11 +153,10 @@ final class IntegrationTests: XCTestCase {
         let day1 = Date.from(year: 2026, month: 1, day: 1)
         let day366 = Date.from(year: 2027, month: 1, day: 1) // Next year's day 1
 
+        // Under the global rotation (CLEAN-001), the same day-of-year in the
+        // next calendar year must resolve to a different challenge.
         let challenge1 = challengeService.challengeForDate(day1)
-
-        // Year 2 should use offset = 1
-        let scheduler = try XCTUnwrap(ChallengeScheduler(challenges: challenges))
-        let challengeYear2 = scheduler.challengeForDate(day366, yearOffset: 1)
+        let challengeYear2 = challengeService.challengeForDate(day366)
 
         XCTAssertNotEqual(challenge1.id, challengeYear2.id,
                          "Day 1 of year 2 should show a different challenge than day 1 of year 1")
