@@ -1,5 +1,72 @@
 # Senior-Grade Ledger
 
+## Measurement — 2026-08-04 (#99): one sample, and a fix aimed at a cost that is not there
+
+Mode: measurement — no code changed.
+Score: not re-scored.
+Closed: #99, without a fix. Filed: #102, found while measuring.
+
+Fourth in the #89/#90/#97 family, and the first one to close by *not* being
+fixed. #99 proposed pre-booting the simulator in CI so the first UI test of a
+job would stop paying for the boot and stop intermittently failing to launch.
+Reading every hosted sample that exists — 26 measurement jobs across three runs,
+plus roughly 20 real CI runs — took all three of its premises apart.
+
+- **The mechanism is real, and correctly separated from #97.**
+  `DTServiceHub - Error resuming pid 5595 'Failed to send signal 19 to process
+  5595: 3'`. Errno 3 is `ESRCH`, no such process: the launcher `SIGSTOP`s the
+  freshly spawned app to attach, and by the time it tries to resume it, the
+  process is gone. Nothing about the audit is involved, and no app code has run
+  at that point.
+
+- **It has been seen once, not once in six.** One occurrence in 26 measurement
+  jobs and **zero** in ~20 real CI runs — call it 900 app launches without a
+  recurrence. The 1-in-6 figure in the issue generalised from the only
+  six-sample run that existed when it was written; the two ten-sample runs that
+  followed contain no launch failure at all.
+
+- **The one occurrence happened in a configuration that no longer exists.** At
+  the commit that produced it (`08cca666`), `make accessibility` had no retry.
+  It now runs `-retry-tests-on-failure -test-iterations 2
+  -test-repetition-relaunch-enabled YES` (#97), and a fresh-process relaunch is
+  precisely what absorbs a launch timeout — as it did for a later `-56` failure,
+  which failed at 81.2s and passed at 20.7s on the second attempt.
+
+- **"It lands on whichever test runs first" is not supported.** In the very job
+  that produced #99, the first test was not even the slowest: last-place
+  `testSettingsIsAccessible` took 89.9s against the first test's 76.9s, and the
+  second took 56.6s. That runner was slow throughout. Across the family, the
+  sibling `-56` failures land at positions 1, 2, 5 and 6.
+
+- **The premise behind the proposed fix is inverted.** The first test of an
+  invocation does carry a real premium, but it is not the simulator booting. In
+  a green CI job, `make accessibility` runs *second*, on a simulator warm from
+  fifteen minutes of UI tests, and its first test cost **52.5s** — more than the
+  **33.7s** the same test costs cold in a standalone job. The premium is per
+  `xcodebuild` invocation (new runner process, app install, automation session),
+  not per boot. Pre-booting would move nothing, because the simulator is already
+  booted when the cost is paid.
+
+So there is no fix here that is not a retry, and the place the failure was
+actually seen already has one.
+
+Changes to standing accepted risks: none.
+
+**`make ui-test` still carries no retry, and that stays deliberate.** It is the
+one step with no protection, and the launch failure has never been observed
+there. Extending #97's retry to it would not inherit #97's reasoning: the audit
+retry is defensible because the thing being retried is not a property of the
+app, whereas a UI-test retry absorbs app defects too. The measurement produced
+the argument for leaving it alone — `JournalEditUITests
+testOverLimitTextBlocksSaving` went red on `main` in run 30909950872 because a
+long press failed to raise the edit menu and an `if waitForExistence` swallowed
+it, so the assertion ran against unpasted text and accused the app of allowing
+an over-limit save. A blanket retry would have hidden it. Filed as #102.
+
+If the launch failure reappears in `make ui-test`, the numbers above are the
+baseline to compare against, and the decision to revisit is the retry — not the
+pre-boot.
+
 ## Remediation — 2026-08-04 (#97): the audit's timeout is the runner's, not the screen's
 
 Mode: fix
