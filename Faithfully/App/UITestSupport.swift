@@ -47,6 +47,10 @@ enum UITestSupport {
         /// Enrolled 90 days ago, completions ending three days ago, so
         /// yesterday sits inside the grace window and is recoverable.
         case graceAvailable
+        /// As `seeded`, except yesterday's reflection is exactly
+        /// `Constants.maxJournalLength` characters, so an editor opened on it
+        /// sits on the boundary and one keystroke crosses it.
+        case atLimitJournal
     }
 
     static var requestedScenario: Scenario? {
@@ -97,6 +101,28 @@ enum UITestSupport {
     static let searchableJournalText = "seeded-journal-marker-alpha"
     static let otherJournalText = "seeded-journal-marker-beta"
 
+    /// A reflection of exactly `Constants.maxJournalLength` characters, seeded
+    /// so a UI test can put the editor one keystroke from the limit.
+    ///
+    /// The test used to get over the limit by pasting: 2,001 keystrokes take
+    /// minutes, so it long-pressed the editor and tapped `Paste`. A long press
+    /// on an editable text view raises the edit menu only sometimes, and when it
+    /// did not, the paste was skipped and the assertion ran against the seeded,
+    /// under-limit text — reporting that the app allowed an over-limit save
+    /// (#102). Seeding the boundary is the same answer every other scenario
+    /// here already gives, and it leaves the test one ordinary character to
+    /// type, which is the transition a writer actually makes.
+    static let atLimitJournalText = journalText(ofLength: Constants.maxJournalLength)
+
+    /// Ordinary words, so the text wraps the way real writing does, and no
+    /// trailing whitespace, so the trimmed length the limit is measured against
+    /// equals the raw length the counter displays.
+    private static func journalText(ofLength length: Int) -> String {
+        let unit = "reflection "
+        let padded = String(String(repeating: unit, count: length / unit.count + 1).prefix(length))
+        return padded.hasSuffix(" ") ? String(padded.dropLast()) + "x" : padded
+    }
+
     static func apply(_ scenario: Scenario, in context: ModelContext, today: Date = .now) {
         wipe(context)
 
@@ -113,7 +139,7 @@ enum UITestSupport {
         case .fresh:
             enrollment = today
             completedOffsets = []
-        case .seeded:
+        case .seeded, .atLimitJournal:
             enrollment = today.addingDays(-90)
             completedOffsets = Array(1...40)
         case .completedToday:
@@ -133,7 +159,7 @@ enum UITestSupport {
             let daily = challenge(for: date)
             let journal: String?
             switch index {
-            case 0: journal = searchableJournalText
+            case 0: journal = scenario == .atLimitJournal ? atLimitJournalText : searchableJournalText
             case 1: journal = otherJournalText
             default: journal = index % 5 == 0 ? "routine reflection \(index)" : nil
             }
