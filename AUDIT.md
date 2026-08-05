@@ -1,5 +1,101 @@
 # Senior-Grade Ledger
 
+## Remediation — 2026-08-04 (#102): a test that accused the app of its own skipped setup
+
+Mode: fix
+Score: not re-scored — a remediation pass, not a grade pass.
+Fixed: #102 (`testOverLimitTextBlocksSaving` reports an app bug when the paste
+menu never appears)
+Accepted risks: none added.
+
+Fifth in the #89/#90/#97/#99 family, and the only one so far where the gate
+went red *pointing at production code that was correct*. The rest were
+environmental; this one was an accusation.
+
+`JournalEditUITests.testOverLimitTextBlocksSaving` needed 2,001 characters in
+the editor. Typing them takes minutes, so it pasted: long-press the text view,
+wait for the `Paste` menu item, tap it. A long press on an editable text view
+raises the edit menu only sometimes — it also places a caret and shows the
+loupe — and the wait was written as `if paste.waitForExistence(timeout: 5) {
+paste.tap() }`. When the menu did not appear the paste was skipped, the editor
+still held the seeded under-limit entry, Save was correctly enabled, and the
+assertion reported that **the app allows an over-limit save**.
+
+This is the CLEAN-008 vacuous-assertion family (#48) in a shape that family did
+not cover. Not an assertion that cannot fail — an assertion that runs against
+a *precondition that silently did not happen*. The mechanism generalises: any
+`if <setup succeeded> { ... }` followed by an unconditional assertion converts
+missing setup into a claim about the code under test.
+
+Two defects, both fixed:
+
+- **The setup could be skipped.** The gesture is gone. The over-limit state is
+  now seeded — `UITestSupport.Scenario.atLimitJournal` gives yesterday's
+  reflection exactly `Constants.maxJournalLength` characters — and the test
+  types one ordinary character to cross the boundary. Every step is asserted:
+  the editor must open reading `2,000 of 2,000` before anything is claimed
+  about Save. Deterministic seeding is what every other scenario here already
+  does; nothing is left to a gesture the system may interpret three ways.
+
+- **`isEnabled` sampled once, immediately.** The same defect `waitForAbsence`
+  was introduced for in #89: read straight after an action, it can observe the
+  value from before SwiftUI's state update landed. `UITestCase` gains
+  `wait(for:toBeEnabled:)` and `waitForValue(_:equals:)`, both predicate
+  expectations, and both reporting the actual value on failure.
+
+The test now proves the rule in **both** directions — exactly at the limit is
+saveable, one character over is not. The first half is not decoration: without
+it the test still passes against a Save button that is disabled unconditionally.
+
+Verified by mutation, three ways, each producing a message that names the right
+culprit:
+
+| Mutation | Result |
+|---|---|
+| `.disabled(isOverLimit)` → `.disabled(false)` | red: *Saving must be blocked while the text is over the limit (still enabled after 5.0s)* |
+| `.disabled(isOverLimit)` → `.disabled(true)` | red: *Text exactly at the limit must be saveable (still disabled after 5.0s)* |
+| seeding silently reverted to the ordinary entry | red: *The editor must open holding exactly the limit (actual: 27 of 2,000)* |
+
+The third is the point of the issue. Where the old test blamed the app for its
+own missing setup, the new one says which of its own preconditions failed and
+what it found instead.
+
+Two incidental notes:
+
+- **The editor is opened from the calendar, not the Journey timeline.** The
+  timeline renders a reflection in full, so a 2,000-character one is a row
+  taller than the screen, and the centre point a tap is aimed at cannot be
+  scrolled into view. The day detail's Edit button stays small and identified
+  however long the text above it is.
+- **The counter's accessibility value is locale-formatted** — `2,001 of 2,000`,
+  not `2001 of 2000`, because SwiftUI interpolates integers through the current
+  locale. The expectation is now built the same way rather than hard-coding one
+  locale's separator.
+
+Runtime: 19.4s, down from 24.5s — the five seconds are the paste wait that no
+longer exists.
+
+**The rest of `FaithfullyUITests` was audited for the same shape. No other site
+has it.** Five conditional waits remain, in two groups, and both are correct:
+
+- `UITestCase.revealDayDetail` swipes up if the day-detail panel is not already
+  visible. It cannot assert what it revealed, because "revealed" differs by day
+  type — a completed day shows `calendarDetailTitle`, a pre-enrollment day shows
+  `preEnrollmentNotice` instead. Every caller states its own precondition
+  afterwards, which is the correct division: the helper reveals, the test
+  asserts.
+- `ScreenshotStoryboardTests` is a capture tool for App Store art, not a gate.
+  Its conditionals are deliberately soft and commented as such; a skipped step
+  there yields a screenshot a human reviews, never a claim about behaviour.
+
+Changes to standing accepted risks: none. **`make ui-test` still carries no
+retry, and this is the second entry in a row arguing it should stay that way.**
+#99 closed with the observation that a blanket retry would have hidden this
+defect; having now read it, that holds — the failure was reproducible in the
+sense that mattered, and a retry would have converted a real defect in the
+suite guarding the journal character limit into an occasional flaky-looking
+green.
+
 ## Measurement — 2026-08-04 (#99): one sample, and a fix aimed at a cost that is not there
 
 Mode: measurement — no code changed.

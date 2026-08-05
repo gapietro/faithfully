@@ -11,6 +11,7 @@ class UITestCase: XCTestCase {
         case seeded
         case completedToday
         case graceAvailable
+        case atLimitJournal
     }
 
     var app: XCUIApplication!
@@ -67,6 +68,46 @@ class UITestCase: XCTestCase {
         let result = XCTWaiter().wait(for: [gone], timeout: timeout)
         XCTAssertEqual(result, .completed,
                        "\(message) (element was still present after \(timeout)s)",
+                       file: file, line: line)
+    }
+
+    /// Waits for a control to reach an enabled state, which `isEnabled` cannot do.
+    ///
+    /// `isEnabled` samples once, immediately — the same defect `waitForAbsence`
+    /// exists for. Read straight after an action, it can observe the value from
+    /// before SwiftUI's state update landed, so the test passes or fails on
+    /// timing rather than on behaviour (#102).
+    func wait(
+        for element: XCUIElement,
+        toBeEnabled enabled: Bool,
+        _ message: String = "",
+        timeout: TimeInterval = 5,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        let expectation = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "isEnabled == %@", NSNumber(value: enabled)), object: element)
+        let result = XCTWaiter().wait(for: [expectation], timeout: timeout)
+        XCTAssertEqual(result, .completed,
+                       "\(message) (still \(element.isEnabled ? "enabled" : "disabled") after \(timeout)s)",
+                       file: file, line: line)
+    }
+
+    /// Waits for an element's value to settle on `expected`, for the same reason
+    /// as above: `value` read immediately after an action can be the old one.
+    func waitForValue(
+        _ element: XCUIElement,
+        equals expected: String,
+        _ message: String = "",
+        timeout: TimeInterval = 5,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        let expectation = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "value == %@", expected), object: element)
+        let result = XCTWaiter().wait(for: [expectation], timeout: timeout)
+        XCTAssertEqual(result, .completed,
+                       "\(message) (actual: \(element.value.map { "\($0)" } ?? "nil"))",
                        file: file, line: line)
     }
 
