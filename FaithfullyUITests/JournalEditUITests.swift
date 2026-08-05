@@ -1,5 +1,4 @@
 import XCTest
-import UIKit
 
 /// Mirrors `Constants.maxJournalLength` (2000). UI tests run out of process and
 /// cannot import the app module, so the value is restated. `JournalTextTests`
@@ -9,6 +8,16 @@ private let maxJournalLengthForUITests = 2000
 final class JournalEditUITests: UITestCase {
 
     private let alpha = "seeded-journal-marker-alpha"
+
+    /// The counter's accessibility value for a given length.
+    ///
+    /// The app builds it with SwiftUI string interpolation, which formats
+    /// integers for the current locale — the counter reads "2,001 of 2,000",
+    /// not "2001 of 2000". Formatting the expectation the same way keeps the
+    /// test agreeing with the app rather than with one locale's separator.
+    private func counterValue(forCharacters count: Int) -> String {
+        "\(count.formatted()) of \(maxJournalLengthForUITests.formatted())"
+    }
 
     private func journalEntry(containing marker: String) -> XCUIElement {
         app.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", marker)).firstMatch
@@ -21,6 +30,29 @@ final class JournalEditUITests: UITestCase {
         entry.tap()
         XCTAssertTrue(app.textViews["journalEditor"].waitForExistence(timeout: 5),
                       "Tapping an entry must open the editor")
+    }
+
+    /// Opens yesterday's reflection through the calendar rather than the Journey
+    /// timeline.
+    ///
+    /// The timeline renders a reflection in full, so a seeded 2,000-character
+    /// one produces a row taller than the screen, whose centre — the point a tap
+    /// is aimed at — cannot be scrolled into view. The day detail's Edit button
+    /// stays a small, identified control however long the text above it is.
+    private func openEditorForYesterdayFromCalendar() {
+        openTab("Calendar")
+        navigateToMonth(containing: targetDate(daysAgo: 1))
+        let day = dayButton(dayNumber(daysAgo: 1))
+        XCTAssertTrue(day.waitForExistence(timeout: 10))
+        day.tap()
+        revealDayDetail()
+
+        let edit = app.buttons["editJournalButton"]
+        XCTAssertTrue(edit.waitForExistence(timeout: 5),
+                      "A completed day must offer to edit its reflection")
+        edit.tap()
+        XCTAssertTrue(app.textViews["journalEditor"].waitForExistence(timeout: 5),
+                      "Tapping Edit reflection must open the editor")
     }
 
     func testEditingAnEntryPersistsAcrossRelaunch() {
@@ -133,21 +165,30 @@ final class JournalEditUITests: UITestCase {
     }
 
     func testOverLimitTextBlocksSaving() {
-        launch(.seeded)
-        openEditorForFirstEntry()
+        launch(.atLimitJournal)
+        openEditorForYesterdayFromCalendar()
 
+        // Every step of the crossing is asserted rather than assumed. The
+        // version that pasted 2,001 characters stepped over a paste that had
+        // not happened — the edit menu never appeared — and then blamed the app
+        // for the under-limit text it was left looking at (#102).
         let counter = app.staticTexts["journalCharacterCount"]
         XCTAssertTrue(counter.waitForExistence(timeout: 5))
+        waitForValue(counter, equals: counterValue(forCharacters: maxJournalLengthForUITests),
+                     "The editor must open holding exactly the limit")
 
-        // Paste rather than type: 2,001 keystrokes takes minutes.
+        // Exactly at the limit is allowed. Without this half the test would
+        // still pass against a Save button that is disabled unconditionally.
+        let save = app.buttons["saveJournalButton"]
+        wait(for: save, toBeEnabled: true,
+             "Text exactly at the limit must be saveable")
+
         let editor = app.textViews["journalEditor"]
         editor.tap()
-        UIPasteboard.general.string = String(repeating: "a", count: maxJournalLengthForUITests + 1)
-        editor.press(forDuration: 1.2)
-        let paste = app.menuItems["Paste"]
-        if paste.waitForExistence(timeout: 5) { paste.tap() }
-
-        XCTAssertFalse(app.buttons["saveJournalButton"].isEnabled,
-                       "Saving must be blocked while the text is over the limit")
+        editor.typeText("x")
+        waitForValue(counter, equals: counterValue(forCharacters: maxJournalLengthForUITests + 1),
+                     "Typing one more character must put the editor over the limit")
+        wait(for: save, toBeEnabled: false,
+             "Saving must be blocked while the text is over the limit")
     }
 }
