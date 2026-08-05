@@ -16,8 +16,16 @@ final class CalendarViewModelTests: XCTestCase {
         badgeService = BadgeService(modelContext: context)
     }
 
-    private func makeService(today: Date) -> ChallengeService {
-        try! ChallengeService(modelContext: context, challenges: challenges, badgeService: badgeService, dateProvider: { today })
+    /// Enrollment defaults to well before every date these tests touch, so
+    /// status assertions exercise grace/missed logic, not the CLEAN-002 boundary.
+    private func makeService(
+        today: Date,
+        enrolledSince: Date = Date.from(year: 2025, month: 1, day: 1)
+    ) -> ChallengeService {
+        try! ChallengeService(
+            modelContext: context, challenges: challenges, badgeService: badgeService,
+            userStartDate: enrolledSince, dateProvider: { today }
+        )
     }
 
     func testCalendarDaysContainsCorrectNumberOfDaysForCurrentMonth() {
@@ -250,6 +258,48 @@ final class CalendarViewModelTests: XCTestCase {
 
         vm.refresh(for: Date.from(year: 2026, month: 5, day: 1))
         XCTAssertNil(vm.selectedDay)
+    }
+
+    // MARK: - Enrollment boundary (CLEAN-002)
+
+    func testPreEnrollmentDaysShowUnavailableNotMissed() {
+        let today = Date.from(year: 2026, month: 4, day: 15)
+        let enrollment = Date.from(year: 2026, month: 4, day: 10)
+        let service = makeService(today: today, enrolledSince: enrollment)
+        let vm = CalendarViewModel(challengeService: service, today: today)
+
+        func status(_ day: Int) -> CalendarDayStatus? {
+            vm.calendarDays.first { Calendar.current.component(.day, from: $0.date) == day }?.status
+        }
+
+        XCTAssertEqual(status(9), .unavailable,
+                       "The day before enrollment was never missable")
+        XCTAssertEqual(status(1), .unavailable)
+        XCTAssertEqual(status(10), .missed,
+                       "The enrollment day itself is part of the journey (outside grace here)")
+        XCTAssertEqual(status(13), .missedRecoverable,
+                       "Post-enrollment grace behavior is unchanged")
+        XCTAssertEqual(status(15), .today)
+    }
+
+    func testGracePathCannotCompletePreEnrollmentDay() throws {
+        // Enrolled on the 14th: the 13th sits inside the raw 3-day grace window
+        // but predates the journey, so grace must not resurrect it.
+        let today = Date.from(year: 2026, month: 4, day: 15)
+        let enrollment = Date.from(year: 2026, month: 4, day: 14)
+        let service = makeService(today: today, enrolledSince: enrollment)
+        let vm = CalendarViewModel(challengeService: service, today: today)
+
+        let day13 = try XCTUnwrap(vm.calendarDays.first {
+            Calendar.current.component(.day, from: $0.date) == 13
+        })
+        XCTAssertEqual(day13.status, .unavailable)
+
+        vm.completeGracePeriod(day13, journal: nil)
+
+        let after = vm.calendarDays.first { Calendar.current.component(.day, from: $0.date) == 13 }
+        XCTAssertEqual(after?.status, .unavailable, "Completion must be rejected, not recorded")
+        XCTAssertEqual(try context.fetch(FetchDescriptor<CompletedChallenge>()).count, 0)
     }
 
     func testCompleteGracePeriodCallsChallengeServiceAndUpdatesCalendar() throws {

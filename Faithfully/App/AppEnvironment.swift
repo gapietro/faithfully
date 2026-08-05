@@ -77,12 +77,14 @@ final class AppEnvironment {
 
     /// Fetches the existing profile or creates it exactly once per install.
     /// Every consumer (tabs, settings, onboarding) sees this same profile.
+    /// Enrollment is stamped from the injected clock so the enrollment boundary
+    /// (CLEAN-002) agrees with the rest of the app's notion of "today".
     private func bootstrapProfile() -> UserProfile {
         let descriptor = FetchDescriptor<UserProfile>()
         if let existing = ((try? modelContext.fetch(descriptor)) ?? []).first {
             return existing
         }
-        let profile = UserProfile()
+        let profile = UserProfile(startDate: dateProvider())
         modelContext.insert(profile)
         try? modelContext.save()
         return profile

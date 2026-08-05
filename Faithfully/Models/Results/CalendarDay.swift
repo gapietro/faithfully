@@ -6,6 +6,9 @@ enum CalendarDayStatus: Equatable {
     case missedRecoverable
     case future
     case today
+    /// Pre-enrollment: the day predates the user's journey and was never
+    /// missable, so it renders as not-applicable rather than missed (CLEAN-002).
+    case unavailable
 }
 
 struct CalendarDay: Identifiable, Equatable {

@@ -20,7 +20,8 @@ final class IntegrationTests: XCTestCase {
         let today = Date.from(year: 2026, month: 6, day: 15)
         let badgeService = BadgeService(modelContext: context)
         let challengeService = try ChallengeService(
-            modelContext: context, challenges: challenges, badgeService: badgeService, dateProvider: { today }
+            modelContext: context, challenges: challenges, badgeService: badgeService,
+            userStartDate: Date.from(year: 2026, month: 6, day: 1), dateProvider: { today }
         )
 
         // View today's challenge
@@ -52,7 +53,8 @@ final class IntegrationTests: XCTestCase {
         let today = Date.from(year: 2026, month: 6, day: 15)
         let badgeService = BadgeService(modelContext: context)
         let challengeService = try ChallengeService(
-            modelContext: context, challenges: challenges, badgeService: badgeService, dateProvider: { today }
+            modelContext: context, challenges: challenges, badgeService: badgeService,
+            userStartDate: Date.from(year: 2026, month: 6, day: 1), dateProvider: { today }
         )
 
         // Insert 31 completions
@@ -83,7 +85,8 @@ final class IntegrationTests: XCTestCase {
         let today = Date.from(year: 2026, month: 6, day: 15)
         let badgeService = BadgeService(modelContext: context)
         let challengeService = try ChallengeService(
-            modelContext: context, challenges: challenges, badgeService: badgeService, dateProvider: { today }
+            modelContext: context, challenges: challenges, badgeService: badgeService,
+            userStartDate: Date.from(year: 2026, month: 6, day: 1), dateProvider: { today }
         )
 
         // Complete days 10, 11, 12 (skip 13, 14), current is 15
@@ -130,7 +133,8 @@ final class IntegrationTests: XCTestCase {
         let today = Date.from(year: 2026, month: 6, day: 15)
         let badgeService = BadgeService(modelContext: context)
         let challengeService = try ChallengeService(
-            modelContext: context, challenges: challenges, badgeService: badgeService, dateProvider: { today }
+            modelContext: context, challenges: challenges, badgeService: badgeService,
+            userStartDate: Date.from(year: 2026, month: 6, day: 1), dateProvider: { today }
         )
 
         let challenge = challengeService.challengeForDate(today)
@@ -191,7 +195,8 @@ final class IntegrationTests: XCTestCase {
         let today = Date.from(year: 2026, month: 6, day: 15)
         let badgeService = BadgeService(modelContext: context)
         let challengeService = try ChallengeService(
-            modelContext: context, challenges: challenges, badgeService: badgeService, dateProvider: { today }
+            modelContext: context, challenges: challenges, badgeService: badgeService,
+            userStartDate: Date.from(year: 2026, month: 6, day: 1), dateProvider: { today }
         )
 
         // Complete a challenge and earn it
@@ -202,7 +207,8 @@ final class IntegrationTests: XCTestCase {
         let newContext = ModelContext(container)
         let newBadgeService = BadgeService(modelContext: newContext)
         let newChallengeService = try ChallengeService(
-            modelContext: newContext, challenges: challenges, badgeService: newBadgeService, dateProvider: { today }
+            modelContext: newContext, challenges: challenges, badgeService: newBadgeService,
+            userStartDate: Date.from(year: 2026, month: 6, day: 1), dateProvider: { today }
         )
 
         // Verify data survived
@@ -218,7 +224,8 @@ final class IntegrationTests: XCTestCase {
         let today = Date.from(year: 2026, month: 6, day: 15)
         let badgeService = BadgeService(modelContext: context)
         let challengeService = try ChallengeService(
-            modelContext: context, challenges: challenges, badgeService: badgeService, dateProvider: { today }
+            modelContext: context, challenges: challenges, badgeService: badgeService,
+            userStartDate: Date.from(year: 2026, month: 6, day: 1), dateProvider: { today }
         )
 
         // Insert 1000 completions

@@ -98,6 +98,7 @@ struct CalendarScreenView: View {
         case .missedRecoverable: return .orange.opacity(0.3)
         case .future: return .clear
         case .today: return .blue.opacity(0.2)
+        case .unavailable: return .clear
         }
     }
 
@@ -108,6 +109,7 @@ struct CalendarScreenView: View {
         case .missedRecoverable: return .orange
         case .future: return .secondary
         case .today: return .primary
+        case .unavailable: return .secondary.opacity(0.5)
         }
     }
 }

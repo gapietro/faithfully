@@ -74,6 +74,10 @@ final class AppEnvironmentTests: XCTestCase {
 
     func testGracePeriodCompletionOnCalendarRefreshesJourney() throws {
         let today = Date.from(year: 2026, month: 6, day: 15)
+        // Grace recovery requires the missed day to be inside the journey:
+        // enroll before the grace window (CLEAN-002).
+        context.insert(UserProfile(startDate: Date.from(year: 2026, month: 6, day: 1)))
+        try context.save()
         let env = makeEnvironment(today: today)
         let services = try XCTUnwrap(env.services)
 
@@ -85,6 +89,36 @@ final class AppEnvironmentTests: XCTestCase {
         services.calendarViewModel.completeGracePeriod(graceDay, journal: nil)
 
         XCTAssertEqual(services.journeyViewModel.totalCompleted, 1)
+    }
+
+    // MARK: - Enrollment stamping (CLEAN-002)
+
+    func testBootstrapProfileEnrollsAtInjectedToday() throws {
+        let today = Date.from(year: 2026, month: 6, day: 15)
+        _ = makeEnvironment(today: today)
+
+        let profile = try XCTUnwrap(try context.fetch(FetchDescriptor<UserProfile>()).first)
+        XCTAssertEqual(Calendar.current.startOfDay(for: profile.startDate),
+                       Calendar.current.startOfDay(for: today),
+                       "Enrollment must come from the injected clock, not the wall clock")
+    }
+
+    func testFreshInstallRendersEarlierDaysUnavailable() throws {
+        // A brand-new profile enrolled today must see earlier days as not part
+        // of the journey — never as missed or recoverable.
+        let today = Date.from(year: 2026, month: 6, day: 15)
+        let env = makeEnvironment(today: today)
+        let services = try XCTUnwrap(env.services)
+
+        func status(day: Int) -> CalendarDayStatus? {
+            services.calendarViewModel.calendarDays.first {
+                Calendar.current.component(.day, from: $0.date) == day
+            }?.status
+        }
+        XCTAssertEqual(status(day: 13), .unavailable)
+        XCTAssertEqual(status(day: 14), .unavailable)
+        XCTAssertEqual(status(day: 15), .today)
+        XCTAssertEqual(status(day: 16), .future)
     }
 
     // MARK: - Fail-closed loading (#5)
@@ -131,8 +165,14 @@ final class AppEnvironmentTests: XCTestCase {
     // MARK: - Day rollover on foreground (PR #15)
 
     /// Builds an environment whose date provider reads a mutable box, so tests
-    /// can cross midnight while the service graph stays in memory.
+    /// can cross midnight while the service graph stays in memory. Enrollment is
+    /// seeded a month back so day statuses exercise grace/missed logic rather
+    /// than the CLEAN-002 boundary.
     private func makeRolloverEnvironment(startingAt start: Date) throws -> (AppServices, (Date) -> Void) {
+        if try context.fetch(FetchDescriptor<UserProfile>()).isEmpty {
+            context.insert(UserProfile(startDate: start.addingDays(-30)))
+            try context.save()
+        }
         var now = start
         let env = AppEnvironment(
             modelContext: context,

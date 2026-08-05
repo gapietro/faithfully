@@ -1,10 +1,11 @@
 import Foundation
 import SwiftData
 
-enum ChallengeServiceError: Error {
+enum ChallengeServiceError: Error, Equatable {
     case gracePeriodExpired
     case alreadyCompleted
     case emptyChallengePool
+    case beforeEnrollment
 }
 
 protocol ChallengeServiceProtocol {
@@ -12,6 +13,7 @@ protocol ChallengeServiceProtocol {
     func challengeForDate(_ date: Date) -> DailyChallenge
     func completeChallenge(_ challenge: DailyChallenge, on scheduledDate: Date, journal: String?) throws -> [BadgeDefinition]
     func isCompleted(on scheduledDate: Date) -> Bool
+    func isEligibleForCompletion(on scheduledDate: Date) -> Bool
     func fetchCompletions(for dateRange: ClosedRange<Date>) -> [CompletedChallenge]
     func calculateStreak() -> Int
 }
@@ -65,8 +67,20 @@ final class ChallengeService: ChallengeServiceProtocol {
         return scheduler.challengeForDate(date, yearOffset: offset)
     }
 
+    /// Days before the profile's enrollment are not part of the user's journey:
+    /// they can never be completed, including via grace/catch-up (CLEAN-002).
+    func isEligibleForCompletion(on scheduledDate: Date) -> Bool {
+        calendar.startOfDay(for: scheduledDate) >= calendar.startOfDay(for: userStartDate)
+    }
+
     func completeChallenge(_ challenge: DailyChallenge, on scheduledDate: Date, journal: String?) throws -> [BadgeDefinition] {
         let today = dateProvider()
+
+        // Enrollment boundary comes first so grace-window math can never
+        // resurrect a day that predates the user's journey (CLEAN-002).
+        guard isEligibleForCompletion(on: scheduledDate) else {
+            throw ChallengeServiceError.beforeEnrollment
+        }
 
         guard GracePeriod.canComplete(challengeDate: scheduledDate, today: today) else {
             throw ChallengeServiceError.gracePeriodExpired

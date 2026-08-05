@@ -102,6 +102,10 @@ final class CalendarViewModel {
                 status = .future
             } else if isCompleted {
                 status = .completed
+            } else if !challengeService.isEligibleForCompletion(on: date) {
+                // Pre-enrollment days were never missable and must not offer
+                // grace recovery (CLEAN-002).
+                status = .unavailable
             } else if dateStart == todayStart {
                 status = .today
             } else if GracePeriod.canComplete(challengeDate: date, today: today) {

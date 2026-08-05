@@ -220,6 +220,74 @@ final class ChallengeServiceTests: XCTestCase {
                        "Rotation must be deterministic")
     }
 
+    // MARK: - Enrollment boundary (CLEAN-002)
+
+    private func makeEnrolledService(enrolledSince: Date, today: Date) throws -> ChallengeService {
+        try ChallengeService(
+            modelContext: context, challenges: challenges, badgeService: badgeService,
+            userStartDate: enrolledSince, dateProvider: { today }
+        )
+    }
+
+    func testCompleteChallengeThrowsBeforeEnrollment() throws {
+        let enrollment = Date.from(year: 2026, month: 6, day: 10)
+        let today = Date.from(year: 2026, month: 6, day: 10)
+        let service = try makeEnrolledService(enrolledSince: enrollment, today: today)
+        let dayBefore = Date.from(year: 2026, month: 6, day: 9)
+
+        XCTAssertThrowsError(
+            try service.completeChallenge(service.challengeForDate(dayBefore), on: dayBefore, journal: nil)
+        ) { error in
+            XCTAssertEqual(error as? ChallengeServiceError, .beforeEnrollment)
+        }
+    }
+
+    func testCompleteChallengeAllowedOnEnrollmentDay() throws {
+        let enrollment = Date.from(year: 2026, month: 6, day: 10)
+        let service = try makeEnrolledService(enrolledSince: enrollment, today: enrollment)
+
+        XCTAssertNoThrow(
+            try service.completeChallenge(service.challengeForDate(enrollment), on: enrollment, journal: nil)
+        )
+        XCTAssertTrue(service.isCompleted(on: enrollment))
+    }
+
+    func testCompleteChallengeAllowedAfterEnrollment() throws {
+        let enrollment = Date.from(year: 2026, month: 6, day: 10)
+        let today = Date.from(year: 2026, month: 6, day: 12)
+        let service = try makeEnrolledService(enrolledSince: enrollment, today: today)
+
+        XCTAssertNoThrow(
+            try service.completeChallenge(service.challengeForDate(today), on: today, journal: nil)
+        )
+    }
+
+    func testGraceWindowCannotBypassEnrollmentBoundary() throws {
+        // The 9th is inside the raw 3-day grace window on the 11th, but predates
+        // the 10th enrollment — the boundary must win over grace math.
+        let enrollment = Date.from(year: 2026, month: 6, day: 10)
+        let today = Date.from(year: 2026, month: 6, day: 11)
+        let service = try makeEnrolledService(enrolledSince: enrollment, today: today)
+        let dayBefore = Date.from(year: 2026, month: 6, day: 9)
+
+        XCTAssertTrue(GracePeriod.canComplete(challengeDate: dayBefore, today: today),
+                      "Guard: raw grace math alone would have allowed this day")
+        XCTAssertThrowsError(
+            try service.completeChallenge(service.challengeForDate(dayBefore), on: dayBefore, journal: nil)
+        ) { error in
+            XCTAssertEqual(error as? ChallengeServiceError, .beforeEnrollment)
+        }
+    }
+
+    func testIsEligibleForCompletionUsesDayGranularity() throws {
+        // Enrolling late in the day must not make the enrollment day ineligible.
+        let enrollment = Date.from(year: 2026, month: 6, day: 10).addingTimeInterval(9 * 3600) // 21:00
+        let service = try makeEnrolledService(enrolledSince: enrollment, today: enrollment)
+
+        XCTAssertTrue(service.isEligibleForCompletion(on: Date.from(year: 2026, month: 6, day: 10)))
+        XCTAssertFalse(service.isEligibleForCompletion(on: Date.from(year: 2026, month: 6, day: 9)))
+    }
+
     func testCalculateStreakDelegatesToStreakAlgorithm() throws {
         // No completions = streak of 0
         XCTAssertEqual(service.calculateStreak(), 0)
@@ -230,15 +298,5 @@ final class ChallengeServiceTests: XCTestCase {
         _ = try service.completeChallenge(challenge, on: today, journal: nil)
 
         XCTAssertEqual(service.calculateStreak(), 1)
-    }
-}
-
-extension ChallengeServiceError: Equatable {
-    public static func == (lhs: ChallengeServiceError, rhs: ChallengeServiceError) -> Bool {
-        switch (lhs, rhs) {
-        case (.gracePeriodExpired, .gracePeriodExpired): return true
-        case (.alreadyCompleted, .alreadyCompleted): return true
-        default: return false
-        }
     }
 }

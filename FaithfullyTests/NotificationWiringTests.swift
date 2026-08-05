@@ -22,7 +22,13 @@ final class NotificationWiringTests: XCTestCase {
         notificationService = NotificationService(center: mockCenter)
     }
 
+    /// Seeds enrollment a month before `today` (unless a test inserted its own
+    /// profile) so grace-recovery paths stay inside the journey (CLEAN-002).
     private func makeServices(today: Date) throws -> AppServices {
+        if try context.fetch(FetchDescriptor<UserProfile>()).isEmpty {
+            context.insert(UserProfile(startDate: today.addingDays(-30)))
+            try context.save()
+        }
         let env = AppEnvironment(
             modelContext: context,
             loadChallenges: { self.challenges },
