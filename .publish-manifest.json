@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "generated": "2026-08-15",
+  "note": "Admission rulings for content-bearing files. Paths and rulings only - never content, never radioactive terms.",
+  "rulings": [
+    { "path": "README.md", "ruling": "ship", "why": "primary doc; screenshots added this run", "ruled": "2026-08-15" },
+    { "path": "LICENSE + CONTENT-LICENSE.md", "ruling": "ship", "why": "deliberate split: MIT code, all-rights-reserved content; scripture is WEB/KJV public domain", "ruled": "2026-08-15" },
+    { "path": "challenges.json + challenges_*.json", "ruling": "ship", "why": "the product content; CONTENT-LICENSE explicitly covers redistribution terms", "ruled": "2026-08-15" },
+    { "path": "AUDIT.md", "ruling": "ship", "why": "exhibit: remediation ledger (already tracked)", "ruled": "2026-08-15" },
+    { "path": "PRD.md", "ruling": "ship", "why": "product doc, content-licensed, no identities", "ruled": "2026-08-15" },
+    { "path": "sparc/**", "ruling": "ship", "why": "original design phase; README caveats it as historical (still describes CloudKit + licensed translations v1 does not have)", "ruled": "2026-08-15" },
+    { "path": "docs/ship/SESSION_HANDOFF.md", "ruling": "redact-then-ship", "why": "overrides the skill's private-ledger default: deliberately committed, SNAPSHOT-bannered. Machine name, keychain service+account, alt-account keyring note, and personal contact channel removed from tree AND history (filter-repo)", "ruled": "2026-08-15" },
+    { "path": "docs/ship/TEST_RUN.md", "ruling": "redact-then-ship", "why": "machine attribution removed", "ruled": "2026-08-15" },
+    { "path": "docs/ship/icons/README.md", "ruling": "redact-then-ship", "why": "credential-location reference removed", "ruled": "2026-08-15" },
+    { "path": "docs/ship/SCREENSHOTS_AND_ICON.md", "ruling": "redact-then-ship", "why": "author home path genericised", "ruled": "2026-08-15" },
+    { "path": "docs/ship/PRIVACY_POLICY.md + TESTFLIGHT_RUNBOOK.md", "ruling": "ship", "why": "gist URLs are the app's PUBLISHED privacy policy - intentionally public, deliberately NOT treated as radioactive", "ruled": "2026-08-15" },
+    { "path": "docs/ship/screenshots/** + icons/**", "ruling": "ship", "why": "marketing assets, own work, no identities in frame", "ruled": "2026-08-15" },
+    { "path": "docs/** (remaining 25 files)", "ruling": "ship", "why": "architecture, timezone policy, content spot-checks, licensing - reviewed, no identities", "ruled": "2026-08-15" },
+    { "path": "commit author identity", "ruling": "ship", "why": "5 identities / 2 emails in commit metadata. Deliberately NOT rewritten: authorship is public on every repo, and rewriting breaks GitHub contribution attribution, which is part of the point of publishing", "ruled": "2026-08-15" }
+  ]
+}

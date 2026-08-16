@@ -5,6 +5,12 @@ for everyone, done on your phone and kept on your phone.
 
 iPhone · SwiftUI · SwiftData · no account, no backend, no third-party dependencies.
 
+<p align="left">
+  <img src="docs/ship/screenshots/6.9/01_daily_walk.png" alt="Today's challenge" width="200">
+  <img src="docs/ship/screenshots/6.9/02_completion.png" alt="Completing a challenge" width="200">
+  <img src="docs/ship/screenshots/6.9/03_calendar.png" alt="Calendar of completed days" width="200">
+</p>
+
 ## Start here
 
 | I want to… | Read |
