@@ -4,13 +4,9 @@
 
 
 **Written:** 2026-07-22  
-**Repo:** `gapietro/faithfully` (private)  
-**Clone:** `path/to/faithfully` on development machine  
-**Main HEAD at handoff:** `7ec15c8` — Merge PR #36 (Recraft app icon v3)  
-**gh user:** `scoutapietro` (push + pull + triage; no admin)
+**Main HEAD at handoff:** `7ec15c8` — Merge PR #36 (Recraft app icon v3)
 
-This file is the durable resume point after the post-audit sprint run (A–E + F1 + privacy + icon).  
-Hermes conversation history also retains the full thread; search “Faithfully sprint” / “Recraft icon” if needed.
+This file is the durable resume point after the post-audit sprint run (A–E + F1 + privacy + icon).
 
 ---
 
@@ -74,24 +70,21 @@ Audit epic **#1** is closed.
 
 2. **CloudKit deferred** to post-v1 — [`CLOUDKIT_DECISION.md`](CLOUDKIT_DECISION.md)
 
-3. **Agents must not** create ASC records, upload TF builds, or Submit for Review without explicit the owner OK on private channel.
+3. **Agents must not** create ASC records, upload TF builds, or Submit for Review without explicit owner approval.
 
-4. **Recraft** is approved for brand art (icon done; badges = #32). Key is **not in git**.
+4. **Recraft** is approved for brand art (icon done; badges = #32). The API key is not in git.
 
 ---
 
-## Secrets & tooling (development machine)
+## Toolchain
 
 | Item | Where |
 |------|--------|
-| Recraft API key | macOS Keychain service **`recraft.ai`**, account `REDACTED` — API validated HTTP 200 against `external.api.recraft.ai` |
-| GitHub | `gh` as `scoutapietro` (keyring) |
-| Claude Code | Max account; model used: `claude-fable-5` (`claude` CLI) |
-| Xcode | 26.x at `/Applications/Xcode.app`, `xcode-select` → full Xcode |
-| XcodeGen / SwiftLint / xcbeautify | Homebrew installed |
-| Simulators | iPhone 17 family, including **iPhone 17 Pro Max** (6.9″ / 1320×2868 targets) |
+| Xcode | 26.x, `xcode-select` → full Xcode |
+| XcodeGen / SwiftLint | pinned into `.tools/` by `scripts/bootstrap.sh` |
+| Simulators | iPhone 17 family, including iPhone 17 Pro Max (6.9″ / 1320×2868 targets) |
 
-**Do not commit** keys. Prefer Keychain or gitignored env.
+Credentials live in the macOS Keychain, never in the repo. **Do not commit** keys.
 
 ---
 
@@ -204,7 +197,7 @@ python3 scripts/validate_challenges.py
 
 ## Contact / trust
 
-- Repository owner — private channel primary command channel  
+- Repository owner — final approval on all store actions  
 - Support email used in privacy: `gapietro@gmail.com`  
 
-Do not take store-shipping actions without the owner on private channel.
+Do not take store-shipping actions without explicit owner approval.

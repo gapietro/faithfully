@@ -16,6 +16,6 @@
 | `AppIcon-chosen-v3.png` | Stable copy of selection | yes |
 
 ## Notes
-- API key lived in macOS Keychain service `recraft.ai` (not committed).
+- API key was held outside the repo and is not committed.
 - Screenshot capture for #26 still outstanding after icon install.
 - Real badge pack remains Epic G #32 (same Recraft pipeline).
